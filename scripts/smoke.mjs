@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_DEF, inLive };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -358,6 +358,20 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (btn(/Debrief/).disabled !== true) fail('files: debrief should wait for a rule');
   doc.querySelectorAll('#app .labdef').forEach(b => clk(b)); if (T.fiLive(FP.on).length) fail('files: all rules should close every hiding place'); next(/Debrief/);
   if (!S.nn.files.done) fail('files debrief not reached');
+  // 8 · inside inference: every stage has a control, and the scene plays through
+  { const chk = (c, m) => { if (!c) fail('infer: ' + m); };
+    chk(T.inLive({}).length === T.IN_STAGES.length, 'no controls should leave every stage open');
+    chk(T.inLive(Object.fromEntries(T.IN_DEF.map(d => [d.id, true]))).length === 0, 'all controls should cover every stage');
+    T.IN_STAGES.forEach(st => chk(T.IN_DEF.some(d => d.fix.includes(st.id)), st.id + ' has no control')); }
+  T.LAB.id = null; go('adv-nn-infer'); const LI = T.LAB.L, IP = LI.sim.P;
+  doc.querySelectorAll('#app .labp').forEach(b => clk(b)); if (IP.revealed.size !== T.IN_STAGES.length) fail('infer: opened ' + IP.revealed.size + ' of ' + T.IN_STAGES.length + ' stages'); next(/Share the GPU/);
+  clk(btn(/Send batch/)); if (!IP.flow) fail('infer: batch did not fire'); next(/The cache/);
+  clk(btn(/Replay prefix/)); if (IP.hits.c !== 'hit') fail('infer: an unsalted cache should return a hit'); next(/The sampler/);
+  clk(btn(/Request logprobs/)); if (IP.probe !== 1) fail('infer: logprob request did not register'); next(/The stream/);
+  clk(btn(/Record the wire/)); if (!IP.pad) fail('infer: wire record did not register'); next(/Harden it/);
+  if (btn(/Debrief/).disabled !== true) fail('infer: debrief should wait for a control');
+  doc.querySelectorAll('#app .labdef').forEach(b => clk(b)); if (T.inLive(IP.on).length) fail('infer: all controls should close every stage'); next(/Debrief/);
+  if (!S.nn.infer.done) fail('infer debrief not reached');
   // every instrument briefs the room and explains every step
   T.NN_SIMS.forEach(x => { if (!x.brief || !x.brief.what || !x.brief.real || x.brief.todo.length !== 3) fail(x.id + ' lacks a briefing');
     T.LAB.id = null; go('adv-nn-' + x.id); const n = T.LAB.L.sim.steps.length; if ((x.guide || []).length !== n) fail(x.id + ' guidance covers ' + (x.guide || []).length + ' of ' + n + ' steps');
@@ -366,7 +380,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.length) fail('advanced index lacks the simulation cards');
   go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
   T.NN.sync = false;
-  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; seven instruments played start to finish; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
+  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; eight instruments played start to finish; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
 }
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {

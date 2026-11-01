@@ -1496,3 +1496,12 @@ body.labmode main#app { max-width: none; padding: 0; }
 .fiout .bad { color: #FF8FA6; background: rgba(255,90,122,.1); } .fiout i { display: block; font-style: normal; font-size: 10px; color: #F2B544; letter-spacing: .5px; text-transform: uppercase; }
 .fiout .lock { color: #3A4566; letter-spacing: -1px; }
 .fisay p { margin: 4px 0 0; font: 600 14px var(--f-body); color: #FF8FA6; }
+/* Inside inference: stage dossier and wire readouts */
+.inspec { display: flex; flex-direction: column; gap: 6px; } .inspec p { margin: 0; font-size: 13px; color: #D6DEEE; line-height: 1.4; }
+.inspec .inissue { font: 700 14px var(--f-body); color: #FF8FA6; } .inspec .inctrl { color: #BFF0D3; }
+.labdef.inone { margin-bottom: 4px; }
+.inreqs { display: flex; flex-direction: column; gap: 5px; } .inreq { display: flex; flex-direction: column; gap: 1px; padding: 6px 9px; border-radius: 8px; border-left: 3px solid; background: rgba(141,182,242,.05); }
+.inreq b { font-size: 12px; color: #E8ECF5; } .inreq span { font: 500 11px var(--f-mono); color: #8B98B6; overflow-wrap: anywhere; }
+.inreq.blue { border-color: #8DB6F2; } .inreq.violet { border-color: #A98BF5; } .inreq.bad { border-color: #FF5A7A; } .inreq.good { border-color: #5FD08F; }
+.inbars { display: flex; flex-direction: column; gap: 4px; } .inbar { display: grid; grid-template-columns: 54px 1fr 38px; gap: 6px; align-items: center; font: 600 11px var(--f-mono); color: #D6DEEE; }
+.inbar i { height: 10px; border-radius: 3px; background: rgba(255,90,122,.7); display: block; } .inbar em { font-style: normal; color: #8B98B6; text-align: right; }
