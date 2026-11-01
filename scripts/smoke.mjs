@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_DEF, inLive };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -364,6 +364,9 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
     chk(T.inLive(Object.fromEntries(T.IN_DEF.map(d => [d.id, true]))).length === 0, 'all controls should cover every stage');
     T.IN_STAGES.forEach(st => chk(T.IN_DEF.some(d => d.fix.includes(st.id)), st.id + ' has no control')); }
   T.LAB.id = null; go('adv-nn-infer'); const LI = T.LAB.L, IP = LI.sim.P;
+  if (doc.querySelectorAll('#app .labp').length !== T.IN_LAYERS.length) fail('infer: peel step should list every layer');
+  if (btn(/Follow it through/).disabled !== true) fail('infer: follow-through should wait for the peel');
+  range(100); clk(doc.querySelectorAll('#app .labp')[3]); if (IP.psel !== 3) fail('infer: tapping a layer did not select it'); next(/Follow it through/);
   doc.querySelectorAll('#app .labp').forEach(b => clk(b)); if (IP.revealed.size !== T.IN_STAGES.length) fail('infer: opened ' + IP.revealed.size + ' of ' + T.IN_STAGES.length + ' stages'); next(/Share the GPU/);
   clk(btn(/Send batch/)); if (!IP.flow) fail('infer: batch did not fire'); next(/The cache/);
   clk(btn(/Replay prefix/)); if (IP.hits.c !== 'hit') fail('infer: an unsalted cache should return a hit'); next(/The sampler/);

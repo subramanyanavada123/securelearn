@@ -25,6 +25,16 @@ const IN_STAGES = [
     control: 'Pad or batch streamed chunks for sensitive routes; put output filtering before the first token leaves, not after the stream has started.' }];
 const IN_BY = Object.fromEntries(IN_STAGES.map((s, i) => [s.id, Object.assign({ i }, s)]));
 
+// The request, peeled: six layers one prompt becomes, from what you typed to what leaves the wire.
+// `who` is who can observe this layer; `rows` is the illustrative content drawn on the sheet.
+const IN_LAYERS = [
+  { id: 'prompt', name: 'Your prompt', who: 'You and the operator', tone: 'good', rows: ['“What is my payroll account?”'] },
+  { id: 'context', name: 'Assembled context', who: 'Anyone who can write to memory or the knowledge base', tone: 'ink', rows: ['SYSTEM: Acme payroll assistant', 'MEMORY: user = ravi · tenant A', 'RAG: policy_v3.md (retrieved)', 'USER: What is my payroll account?'] },
+  { id: 'tokens', name: 'Token ids', who: 'The serving layer; shared in a batch', tone: 'blue', rows: ['[9906, 374, 856, 24069, 2759, 30]', '— no mark says which tokens are untrusted —'] },
+  { id: 'logits', name: 'Output scores', who: 'Anyone given logprobs by the API', tone: 'bad', rows: ['₹ 0.41 · the 0.22 · account 0.14', 'pay 0.09 · … 0.14', '(the full distribution, every token)'] },
+  { id: 'cache', name: 'KV cache state', who: 'Any tenant sharing the cache', tone: 'violet', rows: ['prefix hash: 7f3a… (cached)', 'hit = this prefix was seen before'] },
+  { id: 'wire', name: 'Response on the wire', who: 'Anyone on the network path', tone: 'bad', rows: ['chunk sizes: 6 · 11 · 4 · 14 · 3', '(encrypted; lengths are not)'] }];
+
 // Four requests sharing the serving path. tenantSecret marks the one whose prefix is sensitive.
 const IN_REQS = [
   { id: 'a', who: 'Tenant A · you', col: 'blue', toks: 9, secret: true, prefix: 'SYSTEM: Acme payroll assistant. Secret key sk-7f…' },
@@ -51,15 +61,19 @@ function inLay(L) {
 const inReqY = (L, L2, i) => L2.wide ? L.h * (0.16 + i * 0.1) : 0;
 
 function inMount(L) {
-  const P = { sel: 'tok', on: {}, flow: null, hits: {}, probe: 0, pad: false, revealed: new Set(), lane: {} };
+  const P = { sel: 'tok', psel: null, ex: 0, on: {}, flow: null, hits: {}, probe: 0, pad: false, revealed: new Set(), lane: {} };
   const stageOpen = id => inLive(P.on).some(s => s.id === id);
   const fire = L => { P.flow = { t0: L.t, u: 0 }; IN_REQS.forEach((r, i) => { P.lane[r.id] = i; }); L.repaint(); };
   const sim = { P,
     hud: L => inHud(L, P),
-    draw: (L, g) => [inDrawPipe, inDrawBatch, inDrawCache, inDrawSampler, inDrawStream, inDrawDefend, inDrawDefend][L.step](L, g, P),
+    draw: (L, g) => [inDrawPeel, inDrawPipe, inDrawBatch, inDrawCache, inDrawSampler, inDrawStream, inDrawDefend, inDrawDefend][L.step](L, g, P),
     down: (L, x, y) => inDown(L, P, x, y),
+    move: (L, x, y, dn) => { if (dn && L.step === 0) fiSet(L, P, 'ex', (x - L.w * 0.12) / (L.w * 0.76)); },
     tick: (L) => { if (P.flow && !NN.sync) { P.flow.u = Math.min(1, (L.t - P.flow.t0) * 0.5); } },
     steps: [
+      { say: () => P.ex < 0.9 ? 'One request. It is not one thing — pull it apart.' : P.psel ? IN_LAYERS[P.psel].name + ': ' + IN_LAYERS[P.psel].who : '6 layers. Your prompt is the thinnest of them.',
+        side: L => inPeelSide(L, P),
+        acts: L => [labNext(L, 'Follow it through →', P.ex < 0.9)] },
       { say: () => P.revealed.size < IN_STAGES.length ? 'One request, five stages. Tap each to open it.' : 'Five stages. Each hands out something the answer never says.',
         side: L => inStageSide(L, P),
         acts: L => [labNext(L, 'Share the GPU →', P.revealed.size < IN_STAGES.length)] },
@@ -97,6 +111,7 @@ function inMount(L) {
 function inHud(L, P) {
   const live = () => inLive(P.on).length;
   return [
+    [['LAYERS', () => IN_LAYERS.length + ''], ['YOUR PROMPT IS', () => '1 of ' + IN_LAYERS.length]],
     [['STAGES', () => IN_STAGES.length + ''], ['IN THE ANSWER', () => '0', 'good']],
     [['BATCH', () => IN_REQS.length + ' tenants'], ['GPUS', () => '1', 'bad']],
     [['PREFIX CACHE', () => inLive(P.on).some(s => s.id === 'cache') ? 'shared' : 'per-tenant', inLive(P.on).some(s => s.id === 'cache') ? 'bad' : 'good'], ['A HIT MEANS', () => 'sent before']],
@@ -104,6 +119,16 @@ function inHud(L, P) {
     [['ON THE WIRE', () => P.pad && !inLive(P.on).some(s => s.id === 'stream') ? 'length visible' : 'blips', 'bad']],
     [['OPEN', () => live() + '/' + IN_STAGES.length, 'bad'], ['CONTROLS', () => Object.values(P.on).filter(Boolean).length + '/' + IN_DEF.length]],
     [['OPEN', () => live() + '/' + IN_STAGES.length, live() ? 'bad' : 'good'], ['CONTROLS', () => Object.values(P.on).filter(Boolean).length + '/' + IN_DEF.length]]][L.step];
+}
+// The peel step's side panel: a slider plus the selected layer's dossier.
+function inPeelSide(L, P) {
+  const sel = P.psel != null ? IN_LAYERS[P.psel] : null;
+  return [fiRange(L, P, 'ex', 'PULL APART', () => P.ex >= 0.9),
+    h('div', { class: 'labprompts' }, IN_LAYERS.map((ly, i) => h('button', { type: 'button', class: 'labp' + (P.psel === i ? ' on' : ''),
+      onclick: () => { P.psel = i; if (P.ex < 0.4) fiSet(L, P, 'ex', 1); L.repaint(); } }, ly.name))),
+    sel ? h('div', { class: 'inspec' }, h('span', { class: 'labk' }, sel.name),
+      h('div', { class: 'inrows' }, sel.rows.map(r => h('div', null, r))),
+      h('span', { class: 'labk' }, 'Who can observe this'), h('b', { class: sel.tone === 'good' ? 'inctrl' : 'inissue' }, sel.who)) : h('p', { class: 'labsm' }, 'Tap a layer to see what it exposes.')];
 }
 // A stage's dossier in the side panel.
 function inStageSide(L, P) {
@@ -122,7 +147,7 @@ function inCacheSide(L, P) { return h('div', { class: 'inspec' }, h('span', { cl
   P.hits.c ? h('b', { class: P.hits.c === 'hit' ? 'inissue' : 'inctrl' }, P.hits.c === 'hit' ? 'HIT · 8 ms — confirmed' : 'MISS · 240 ms — cache is per-tenant, nothing learned') : null); }
 function inSamplerSide(L, P) {
   const covered = !inLive(P.on).some(s => s.id === 'sampler'), toks = [['₹', 0.41], ['the', 0.22], ['account', 0.14], ['pay', 0.09], ['…', 0.14]];
-  return h('div', { class: 'inspec' }, h('span', { class: 'labk' }, open ? 'What you get back' : 'What you get back'),
+  return h('div', { class: 'inspec' }, h('span', { class: 'labk' }, 'What you get back'),
     P.probe < 1 ? h('p', null, 'The answer is one token at a time.') : covered ? h('p', { class: 'inctrl' }, 'Text only: “₹4,80,000 to account …9921”. No scores.')
       : h('div', { class: 'inbars' }, toks.map(([t, v]) => h('div', { class: 'inbar' }, h('span', null, t), h('i', { style: 'width:' + Math.round(v * 100) + '%' }), h('em', null, (v * 100).toFixed(0) + '%'))))); }
 function inStreamSide(L, P) {
@@ -133,12 +158,47 @@ function inStreamSide(L, P) {
         : h('p', { class: 'inissue' }, 'The chunk sizes spell the answer’s word lengths. Enough to tell a yes from a no, a short code from a long one.')); }
 
 function inDown(L, P, x, y) {
-  if (L.step !== 0) return; const Ly = inLay(L);
+  if (L.step === 0) { const b = inPeelBox(L); if (!b.sheets) return;
+    let best = -1, bd = 1e9; b.sheets.forEach((s, i) => { const d = Math.hypot(s.cx - x, s.cy - y); if (d < bd && d < b.pw * 0.5) { bd = d; best = i; } });
+    if (best >= 0) { P.psel = best; L.repaint(); } return; }
+  if (L.step !== 1) return; const Ly = inLay(L);
   Ly.nodes.forEach((p, i) => { if (Math.hypot(p.x - x, p.y - y) < Ly.r + 8) { P.sel = IN_STAGES[i].id; P.revealed.add(P.sel); L.repaint(); } });
 }
 
 /* ---------- drawing ---------- */
 const inCol = r => LC[r.col] || LC.blue;
+// The exploded request: six sheets fanning out from the flat prompt, in the same isometric style as the PDF.
+function inPeelBox(L) { const pw = Math.min(L.w * 0.44, (L.h - 60) / 1.25, 300), ph = pw * 1.25; return { pw, ph, sp: pw + ph }; }
+function inDrawPeel(L, g, P) {
+  const e = fiEase(P.ex), B = inPeelBox(L), pw = B.pw, ph = B.ph, sp = B.sp;
+  const k = Math.min(1, (L.w - 220) / (0.87 * sp), (L.h - 30) / (1.3 * sp)), G = 0.14 * sp * k, cx = L.w / 2 - e * Math.min(50, L.w * 0.1), cy = L.h / 2;
+  B.sheets = [];
+  IN_LAYERS.forEach((ly, i) => {
+    const M = [1, 0, 0, 1].map((f, j) => f + (FI_ISO[j] * k - f) * e), cyc = cy + e * ((IN_LAYERS.length - 1) / 2 - i) * G;
+    const tx = cx - (M[0] * pw + M[2] * ph) / 2, ty = cyc - (M[1] * pw + M[3] * ph) / 2;
+    B.sheets.push({ cx, cy: cyc });
+    g.setTransform(L.dpr * M[0], L.dpr * M[1], L.dpr * M[2], L.dpr * M[3], L.dpr * tx, L.dpr * ty);
+    inSheet(g, ly, i, pw, ph, e, P.psel === i);
+    g.setTransform(L.dpr, 0, 0, L.dpr, 0, 0);
+    if (e > 0.25) { const rx = tx + M[0] * pw, ry = ty + M[1] * pw, c = ly.tone === 'good' ? LC.good : ly.tone === 'bad' ? LC.bad : LC[ly.tone] || LC.ink, sel = P.psel === i;
+      g.strokeStyle = lc(c, e * (sel ? 1 : 0.5)); g.lineWidth = sel ? 2 : 1; g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx + 10, ry); g.stroke(); g.lineWidth = 1;
+      const nm = L.w < 520 ? { 'Response on the wire': 'On the wire', 'Assembled context': 'Context' }[ly.name] || ly.name : ly.name;
+      labText(g, nm, rx + 14, ry + 4, { size: sel ? 12 : 11, w: sel ? 700 : 600, col: lc(c, e) }); }
+  });
+  if (e < 0.05) { const b = Math.sin(L.t * 3) * 8; labText(g, '◀  drag  ▶', cx + b, Math.min(L.h - 8, cy + ph / 2 + 24), { size: 13, w: 700, align: 'center', col: lc(LC.ink, 0.9) }); }
+}
+function inSheet(g, ly, i, pw, ph, e, sel) {
+  const fs = Math.max(9, pw * 0.05), c = ly.tone === 'good' ? LC.good : ly.tone === 'bad' ? LC.bad : LC[ly.tone] || LC.ink;
+  if (!i) { g.fillStyle = '#F4F1EA'; g.fillRect(0, 0, pw, ph); g.fillStyle = '#16234A'; g.fillRect(0, 0, pw, ph * 0.03);
+    labText(g, 'REQUEST', pw * 0.07, ph * 0.1, { size: fs * 0.8, w: 700, col: '#3A4566' });
+    labText(g, ly.rows[0], pw * 0.07, ph * 0.2, { size: fs * 1.1, w: 600, col: '#16234A', mono: false });
+    if (e > 0.2) { g.strokeStyle = lc(LC.good, e); g.lineWidth = sel ? 2 : 1; g.strokeRect(0, 0, pw, ph); g.lineWidth = 1; }
+    return; }
+  g.fillStyle = sel ? 'rgba(14,22,48,.96)' : 'rgba(14,22,48,.9)'; g.fillRect(0, 0, pw, ph);
+  g.strokeStyle = lc(c, sel ? 1 : 0.55); g.lineWidth = sel ? 2 : 1; g.strokeRect(0, 0, pw, ph); g.lineWidth = 1;
+  labText(g, ly.name.toUpperCase(), pw * 0.07, ph * 0.12, { size: fs * 0.72, w: 700, col: lc(c, 1) });
+  ly.rows.forEach((r, j) => labText(g, r, pw * 0.07, ph * (0.26 + j * 0.11), { size: fs * 0.82, col: lc(LC.text, 0.85), mono: ly.id !== 'wire' ? true : true }));
+}
 function inNode(L, g, p, Ly, st, open, hot) {
   const r = Ly.r, c = open ? LC.bad : LC.good;
   if (hot) labGlow(g, p.x, p.y, r * 1.8, LC.ink, 0.22 + 0.1 * Math.sin(L.t * 4));
@@ -230,8 +290,10 @@ function inDrawDefend(L, g, P) {
 NN_SIMS.push({ id: 'infer', title: 'Inside inference', kicker: 'Inference-time · side channels', blurb: 'Follow one request through tokeniser, shared GPU batch, KV cache, sampler and the streamed response, and watch every stage hand out something the answer never says.', mount: inMount,
   brief: { what: 'When a model answers, the request travels a serving pipeline: tokeniser, GPU batch, KV cache, sampler, response stream. The answer is only the end of it. The timing, the shared cache, the confidence scores and the token lengths along the way leak on their own.',
     real: 'Training-data extraction by repetition; model stealing through the API; token-length and timing side channels on streamed responses; KV-cache and cross-tenant leakage — all documented at the inference layer in 2023–2025.',
-    todo: ['Open each of the five stages and see what it exposes', 'Share a GPU batch, replay a cached prefix, ask for raw scores, record the stream', 'Switch on the serving-layer controls until every stage is covered'] },
+    todo: ['Pull one request apart into its six layers', 'Share a GPU batch, replay a cached prefix, ask for raw scores, record the stream', 'Switch on the serving-layer controls until every stage is covered'] },
   guide: [
+    { look: [['good', '▭', 'The flat request: what you typed.'], ['ink', '▱', 'The layers it becomes before an answer exists.'], ['bad', 'A', 'Red edge: a layer someone other than you can observe.']],
+      why: 'Drag to pull the request apart, or tap a layer. Your prompt is one thin sheet; the stack around it is the attack surface.' },
     { look: [['good', '◯', 'A pipeline stage.'], ['ink', '◯', 'The one you opened.'], ['bad', '▭', 'Red tag: the security issue that lives there.'], ['blue', '●', 'The request’s tokens flowing in.']],
       why: 'Tap each stage. The answer leaves at the end; everything before it is observable in its own way.' },
     { look: [['blue', '●', 'Tenant A (you).'], ['violet', '●', 'Other tenants.'], ['bad', '●', 'An attacker, in the same batch.']],
