@@ -68,12 +68,16 @@ function inMount(L) {
     hud: L => inHud(L, P),
     draw: (L, g) => [inDrawPeel, inDrawPipe, inDrawBatch, inDrawCache, inDrawSampler, inDrawStream, inDrawDefend, inDrawDefend][L.step](L, g, P),
     down: (L, x, y) => inDown(L, P, x, y),
-    move: (L, x, y, dn) => { if (dn && L.step === 0) fiSet(L, P, 'ex', (x - L.w * 0.12) / (L.w * 0.76)); },
-    tick: (L) => { if (P.flow && !NN.sync) { P.flow.u = Math.min(1, (L.t - P.flow.t0) * 0.5); } },
+    move: (L, x, y, dn) => { if (dn && L.step === 0) { P.exTarget = null; P.psel = null; fiSet(L, P, 'ex', (x - L.w * 0.14) / (L.w * 0.72)); inMarkSeen(P); } },
+    tick: (L, dt) => {
+      if (P.flow && !NN.sync) { P.flow.u = Math.min(1, (L.t - P.flow.t0) * 0.5); }
+      if (L.step === 0 && P.exTarget != null && !NN.sync) { const d = P.exTarget - P.ex; if (Math.abs(d) < 0.004) { fiSet(L, P, 'ex', P.exTarget); P.exTarget = null; } else { fiSet(L, P, 'ex', P.ex + d * Math.min(1, dt * 6)); } }
+    },
     steps: [
-      { say: () => P.ex < 0.9 ? 'One request. It is not one thing — pull it apart.' : P.psel ? IN_LAYERS[P.psel].name + ': ' + IN_LAYERS[P.psel].who : '6 layers. Your prompt is the thinnest of them.',
+      { say: () => { const done = P.ex >= 0.9 || (P.seenLayers && P.seenLayers.size >= IN_LAYERS.length);
+          return P.psel != null ? IN_LAYERS[P.psel].name + ' · ' + IN_LAYERS[P.psel].who : done ? 'Six layers. Your prompt is the thinnest of them.' : 'One request. It is not one thing — fly into it.'; },
         side: L => inPeelSide(L, P),
-        acts: L => [labNext(L, 'Follow it through →', P.ex < 0.9)] },
+        acts: L => [labNext(L, 'Follow it through →', !(P.ex >= 0.9 || (P.seenLayers && P.seenLayers.size >= IN_LAYERS.length)))] },
       { say: () => P.revealed.size < IN_STAGES.length ? 'One request, five stages. Tap each to open it.' : 'Five stages. Each hands out something the answer never says.',
         side: L => inStageSide(L, P),
         acts: L => [labNext(L, 'Share the GPU →', P.revealed.size < IN_STAGES.length)] },
@@ -120,15 +124,22 @@ function inHud(L, P) {
     [['OPEN', () => live() + '/' + IN_STAGES.length, 'bad'], ['CONTROLS', () => Object.values(P.on).filter(Boolean).length + '/' + IN_DEF.length]],
     [['OPEN', () => live() + '/' + IN_STAGES.length, live() ? 'bad' : 'good'], ['CONTROLS', () => Object.values(P.on).filter(Boolean).length + '/' + IN_DEF.length]]][L.step];
 }
-// The peel step's side panel: a slider plus the selected layer's dossier.
+// Mark layers the camera has flown past as seen.
+function inMarkSeen(P) { P.seenLayers = P.seenLayers || new Set(); const upto = Math.round(P.ex * (IN_LAYERS.length - 1)); for (let i = 0; i <= upto; i++) P.seenLayers.add(i); }
+// Fly the camera to a chosen layer and focus it.
+function inFocusLayer(L, P, i) { P.psel = i; P.seenLayers = P.seenLayers || new Set(); P.seenLayers.add(i);
+  const want = i / (IN_LAYERS.length - 1);
+  if (NN.sync) { if (P.ex < want) fiSet(L, P, 'ex', want); P.rangeOut && P.rangeOut(); } else { P.exTarget = want; if (P.ex < 0.04) P.ex = 0.03; }
+  L.repaint(); }
+// The peel step's side panel: a fly-through slider plus the focused layer's dossier.
 function inPeelSide(L, P) {
   const sel = P.psel != null ? IN_LAYERS[P.psel] : null;
-  return [fiRange(L, P, 'ex', 'PULL APART', () => P.ex >= 0.9),
-    h('div', { class: 'labprompts' }, IN_LAYERS.map((ly, i) => h('button', { type: 'button', class: 'labp' + (P.psel === i ? ' on' : ''),
-      onclick: () => { P.psel = i; if (P.ex < 0.4) fiSet(L, P, 'ex', 1); L.repaint(); } }, ly.name))),
+  return [fiRange(L, P, 'ex', 'FLY THROUGH', () => P.ex >= 0.9 || (P.seenLayers && P.seenLayers.size >= IN_LAYERS.length)),
+    h('div', { class: 'labprompts' }, IN_LAYERS.map((ly, i) => h('button', { type: 'button', class: 'labp' + (P.psel === i ? ' on' : '') + (P.seenLayers && P.seenLayers.has(i) ? ' sent' : ''),
+      onclick: () => inFocusLayer(L, P, i) }, ly.name))),
     sel ? h('div', { class: 'inspec' }, h('span', { class: 'labk' }, sel.name),
       h('div', { class: 'inrows' }, sel.rows.map(r => h('div', null, r))),
-      h('span', { class: 'labk' }, 'Who can observe this'), h('b', { class: sel.tone === 'good' ? 'inctrl' : 'inissue' }, sel.who)) : h('p', { class: 'labsm' }, 'Tap a layer to see what it exposes.')];
+      h('span', { class: 'labk' }, 'Who can observe this'), h('b', { class: sel.tone === 'good' ? 'inctrl' : 'inissue' }, sel.who)) : h('p', { class: 'labsm' }, 'Tap a layer, or fly through, to see what each one exposes.')];
 }
 // A stage's dossier in the side panel.
 function inStageSide(L, P) {
@@ -158,46 +169,89 @@ function inStreamSide(L, P) {
         : h('p', { class: 'inissue' }, 'The chunk sizes spell the answer’s word lengths. Enough to tell a yes from a no, a short code from a long one.')); }
 
 function inDown(L, P, x, y) {
-  if (L.step === 0) { const b = inPeelBox(L); if (!b.sheets) return;
-    let best = -1, bd = 1e9; b.sheets.forEach((s, i) => { const d = Math.hypot(s.cx - x, s.cy - y); if (d < bd && d < b.pw * 0.5) { bd = d; best = i; } });
-    if (best >= 0) { P.psel = best; L.repaint(); } return; }
+  if (L.step === 0) { if (!P.panels) return;
+    // nearest-to-front panel whose rect is under the pointer (panels are front-first here since we pushed back-to-front)
+    const hit = [...P.panels].reverse().find(p => x >= p.x && x <= p.x + p.w && y >= p.y && y <= p.y + p.h);
+    if (hit) inFocusLayer(L, P, hit.i); return; }
   if (L.step !== 1) return; const Ly = inLay(L);
   Ly.nodes.forEach((p, i) => { if (Math.hypot(p.x - x, p.y - y) < Ly.r + 8) { P.sel = IN_STAGES[i].id; P.revealed.add(P.sel); L.repaint(); } });
 }
 
 /* ---------- drawing ---------- */
 const inCol = r => LC[r.col] || LC.blue;
-// The exploded request: six sheets fanning out from the flat prompt, in the same isometric style as the PDF.
-function inPeelBox(L) { const pw = Math.min(L.w * 0.44, (L.h - 60) / 1.25, 300), ph = pw * 1.25; return { pw, ph, sp: pw + ph }; }
+const inToneCol = ly => ly.tone === 'good' ? LC.good : ly.tone === 'bad' ? LC.bad : LC[ly.tone] || LC.ink;
+// Cinematic layer reveal: six glass panels floating at increasing depth. Dragging flies the camera
+// forward through the stack; the focused panel rises to the front, the rest recede, dim and drift.
+// A diagonal light sweep catches each panel's edges. Everything is a perspective projection of one
+// depth axis, drawn back to front, with a slow camera drift for parallax.
+const IN_FOV = 460;                                   // focal length for the projection
+function inPeelBox(L) { const pw = Math.min(L.w * 0.5, 440), ph = pw * 0.62; return { pw, ph }; }
+// Project a point at panel depth z (world units) with a slight camera offset, to screen.
+function inProj(L, cx, cy, z, camx, camy) { const s = IN_FOV / (IN_FOV + z); return { s, x: cx + (camx) * s, y: cy + (camy) * s }; }
 function inDrawPeel(L, g, P) {
-  const e = fiEase(P.ex), B = inPeelBox(L), pw = B.pw, ph = B.ph, sp = B.sp;
-  const k = Math.min(1, (L.w - 220) / (0.87 * sp), (L.h - 30) / (1.3 * sp)), G = 0.14 * sp * k, cx = L.w / 2 - e * Math.min(50, L.w * 0.1), cy = L.h / 2;
-  B.sheets = [];
-  IN_LAYERS.forEach((ly, i) => {
-    const M = [1, 0, 0, 1].map((f, j) => f + (FI_ISO[j] * k - f) * e), cyc = cy + e * ((IN_LAYERS.length - 1) / 2 - i) * G;
-    const tx = cx - (M[0] * pw + M[2] * ph) / 2, ty = cyc - (M[1] * pw + M[3] * ph) / 2;
-    B.sheets.push({ cx, cy: cyc });
-    g.setTransform(L.dpr * M[0], L.dpr * M[1], L.dpr * M[2], L.dpr * M[3], L.dpr * tx, L.dpr * ty);
-    inSheet(g, ly, i, pw, ph, e, P.psel === i);
-    g.setTransform(L.dpr, 0, 0, L.dpr, 0, 0);
-    if (e > 0.25) { const rx = tx + M[0] * pw, ry = ty + M[1] * pw, c = ly.tone === 'good' ? LC.good : ly.tone === 'bad' ? LC.bad : LC[ly.tone] || LC.ink, sel = P.psel === i;
-      g.strokeStyle = lc(c, e * (sel ? 1 : 0.5)); g.lineWidth = sel ? 2 : 1; g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx + 10, ry); g.stroke(); g.lineWidth = 1;
-      const nm = L.w < 520 ? { 'Response on the wire': 'On the wire', 'Assembled context': 'Context' }[ly.name] || ly.name : ly.name;
-      labText(g, nm, rx + 14, ry + 4, { size: sel ? 12 : 11, w: sel ? 700 : 600, col: lc(c, e) }); }
-  });
-  if (e < 0.05) { const b = Math.sin(L.t * 3) * 8; labText(g, '◀  drag  ▶', cx + b, Math.min(L.h - 8, cy + ph / 2 + 24), { size: 13, w: 700, align: 'center', col: lc(LC.ink, 0.9) }); }
+  const fly = fiEase(P.ex), B = inPeelBox(L), N = IN_LAYERS.length;
+  const cx = L.w * 0.44, cy = L.h * 0.5, drift = Math.sin(L.t * 0.4), driftY = Math.sin(L.t * 0.31 + 1);
+  // the camera travels from just in front of the back panel toward the front as you drag
+  const spacing = 190, camZ = fly * (N - 1) * spacing;
+  P.panels = [];
+  // which panel is "in focus": the one nearest the camera plane, unless the user picked one
+  const focusByFly = Math.round(fly * (N - 1));
+  const focus = P.psel != null ? P.psel : focusByFly;
+  // draw order: every other panel back-to-front, then the focused panel on top of all of them
+  const order = []; for (let i = N - 1; i >= 0; i--) if (i !== focus) order.push(i); order.push(focus);
+  for (const i of order) {
+    const ly = IN_LAYERS[i], z = i * spacing - camZ, depth = z + IN_FOV;
+    if (depth < 30) continue;                           // panel is behind the camera
+    const sel = i === focus, par = (i - focus) * 10;     // parallax offset by distance from focus
+    const pr = inProj(L, cx, cy, Math.max(0, z), drift * (18 + par) + par * 2.2, driftY * 10 + (i - focus) * 6);
+    const pop = sel ? 1.16 : 1, w = B.pw * pr.s * pop, hh = B.ph * pr.s * pop, x = pr.x - w / 2, y = pr.y - hh / 2;
+    const near = 1 - Math.min(1, Math.abs(z) / (spacing * (N - 0.5)));   // 1 at camera plane
+    const bright = sel ? 1 : 0.22 + near * 0.4;
+    inGlass(L, g, ly, x, y, w, hh, bright, sel, i, focus);
+    P.panels.push({ i, x, y, w, h: hh, cx: pr.x, cy: pr.y });
+  }
+  // the light sweep: a soft diagonal band crossing the whole canvas
+  const sweep = ((L.t * 0.12) % 1.4) - 0.2, sx = sweep * L.w * 1.4 - L.w * 0.2;
+  const grd = g.createLinearGradient(sx - 120, 0, sx + 120, L.h); grd.addColorStop(0, 'rgba(255,255,255,0)'); grd.addColorStop(0.5, 'rgba(180,210,255,.05)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = grd; g.fillRect(0, 0, L.w, L.h);
+  if (fly < 0.06) { const b = Math.sin(L.t * 3) * 7; labText(g, '◀  fly through  ▶', cx + b, L.h - 16, { size: 13, w: 700, align: 'center', col: lc(LC.ink, 0.9) }); }
+  // depth rail on the left: where the camera is in the stack
+  inDepthRail(L, g, focus, fly);
 }
-function inSheet(g, ly, i, pw, ph, e, sel) {
-  const fs = Math.max(9, pw * 0.05), c = ly.tone === 'good' ? LC.good : ly.tone === 'bad' ? LC.bad : LC[ly.tone] || LC.ink;
-  if (!i) { g.fillStyle = '#F4F1EA'; g.fillRect(0, 0, pw, ph); g.fillStyle = '#16234A'; g.fillRect(0, 0, pw, ph * 0.03);
-    labText(g, 'REQUEST', pw * 0.07, ph * 0.1, { size: fs * 0.8, w: 700, col: '#3A4566' });
-    labText(g, ly.rows[0], pw * 0.07, ph * 0.2, { size: fs * 1.1, w: 600, col: '#16234A', mono: false });
-    if (e > 0.2) { g.strokeStyle = lc(LC.good, e); g.lineWidth = sel ? 2 : 1; g.strokeRect(0, 0, pw, ph); g.lineWidth = 1; }
-    return; }
-  g.fillStyle = sel ? 'rgba(14,22,48,.96)' : 'rgba(14,22,48,.9)'; g.fillRect(0, 0, pw, ph);
-  g.strokeStyle = lc(c, sel ? 1 : 0.55); g.lineWidth = sel ? 2 : 1; g.strokeRect(0, 0, pw, ph); g.lineWidth = 1;
-  labText(g, ly.name.toUpperCase(), pw * 0.07, ph * 0.12, { size: fs * 0.72, w: 700, col: lc(c, 1) });
-  ly.rows.forEach((r, j) => labText(g, r, pw * 0.07, ph * (0.26 + j * 0.11), { size: fs * 0.82, col: lc(LC.text, 0.85), mono: ly.id !== 'wire' ? true : true }));
+// One glass panel: frosted fill, bright rim, a top glint, its name and (when near) its content.
+function inGlass(L, g, ly, x, y, w, hh, bright, sel, i, focus) {
+  const c = inToneCol(ly), r = Math.min(14, w * 0.04);
+  g.save();
+  inRound(g, x, y, w, hh, r);
+  // frosted body
+  const bg = g.createLinearGradient(x, y, x, y + hh); bg.addColorStop(0, lc(c, 0.09 * bright + 0.03)); bg.addColorStop(1, 'rgba(10,16,34,' + (0.5 + 0.35 * bright).toFixed(2) + ')');
+  g.fillStyle = bg; g.fill();
+  if (sel) { g.save(); g.shadowColor = lc(c, 0.6); g.shadowBlur = 34; g.strokeStyle = lc(c, 1); g.lineWidth = 2; inRound(g, x, y, w, hh, r); g.stroke(); g.restore(); }
+  else { g.strokeStyle = lc(c, 0.3 + 0.5 * bright); g.lineWidth = 1; inRound(g, x, y, w, hh, r); g.stroke(); }
+  // top glint
+  g.save(); inRound(g, x, y, w, hh, r); g.clip();
+  const gl = g.createLinearGradient(x, y, x, y + hh * 0.5); gl.addColorStop(0, 'rgba(255,255,255,' + (0.12 * bright).toFixed(2) + ')'); gl.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gl; g.fillRect(x, y, w, hh * 0.5);
+  g.restore();
+  // Only the focused panel carries text; the rest are pure glass, so the stack never turns into overlapping words.
+  const fs = Math.max(10, w * 0.042);
+  if (sel) {
+    g.save(); inRound(g, x + 1, y + 1, w - 2, hh - 2, r); g.clip();
+    labText(g, ly.name.toUpperCase(), x + w * 0.06, y + fs * 1.6, { size: fs * 0.82, w: 700, col: lc(c, 1) });
+    labText(g, '● you are here', x + w - w * 0.06, y + fs * 1.6, { size: fs * 0.7, align: 'right', col: lc(c, 0.9) });
+    ly.rows.forEach((row, j) => labText(g, row, x + w * 0.06, y + fs * 3.1 + j * fs * 1.4, { size: fs * 0.82, col: lc(LC.text, 0.95), mono: true }));
+    labText(g, ly.who, x + w * 0.06, y + hh - fs * 1.1, { size: fs * 0.78, w: 600, mono: false, col: lc(c, 1) });
+    g.restore();
+  }
+  g.restore();
+}
+function inRound(g, x, y, w, hh, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + hh, r); g.arcTo(x + w, y + hh, x, y + hh, r); g.arcTo(x, y + hh, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+// A vertical rail of pips showing stack depth and the camera's position.
+function inDepthRail(L, g, focus, fly) {
+  const N = IN_LAYERS.length, x = 26, y0 = L.h * 0.3, y1 = L.h * 0.7, gap = (y1 - y0) / (N - 1);
+  g.strokeStyle = lc(LC.mute, 0.3); g.beginPath(); g.moveTo(x, y0); g.lineTo(x, y1); g.stroke();
+  IN_LAYERS.forEach((ly, i) => { const y = y0 + i * gap, on = i === focus, c = inToneCol(ly);
+    g.fillStyle = lc(on ? c : LC.mute, on ? 1 : 0.5); g.beginPath(); g.arc(x, y, on ? 6 : 3, 0, 7); g.fill();
+    if (on) { labGlow(g, x, y, 16, c, 0.5); labText(g, ly.name, x + 14, y + 4, { size: 11, w: 700, col: lc(c, 1), mono: false }); } });
 }
 function inNode(L, g, p, Ly, st, open, hot) {
   const r = Ly.r, c = open ? LC.bad : LC.good;
