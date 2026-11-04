@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -375,6 +375,68 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (btn(/Debrief/).disabled !== true) fail('infer: debrief should wait for a control');
   doc.querySelectorAll('#app .labdef').forEach(b => clk(b)); if (T.inLive(IP.on).length) fail('infer: all controls should close every stage'); next(/Debrief/);
   if (!S.nn.infer.done) fail('infer debrief not reached');
+  // 9–12 · the agent labs: their mechanics hold, every path has a control, and each scene plays through
+  { const chk = (c, m) => { if (!c) fail('agent labs: ' + m); };
+    chk(T.axSha256(T.axBytes('abc')) === 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad', 'SHA-256 test vector');
+    chk(T.axHmac('key', 'The quick brown fox jumps over the lazy dog') === 'f7bc83f430538424b13298e6aa6fb143ef4d59a14946175997479dbc2d1a3cd8', 'HMAC-SHA256 test vector');
+    [[T.AX_VEC, T.AX_DEF], [T.MP_VEC, T.MP_DEF], [T.TK_VEC, T.TK_DEF], [T.IMP_VEC, T.IMP_DEF]].forEach(([V, D]) => { chk(T.axLive(V, D, {}).length === V.length && !T.axLive(V, D, Object.fromEntries(D.map(d => [d.id, true]))).length, 'controls do not close every path');
+      V.forEach(v => chk(D.some(d => d.kills.includes(v.id)), v.id + ' has no control')); });
+    T.AX_Q.forEach(q => chk((T.axBadN(T.axRun(q.q, false)) > 0) === (q.id !== 'ok') && T.axBadN(T.axRun(q.q, true)) === 0, 'shell split wrong for ' + q.id));
+    chk(T.AX_ACTS.map(T.axOrigin).join() === 'user,e2,e2,user', 'action attribution: ' + T.AX_ACTS.map(T.axOrigin).join());
+    chk(T.axPolicy(0).bad === 0 && T.axPolicy(0).asks === 40 && T.axPolicy(3).bad === 28 && T.axPolicy(2).bad > 0 && T.axPolicy(2).asks < 40, 'approval policies');
+    const clean = { planted: new Set(), deleted: false, derived: false }, dirty = { planted: new Set(['pe', 'pw']), deleted: false, derived: false };
+    chk(T.MP_Q.every(q => !T.mpPoisoned(clean, q.id)), 'a clean memory should never poison an answer');
+    chk(T.MP_Q.every(q => T.mpPoisoned(dirty, q.id) === !!q.money), 'poison should win money questions and only those');
+    chk(T.mpPoisoned({ planted: dirty.planted, deleted: true, derived: true }, 'pay'), 'the derived copy should survive deletion');
+    chk(T.MP_MEM.filter(m => T.mpOrder(m.txt)).map(m => m.id).join() === 'pe,pw', 'order-shaped memories');
+    chk(T.tkSigOk(T.TK.svc) && !T.tkSigOk(T.TK.svc.replace(/\.[^.]+\./, '.' + btoa('{"sub":"x"}') + '.')), 'token signature check');
+    chk(T.tkCheck(T.TK.svc, 'payroll', { owner: 'all staff' }).ok && !T.tkCheck(T.TK.obo, 'payroll', { aud: true, owner: 'all staff' }).ok, 'confused deputy');
+    chk(T.tkCheck(T.TK.svc, 'mail').ok && !T.tkCheck(T.TK.slides, 'mail', { aud: true }).ok, 'audience check');
+    chk(T.tkCheck(T.TK.svc, 'payroll', { now: 1762300800 + 89 * 86400 }).ok && !T.tkCheck(T.TK.svc, 'payroll', { now: 1762300800 + 91 * 86400 }).ok && !T.tkCheck(T.TK.bound, 'payroll', { aud: true, key: 'attacker-laptop' }).ok, 'expiry and key binding');
+    chk(T.impRoute({ pub: true })[0].c.bad && T.impRoute({ pub: true, signedOnly: true })[0].c.id === 'fin' && T.impRoute({ pub: false })[0].c.id === 'fin', 'agent routing');
+    chk(T.IMP_NAMES.filter(x => T.impClash(x.n)).length === 3, 'confusable names');
+    chk(T.impVerify(T.IMP_MSG.real) && !T.impVerify(T.IMP_MSG.forge) && !T.impVerify(T.IMP_MSG.tamper), 'message MACs'); }
+  const lp = re => [...doc.querySelectorAll('#app .labp')].find(b => re.test(b.textContent));
+  const defs = () => doc.querySelectorAll('#app .labdef').forEach(b => clk(b));
+  T.LAB.id = null; go('adv-nn-agent'); const LA = T.LAB.L, AP = LA.sim.P;
+  if (btn(/Abuse a tool/).disabled !== true) fail('agent: tool step should wait');
+  [/read_email/, /run_shell/, /pay_invoice/].forEach(re => clk(lp(re))); next(/Abuse a tool/);
+  if (btn(/Whose goal/).disabled !== true) fail('agent: shell step should wait for an escape and the fix');
+  clk(lp(/Break the quotes/)); if (T.axEscaped(AP.query, false) < 3) fail('agent: quote break should escape the quotes'); clk(lp(/Chain a command/));
+  clk(doc.querySelector('#app .labdef')); if (!AP.argv || T.axEscaped(AP.query, true) !== 0) fail('agent: argv should leave nothing escaped'); next(/Whose goal/);
+  if (btn(/Let it run/).disabled !== true) fail('agent: plan step should wait for the email'); drag(doc.querySelector('#app .labtok')); if (!AP.inj) fail('agent: email not dropped'); next(/Let it run/);
+  if (btn(/Close the paths/).disabled !== true) fail('agent: autonomy step should wait for a run');
+  range(0); if (AP.pol !== 0) fail('agent: policy slider');
+  // play the approval game: approve the first 20 prompts, deny the rest
+  clk(btn(/▶ Run/)); for (let k = 0; k < 400 && !AP.g.done; k++) { LA.t += 1; LA.sim.tick(LA, 1); if (AP.g.wait >= 0) clk(btn(AP.g.wait < 20 ? /Approve/ : /Deny/)); }
+  { const t = T.axTally(AP.g); if (!AP.g.done || t.asks !== 40 || t.you !== 8 || t.ran !== 8 || t.stopped !== 20) fail('agent: approval game ' + JSON.stringify(t)); }
+  range(3); clk(btn(/Run again/)); for (let k = 0; k < 200 && !AP.g.done; k++) { LA.t += 1; LA.sim.tick(LA, 1); }
+  if (T.axTally(AP.g).ran !== 28 || AP.g.asks) fail('agent: never-ask should run all 28 harmful actions'); next(/Close the paths/);
+  if (btn(/Debrief/).disabled !== true) fail('agent: debrief should wait for a control'); defs(); next(/Debrief/);
+  if (!S.nn.agent.done) fail('agent debrief not reached');
+  T.LAB.id = null; go('adv-nn-memory'); const MP = T.LAB.L.sim.P;
+  clk(lp(/manager/)); clk(lp(/flight/)); next(/Send it some reading/);
+  for (let i = 0; i < 2; i++) drag(doc.querySelector('#app .labtok:not(.used)')); if (MP.planted.size !== 2) fail('memory: planted ' + MP.planted.size); next(/Three weeks later/);
+  clk(lp(/manager/)); clk(lp(/Which vendor/)); clk(lp(/Northwind/)); if (!MP.derived || MP.poisonedN !== 2) fail('memory: trigger step ' + MP.poisonedN + ' poisoned, derived ' + MP.derived); next(/Your turn/);
+  if (btn(/Clean it up/).disabled !== true) fail('memory: hijack step should wait'); clk(lp(/Too vague/)); if (MP.won) fail('memory: a vague memory should not win');
+  clk(lp(/Aim at the question/)); if (!MP.won) fail('memory: an aimed memory should win recall'); next(/Clean it up/);
+  clk(btn(/Delete the 2/)); clk(lp(/Which vendor/)); if (!MP.reask) fail('memory: re-ask'); next(/Close the paths/);
+  defs(); next(/Debrief/); if (!S.nn.memory.done) fail('memory debrief not reached');
+  T.LAB.id = null; go('adv-nn-badge'); const BP = T.LAB.L.sim.P;
+  if (btn(/A viewer asks/).disabled !== true) fail('badge: forge step should wait'); clk(lp(/Make me an admin/)); if (!BP.forged || T.tkForge(BP.forge).ok) fail('badge: an edited payload should fail the signature'); next(/A viewer asks/);
+  clk(btn(/Send request/)); clk(doc.querySelector('#app .labdef')); clk(btn(/Send request/)); next(/A third-party tool/);
+  drag(doc.querySelector('#app .labtok')); if (!BP.drops[0] || !BP.drops[0].r.ok) fail('badge: aud * should be accepted');
+  clk(doc.querySelector('#app .labdef')); drag(doc.querySelector('#app .labtok')); if (BP.drops[1].r.ok) fail('badge: an audience-bound token should be rejected'); next(/The token leaks/);
+  range(50); next(/Climb/);
+  for (let i = 0; i < 6; i++) clk(btn(/Next hop/)); if (BP.hops !== 6) fail('badge: hops ' + BP.hops); next(/Close the paths/);
+  defs(); next(/Debrief/); if (!S.nn.badge.done) fail('badge debrief not reached');
+  T.LAB.id = null; go('adv-nn-impostor'); const IP2 = T.LAB.L.sim.P;
+  if (btn(/Lookalike names/).disabled !== true) fail('impostor: the real agent should win at first'); clk(lp(/Copy the real one/)); if (IP2.won) fail('impostor: a copied card ties and loses');
+  clk(lp(/Stuff the keywords/)); if (!IP2.won) fail('impostor: stuffing should win routing'); next(/Lookalike names/);
+  clk(lp(/payrnent/)); clk(lp(/pаyment/)); next(/Agent-to-agent/);
+  clk(doc.querySelector('#app .labdef')); clk(lp(/Attacker sends/)); clk(lp(/Forward with this amount/)); if (IP2.tried.size !== 2) fail('impostor: verified attacks ' + IP2.tried.size); next(/Whose action/);
+  clk(doc.querySelector('#app .labdef')); clk(lp(/02:14/)); if (!IP2.found) fail('impostor: attribution'); next(/Close the paths/);
+  defs(); next(/Debrief/); if (!S.nn.impostor.done) fail('impostor debrief not reached');
   // every instrument briefs the room and explains every step
   T.NN_SIMS.forEach(x => { if (!x.brief || !x.brief.what || !x.brief.real || x.brief.todo.length !== 3) fail(x.id + ' lacks a briefing');
     T.LAB.id = null; go('adv-nn-' + x.id); const n = T.LAB.L.sim.steps.length; if ((x.guide || []).length !== n) fail(x.id + ' guidance covers ' + (x.guide || []).length + ' of ' + n + ' steps');
@@ -383,7 +445,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.length) fail('advanced index lacks the simulation cards');
   go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
   T.NN.sync = false;
-  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; eight instruments played start to finish; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
+  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; twelve instruments played start to finish; shell split, memory recall, tokens and agent MACs verified; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
 }
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {

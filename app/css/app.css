@@ -1507,3 +1507,12 @@ body.labmode main#app { max-width: none; padding: 0; }
 .inbar i { height: 10px; border-radius: 3px; background: rgba(255,90,122,.7); display: block; } .inbar em { font-style: normal; color: #8B98B6; text-align: right; }
 .inrows { display: flex; flex-direction: column; gap: 3px; font: 500 12px var(--f-mono); color: #D6DEEE; }
 .inrows > div { padding: 3px 8px; border-radius: 6px; background: rgba(141,182,242,.06); overflow-wrap: anywhere; }
+/* agent labs: live text fields and the approval prompt */
+.labfield { display: flex; flex-direction: column; gap: 6px; }
+.labfield .labinput { width: 100%; box-sizing: border-box; font: 600 14px var(--f-mono); color: #F2B544; background: rgba(242,181,68,.06); border: 1px solid rgba(242,181,68,.45); border-radius: 10px; padding: 10px 12px; }
+.labfield textarea.labinput { min-height: 92px; resize: vertical; line-height: 1.45; }
+.labfield .labinput:focus { outline: none; border-color: #F2B544; box-shadow: 0 0 0 3px rgba(242,181,68,.2); }
+.labask { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; border: 2px solid #F2B544; background: rgba(242,181,68,.08); }
+.labask code { font: 600 13px var(--f-mono); color: #E8ECF5; overflow-wrap: anywhere; }
+.labask .labaskrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.labask .labbtn.deny { border-color: #5FD08F; color: #5FD08F; } .labask .labbtn.allow { grid-column: 1 / -1; opacity: .85; }

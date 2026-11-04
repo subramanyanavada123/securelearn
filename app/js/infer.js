@@ -54,11 +54,14 @@ const inLive = on => IN_STAGES.filter(s => !IN_DEF.some(d => on[d.id] && d.fix.i
 
 /* ---------- geometry ---------- */
 function inLay(L) {
+  // Always horizontal: YOU on the left, ANSWER on the right, the five stages between. The pipeline
+  // is the whole idea, so even on a phone it reads left-to-right, just smaller.
   const wide = L.w > 600, n = IN_STAGES.length;
-  if (wide) { const m = 70, gap = (L.w - m * 2) / n, y = L.h * 0.5; return { wide, y, nodes: IN_STAGES.map((s, i) => ({ x: m + gap * (i + 0.5), y })), r: Math.min(46, gap * 0.34), x0: m - 10, x1: L.w - m + 10 }; }
-  const m = 16, gap = (L.h - m * 2) / n, x = 34; return { wide, x, nodes: IN_STAGES.map((s, i) => ({ x, y: m + gap * (i + 0.5) })), r: Math.min(18, gap * 0.4), y0: m, y1: L.h - m, col: L.w * 0.52 };
+  const padL = wide ? 90 : 48, padR = wide ? 90 : 48, y = wide ? L.h * 0.42 : L.h * 0.26;
+  const span = L.w - padL - padR, gap = span / (n + 1), r = Math.min(wide ? 60 : 30, gap * 0.42, L.h * 0.14);
+  return { wide, y, gap, r, nodes: IN_STAGES.map((s, i) => ({ x: padL + gap * (i + 1), y })),
+    x0: padL - (wide ? 24 : 14), x1: L.w - padR + (wide ? 24 : 14), inPt: { x: padL - (wide ? 24 : 14), y }, outPt: { x: L.w - padR + (wide ? 24 : 14), y } };
 }
-const inReqY = (L, L2, i) => L2.wide ? L.h * (0.16 + i * 0.1) : 0;
 
 function inMount(L) {
   const P = { sel: 'tok', psel: null, ex: 0, on: {}, flow: null, hits: {}, probe: 0, pad: false, revealed: new Set(), lane: {} };
@@ -255,90 +258,142 @@ function inDepthRail(L, g, focus, fly) {
 }
 function inNode(L, g, p, Ly, st, open, hot) {
   const r = Ly.r, c = open ? LC.bad : LC.good;
-  if (hot) labGlow(g, p.x, p.y, r * 1.8, LC.ink, 0.22 + 0.1 * Math.sin(L.t * 4));
-  g.fillStyle = 'rgba(14,22,48,.85)'; g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.fill();
-  g.strokeStyle = lc(hot ? LC.ink : c, hot ? 1 : 0.7); g.lineWidth = hot ? 2.5 : 1.5; g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.stroke(); g.lineWidth = 1;
-  if (r < 30) { labText(g, st.name, p.x + r + 8, p.y + 1, { size: 12, w: 700, col: lc(LC.text, 1), mono: false }); return; }
-  labText(g, st.name, p.x, p.y - 2, { size: Math.min(13, r * 0.32), w: 700, align: 'center', col: lc(LC.text, 1), mono: false });
-  labText(g, st.sub, p.x, p.y + r * 0.3, { size: Math.min(10, r * 0.24), align: 'center', col: lc(LC.mute, 1) });
+  if (hot) labGlow(g, p.x, p.y, r * 1.9, LC.ink, 0.25 + 0.12 * Math.sin(L.t * 4));
+  // ring
+  const bg = g.createRadialGradient(p.x, p.y - r * 0.3, r * 0.2, p.x, p.y, r); bg.addColorStop(0, 'rgba(20,30,60,.95)'); bg.addColorStop(1, 'rgba(10,16,34,.95)');
+  g.fillStyle = bg; g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.fill();
+  g.strokeStyle = lc(hot ? LC.ink : c, hot ? 1 : 0.75); g.lineWidth = hot ? 3 : 1.8; g.beginPath(); g.arc(p.x, p.y, r, 0, 7); g.stroke(); g.lineWidth = 1;
+  // stage number
+  labText(g, String(IN_BY[st.id].i + 1), p.x, p.y - r * 0.28, { size: Math.max(16, r * 0.42), w: 800, align: 'center', col: lc(hot ? LC.ink : c, 0.9), mono: false });
+  // name below the ring on wide screens; on a phone the ring number is enough and names would collide
+  if (Ly.wide) { labText(g, st.name, p.x, p.y + r + 14, { size: Math.min(13, Math.max(9, r * 0.3)), w: 700, align: 'center', col: lc(LC.text, 1), mono: false });
+    if (Ly.gap > 150) labText(g, st.sub, p.x, p.y + r + 30, { size: Math.min(11, r * 0.2), align: 'center', col: lc(LC.mute, 0.8) }); }
 }
-function inPipe(L, g, Ly, dashOn) {
-  g.strokeStyle = lc(LC.mute, 0.4); g.lineWidth = 2; g.beginPath();
-  if (Ly.wide) { g.moveTo(Ly.x0, Ly.y); g.lineTo(Ly.x1, Ly.y); } else { g.moveTo(Ly.x, Ly.y0); g.lineTo(Ly.x, Ly.y1); } g.stroke(); g.lineWidth = 1;
+// Endpoint chips: YOU (the request source) and ANSWER (what comes back), framing the pipeline.
+function inEndpoints(L, g, Ly) {
+  const chip = (pt, label, c, icon) => { const w = 54, hh = 30;
+    g.fillStyle = lc(c, 0.12); inRound(g, pt.x - w / 2, pt.y - hh / 2, w, hh, 8); g.fill(); g.strokeStyle = lc(c, 0.7); g.lineWidth = 1.4; inRound(g, pt.x - w / 2, pt.y - hh / 2, w, hh, 8); g.stroke(); g.lineWidth = 1;
+    labText(g, label, pt.x, pt.y + 4, { size: 11, w: 800, align: 'center', col: lc(c, 1), mono: false }); };
+  chip(Ly.inPt, 'YOU', LC.blue); chip(Ly.outPt, 'ANSWER', LC.good);
+}
+function inPipe(L, g, Ly) {
+  // the rail with a soft glow
+  g.strokeStyle = lc(LC.blue, 0.22); g.lineWidth = 6; g.beginPath();
+  g.moveTo(Ly.x0, Ly.y); g.lineTo(Ly.x1, Ly.y); g.stroke();
+  g.strokeStyle = lc(LC.mute, 0.5); g.lineWidth = 1.5; g.stroke(); g.lineWidth = 1;
+}
+// A steady trickle of request packets along the whole rail, so the pipeline always looks alive.
+function inFlowDots(L, g, Ly, upTo) {
+  const a = [Ly.x0, Ly.y], b = upTo ? [upTo.x, upTo.y] : [Ly.x1, Ly.y];
+  for (let k = 0; k < 5; k++) { const t = ((L.t * 0.4 + k / 5) % 1); const x = a[0] + (b[0] - a[0]) * t, y = a[1] + (b[1] - a[1]) * t;
+    g.fillStyle = lc(LC.blue, 0.8 * (1 - Math.abs(t - 0.5))); g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill(); }
 }
 function inDrawPipe(L, g, P) {
-  const Ly = inLay(L); inPipe(L, g, Ly);
+  const Ly = inLay(L); inPipe(L, g, Ly); inEndpoints(L, g, Ly); inFlowDots(L, g, Ly);
   Ly.nodes.forEach((p, i) => inNode(L, g, p, Ly, IN_STAGES[i], false, IN_STAGES[i].id === P.sel));
-  // the request token packet entering
-  const sp = IN_BY[P.sel].i, from = Ly.nodes[0], to = Ly.nodes[sp];
-  if (P.revealed.size) for (let k = 0; k < 6; k++) labPulse(L, Ly.wide ? Ly.x0 : Ly.x, Ly.wide ? Ly.y : Ly.y0, to.x, to.y, LC.blue, { delay: k * 0.12, speed: 1 });
-  // highlight the selected stage's issue as a tag
-  const s = IN_BY[P.sel], p = Ly.nodes[sp], off = Ly.wide ? [0, -Ly.r - 16] : [Ly.r + 8, 22];
-  g.font = "700 12px 'IBM Plex Sans', sans-serif"; const tw = g.measureText(s.issue).width + 16, tx = Math.max(6, Math.min(L.w - tw - 6, p.x + off[0] - (Ly.wide ? tw / 2 : 0))), ty = p.y + off[1] - (Ly.wide ? 10 : 6);
-  g.fillStyle = 'rgba(255,90,122,.15)'; g.fillRect(tx, ty - 14, tw, 22); g.strokeStyle = lc(LC.bad, 0.6); g.strokeRect(tx, ty - 14, tw, 22);
-  labText(g, s.issue, tx + 8, ty + 1, { size: 12, w: 700, mono: false, col: lc(LC.bad, 1) });
+  // the selected stage: pull its issue + control into a big readable card on the empty canvas
+  const sp = IN_BY[P.sel].i, p = Ly.nodes[sp], s = IN_BY[P.sel];
+  // connector from the node up to the card
+  const cardW = Math.min(420, L.w - 80), cardH = 118, cx = Math.max(20, Math.min(L.w - cardW - 20, p.x - cardW / 2)), cy = Ly.wide ? Math.max(16, p.y - Ly.r - 20 - cardH) : 16;
+  g.strokeStyle = lc(LC.ink, 0.5); g.setLineDash([4, 4]); g.beginPath(); g.moveTo(p.x, p.y - Ly.r); g.lineTo(cx + cardW / 2, cy + cardH); g.stroke(); g.setLineDash([]);
+  inCard(L, g, cx, cy, cardW, cardH, s);
+  if (P.revealed.size < IN_STAGES.length) { const b = Math.sin(L.t * 3) * 6; labText(g, 'tap each stage ▸', (Ly.nodes[0].x + Ly.nodes[IN_STAGES.length - 1].x) / 2 + b, L.h - 14, { size: 12, w: 700, align: 'center', col: lc(LC.ink, 0.85) }); }
 }
+// A readable panel on the canvas: stage name, what it exposes (red), and the control (green).
+function inCard(L, g, x, y, w, hh, s) {
+  g.fillStyle = 'rgba(12,18,38,.92)'; inRound(g, x, y, w, hh, 12); g.fill(); g.strokeStyle = lc(LC.ink, 0.5); g.lineWidth = 1.4; inRound(g, x, y, w, hh, 12); g.stroke(); g.lineWidth = 1;
+  labText(g, s.name.toUpperCase() + '  ·  ' + s.sub, x + 16, y + 22, { size: 11, w: 700, col: lc(LC.ink, 1) });
+  g.fillStyle = lc(LC.bad, 1); g.beginPath(); g.arc(x + 20, y + 44, 3.5, 0, 7); g.fill();
+  inWrapText(g, 'EXPOSES: ' + s.issue, x + 32, y + 48, w - 48, 14, { size: 12, w: 600, col: lc(LC.bad, 1) });
+  g.fillStyle = lc(LC.good, 1); g.beginPath(); g.arc(x + 20, y + hh - 34, 3.5, 0, 7); g.fill();
+  inWrapText(g, 'CONTROL: ' + s.control, x + 32, y + hh - 30, w - 48, 14, { size: 11, w: 500, col: lc(LC.good, 0.95), max: 2 });
+}
+function inWrapText(g, text, x, y, maxW, lh, o) { o = o || {}; g.font = (o.w || 600) + ' ' + (o.size || 12) + "px 'IBM Plex Sans', sans-serif";
+  const words = text.split(' '); let line = '', yy = y, lines = 0;
+  for (const wd of words) { const t = line ? line + ' ' + wd : wd; if (g.measureText(t).width > maxW && line) { labText(g, line, x, yy, { ...o, mono: false }); line = wd; yy += lh; if (++lines >= (o.max || 2)) { break; } } else line = t; }
+  if (lines < (o.max || 2)) labText(g, line, x, yy, { ...o, mono: false });
+}
+// Shared frame for every pipeline step: rail, endpoints, flow, and the stages with `active` lit, others dimmed.
+function inScene(L, g, Ly, active) {
+  inPipe(L, g, Ly); inEndpoints(L, g, Ly); inFlowDots(L, g, Ly, Ly.nodes[active]);
+  Ly.nodes.forEach((p, i) => { if (i !== active) { g.globalAlpha = 0.5; inNode(L, g, p, Ly, IN_STAGES[i], false, false); g.globalAlpha = 1; } });
+  inNode(L, g, Ly.nodes[active], Ly, IN_STAGES[active], false, true);
+}
+// The big result panel that fills the lower canvas under the active stage. Returns its inner box.
+function inStagePanel(L, g, Ly, active, title, titleCol) {
+  const w = Math.min(560, L.w - 36), x = (L.w - w) / 2, y = Ly.y + Ly.r + (Ly.wide ? 54 : 30), hh = Math.min(Ly.wide ? 240 : 150, L.h - y - 34);
+  // connector from the active node down to the panel
+  const p = Ly.nodes[active]; g.strokeStyle = lc(LC.ink, 0.4); g.setLineDash([4, 4]); g.beginPath(); g.moveTo(p.x, Ly.wide ? p.y + Ly.r : p.y + Ly.r); g.lineTo(L.w / 2, y); g.stroke(); g.setLineDash([]);
+  g.fillStyle = 'rgba(12,18,38,.9)'; inRound(g, x, y, w, hh, 14); g.fill(); g.strokeStyle = lc(titleCol || LC.ink, 0.5); g.lineWidth = 1.4; inRound(g, x, y, w, hh, 14); g.stroke(); g.lineWidth = 1;
+  labText(g, title, x + 20, y + 26, { size: 13, w: 800, col: lc(titleCol || LC.ink, 1), mono: false });
+  return { x: x + 20, y: y + 48, w: w - 40, h: hh - 60, cy: y + hh / 2 };
+}
+
+function inCenterNote(L, g, text, y, c) { g.font = "600 13px 'IBM Plex Sans', sans-serif"; let fs = 13; while (fs > 10 && g.measureText(text).width > L.w - 40) { fs--; g.font = '600 ' + fs + "px 'IBM Plex Sans', sans-serif"; }
+  labText(g, text, L.w / 2, y, { size: fs, w: 600, mono: false, align: 'center', col: lc(c, 1) }); }
 function inDrawBatch(L, g, P) {
-  const Ly = inLay(L), gpu = Ly.nodes[1];
-  inPipe(L, g, Ly); Ly.nodes.forEach((p, i) => inNode(L, g, p, Ly, IN_STAGES[i], false, i === 1));
+  const Ly = inLay(L); inScene(L, g, Ly, 1);
   const u = P.flow ? (NN.sync ? 1 : P.flow.u) : 0, pool = !inLive(P.on).some(s => s.id === 'batch');
-  IN_REQS.forEach((r, i) => { const sy = inReqY(L, Ly, i) || (Ly.wide ? 0 : 40 + i * 18), sx = Ly.wide ? Ly.x0 : L.w * (0.18 + i * 0.21);
-    const start = Ly.wide ? [Ly.x0, L.h * (0.18 + i * 0.1)] : [L.w * (0.18 + i * 0.21), Ly.y0];
-    const c = inCol(r);
-    // request chip at the entry
-    if (!P.flow) { g.fillStyle = lc(c, 0.8); g.fillRect(start[0] - 24, start[1] - 7, 18, 14); labText(g, r.id.toUpperCase(), start[0] - 15, start[1] + 4, { size: 10, w: 700, align: 'center', col: '#0A1022' }); }
-    else { const uu = Math.max(0, Math.min(1, u * 1.4 - i * 0.05)), x = start[0] + (gpu.x - start[0]) * fiEase(uu), y = start[1] + (gpu.y - start[1]) * fiEase(uu);
-      g.fillStyle = lc(c, 0.9); g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill();
-      if (uu >= 1 && pool) { /* mixed in the batch */ } } });
-  // the batch grid inside the GPU
-  if (P.flow && u > 0.6) { const n = IN_REQS.reduce((a, r) => a + r.toks, 0), cols = 7, cs = (Ly.r * 1.4) / cols; let k = 0;
-    const gx = gpu.x - cs * cols / 2, gy = gpu.y - Ly.r * 0.2;
-    IN_REQS.forEach(r => { for (let j = 0; j < r.toks; j++, k++) { const x = gx + (k % cols) * cs, y = gy + Math.floor(k / cols) * cs; g.fillStyle = lc(inCol(r), 0.85); g.fillRect(x, y, cs - 1.5, cs - 1.5); } });
-    labText(g, pool ? 'ISOLATED POOLS' : 'ONE SHARED BATCH', gpu.x, gpu.y + Ly.r + 16, { size: 11, w: 700, align: 'center', col: lc(pool ? LC.good : LC.bad, 1) }); }
+  const b = inStagePanel(L, g, Ly, 1, pool ? 'ISOLATED POOLS — one tenant per pass' : 'ONE SHARED GPU BATCH — four tenants, one pass', pool ? LC.good : LC.bad);
+  // four tenant request-rows; when fired they slide into a single batch block
+  const rowH = Math.min(34, b.h / 4.4), bx = b.x, bw = b.w;
+  IN_REQS.forEach((r, i) => { const c = inCol(r), ry = b.y + i * (rowH + 6), uu = Math.max(0, Math.min(1, u * 1.3 - i * 0.06)), slide = pool ? 0 : fiEase(uu) * 10;
+    g.fillStyle = lc(c, 0.16 + 0.1 * uu); inRound(g, bx + slide, ry, bw - slide, rowH, 7); g.fill(); g.strokeStyle = lc(c, 0.7); inRound(g, bx + slide, ry, bw - slide, rowH, 7); g.stroke();
+    labText(g, r.who, bx + 12 + slide, ry + rowH / 2 + 4, { size: 11, w: 700, mono: false, col: lc(c, 1) });
+    // token cells
+    for (let k = 0; k < r.toks; k++) { g.fillStyle = lc(c, 0.55); g.fillRect(bx + bw - 14 - k * 11 - slide, ry + rowH / 2 - 5, 9, 10); } });
+  inCenterNote(L, g, pool ? 'Timing is per tenant — no cross-request signal.' : 'Shared timing around isolated maths. That is the signal.', b.y + b.h + 18, pool ? LC.good : LC.bad);
 }
 function inDrawCache(L, g, P) {
-  const Ly = inLay(L), cache = Ly.nodes[2]; inPipe(L, g, Ly);
-  Ly.nodes.forEach((p, i) => inNode(L, g, p, Ly, IN_STAGES[i], false, i === 2));
-  // two prefixes feeding the cache: tenant A (blue) then attacker (red)
-  const box = Ly.wide ? { x: cache.x - Ly.r * 1.1, y: cache.y + Ly.r + 14, w: Math.max(Ly.r * 2.4, 150), h: 40 } : { x: Ly.col, y: cache.y - 20, w: L.w - Ly.col - 10, h: 40 };
-  g.fillStyle = 'rgba(141,182,242,.06)'; g.fillRect(box.x, box.y, box.w, box.h); g.strokeStyle = lc(LC.blue, 0.4); g.strokeRect(box.x, box.y, box.w, box.h);
-  labText(g, 'PREFIX CACHE', box.x + 6, box.y + 13, { size: 9, w: 700, col: lc(LC.blue, 1) });
-  const stored = !!P.hits.c, hit = P.hits.c === 'hit'; g.fillStyle = lc(hit ? LC.bad : LC.blue, stored ? 0.5 : 0.22); g.fillRect(box.x + 8, box.y + 20, box.w - 16, 12);
-  if (P.hits.c) { labText(g, hit ? 'tenant A prefix · match' : 'salted · no match', box.x + 11, box.y + 29, { size: 9, w: 600, col: lc(hit ? '#FFD1DB' : '#BFF0D3', 1) });
-    labText(g, hit ? 'HIT · 8 ms' : 'MISS · 240 ms', cache.x, cache.y - Ly.r - 10, { size: 13, w: 800, align: 'center', col: lc(hit ? LC.bad : LC.good, 1) });
-    const src = Ly.wide ? [cache.x + Ly.r * 1.3, cache.y] : [cache.x, cache.y + Ly.r * 1.3]; for (let k = 0; k < 4; k++) labPulse(L, src[0], src[1], cache.x, cache.y, hit ? LC.bad : LC.good, { delay: k * 0.1, speed: 1.6, r: 2 }); }
+  const Ly = inLay(L); inScene(L, g, Ly, 2);
+  const hit = P.hits.c === 'hit', miss = P.hits.c === 'miss';
+  const b = inStagePanel(L, g, Ly, 2, 'PREFIX CACHE — reuse a seen prefix for speed', P.hits.c ? (hit ? LC.bad : LC.good) : LC.ink);
+  // two rows: tenant A stored the prefix; attacker replays a guess
+  const rowH = Math.min(30, b.h * 0.3), labW = Math.min(130, b.w * 0.36);
+  const row = (i, who, txt, c) => { const ry = b.y + i * (rowH + Math.min(10, b.h * 0.08)); labText(g, who, b.x, ry + rowH / 2 + 4, { size: Math.min(11, b.w * 0.032), w: 700, mono: false, col: lc(c, 1) });
+    g.fillStyle = lc(c, 0.12); inRound(g, b.x + labW, ry, b.w - labW, rowH, 7); g.fill(); g.strokeStyle = lc(c, 0.6); inRound(g, b.x + labW, ry, b.w - labW, rowH, 7); g.stroke();
+    fiClip(g, b.x + labW, ry, b.w - labW, rowH, () => labText(g, txt, b.x + labW + 10, ry + rowH / 2 + 4, { size: Math.min(11, b.w * 0.03), mono: true, col: lc(LC.text, 0.9) })); };
+  row(0, 'Tenant A sent', 'prefix 7f3a…  →  cached', LC.blue);
+  row(1, 'Attacker replays', 'guess 7f3a…  →  ' + (P.hits.c ? (hit ? 'HIT · 8 ms' : 'MISS · 240 ms') : '?'), hit ? LC.bad : miss ? LC.good : LC.mute);
+  if (P.hits.c) inCenterNote(L, g, hit ? 'A fast reply means the guess was already cached — now confirmed.' : 'Salted per tenant: no shared hit, the timing says nothing.', b.y + b.h + 18, hit ? LC.bad : LC.good);
 }
 function inDrawSampler(L, g, P) {
-  const Ly = inLay(L), s = Ly.nodes[3]; inPipe(L, g, Ly);
-  Ly.nodes.forEach((p, i) => inNode(L, g, p, Ly, IN_STAGES[i], false, i === 3));
-  const covered = !inLive(P.on).some(st => st.id === 'sampler'), toks = [['₹', 0.41], ['the', 0.22], ['acct', 0.14], ['pay', 0.09], ['9921', 0.14]];
-  const bx = Ly.wide ? s.x - 90 : Ly.col + 30, by = Ly.wide ? s.y + Ly.r + 16 : 24, bw = Ly.wide ? 180 : L.w - Ly.col - 40;
-  if (P.probe < 1) { labText(g, 'one token →  “₹”', s.x, Ly.wide ? s.y + Ly.r + 26 : s.y - 30, { size: 13, w: 700, align: Ly.wide ? 'center' : 'left', col: lc(LC.text, 1) }); return; }
-  if (covered) { g.fillStyle = 'rgba(95,208,143,.1)'; g.fillRect(bx, by, bw, 40); g.strokeStyle = lc(LC.good, 0.6); g.strokeRect(bx, by, bw, 40);
-    labText(g, 'TEXT ONLY', bx + 8, by + 15, { size: 10, w: 700, col: lc(LC.good, 1) }); labText(g, '“₹4,80,000 to …9921”', bx + 8, by + 31, { size: 11, w: 600, col: lc(LC.text, 1), mono: false }); return; }
-  labText(g, 'FULL DISTRIBUTION · every token’s score', bx, by - 6, { size: 10, w: 700, col: lc(LC.bad, 1) });
-  toks.forEach(([t, v], i) => { const y = by + i * 15; labText(g, t, bx, y + 8, { size: 11, align: 'right', col: lc(LC.text, 1) });
-    g.fillStyle = lc(LC.bad, 0.7); g.fillRect(bx + 6, y, (bw - 46) * v / 0.41, 10); labText(g, (v * 100).toFixed(0) + '%', bx + bw - 34, y + 8, { size: 10, col: lc(LC.mute, 1) }); });
+  const Ly = inLay(L); inScene(L, g, Ly, 3);
+  const covered = !inLive(P.on).some(st => st.id === 'sampler'), toks = [['₹', 0.41], ['the', 0.22], ['account', 0.14], ['pay', 0.09], ['9921', 0.14]];
+  const b = inStagePanel(L, g, Ly, 3, P.probe < 1 ? 'SAMPLER — scores become one token' : covered ? 'TEXT ONLY — the control is on' : 'FULL DISTRIBUTION — every token’s score, exposed', P.probe < 1 ? LC.ink : covered ? LC.good : LC.bad);
+  if (P.probe < 1) { labText(g, 'The model scores every possible next token, then picks one.', b.x, b.y + 10, { size: 13, mono: false, col: lc(LC.text, 0.9) });
+    labText(g, 'You normally see only the pick:  “₹”', b.x, b.y + 36, { size: 13, w: 700, mono: false, col: lc(LC.good, 1) }); return; }
+  if (covered) { labText(g, 'You get the answer text, not the scores:', b.x, b.y + 10, { size: 13, mono: false, col: lc(LC.text, 0.9) });
+    labText(g, '“₹4,80,000 to account …9921”', b.x, b.y + 40, { size: 15, w: 700, mono: false, col: lc(LC.good, 1) }); return; }
+  const barW = b.w - 140; toks.forEach(([t, v], i) => { const y = b.y + i * (b.h / 5.4) + 6; labText(g, t, b.x + 44, y + 10, { size: 12, align: 'right', mono: false, col: lc(LC.text, 1) });
+    g.fillStyle = lc(LC.bad, 0.7); inRound(g, b.x + 54, y, barW * v / 0.41, 13, 3); g.fill(); labText(g, (v * 100).toFixed(0) + '%', b.x + 60 + barW * v / 0.41 + 6, y + 10, { size: 11, mono: true, col: lc(LC.mute, 1) }); });
+  inCenterNote(L, g, 'The whole distribution, every query — enough to copy the model.', b.y + b.h + 16, LC.bad);
 }
 function inDrawStream(L, g, P) {
-  const Ly = inLay(L), st = Ly.nodes[4]; inPipe(L, g, Ly);
-  Ly.nodes.forEach((p, i) => inNode(L, g, p, Ly, IN_STAGES[i], false, i === 4));
-  if (!P.pad) { for (let k = 0; k < 10; k++) labPulse(L, st.x, st.y, Ly.wide ? Ly.x1 : Ly.x, Ly.wide ? Ly.y : Ly.y1, LC.ink, { delay: k * 0.12, speed: 0.9 }); return; }
+  const Ly = inLay(L); inScene(L, g, Ly, 4);
   const covered = !inLive(P.on).some(s => s.id === 'stream'), sizes = covered ? [32, 32, 32, 32, 32, 32, 32] : [6, 11, 4, 14, 3, 9, 7];
-  const bx = Ly.wide ? Ly.x0 + 20 : Ly.col, by = Ly.wide ? L.h - 90 : L.h * 0.4, bw = L.w - bx - 20, unit = bw / (Ly.wide ? 90 : 130);
-  labText(g, covered ? 'PADDED · equal chunks' : 'RAW · chunk size = word length', bx, by - 10, { size: 11, w: 700, col: lc(covered ? LC.good : LC.bad, 1) });
-  let x = bx; sizes.forEach((sz, i) => { const w = sz * unit * (covered ? 1 : 1.6); g.fillStyle = lc(covered ? LC.good : LC.bad, 0.75); g.fillRect(x, by, w - 2, 20);
-    labText(g, covered ? '32' : sz + '', x + w / 2 - 1, by + 34, { size: 9, align: 'center', col: lc(LC.mute, 1) }); x += w + 4; });
-  if (!covered) labText(g, '…reads as:  “N  o,   d  o   n  o  t   p  a  y”', bx, by + 52, { size: 12, w: 600, mono: false, col: lc(LC.bad, 1) });
+  const b = inStagePanel(L, g, Ly, 4, !P.pad ? 'RESPONSE STREAM — tokens leave one by one' : covered ? 'PADDED — equal-size chunks' : 'RAW — each chunk’s size = a word length', !P.pad ? LC.ink : covered ? LC.good : LC.bad);
+  if (!P.pad) { labText(g, 'The text is encrypted on the wire. Its shape is not.', b.x, b.y + 12, { size: 13, mono: false, col: lc(LC.text, 0.9) });
+    for (let k = 0; k < 8; k++) { const t = ((L.t * 0.5 + k / 8) % 1); g.fillStyle = lc(LC.ink, 0.7 * (1 - Math.abs(t - 0.5) * 1.4)); g.beginPath(); g.arc(b.x + t * b.w, b.y + 50, 4, 0, 7); g.fill(); } return; }
+  const unit = (b.w) / (covered ? 230 : 95); let x = b.x, y = b.y + 20;
+  labText(g, covered ? 'Each chunk is padded to the same size:' : 'Each blip’s width is one word’s length:', b.x, b.y + 4, { size: 12, mono: false, col: lc(covered ? LC.good : LC.bad, 1) });
+  sizes.forEach((sz) => { const w = Math.max(10, sz * unit); g.fillStyle = lc(covered ? LC.good : LC.bad, 0.75); inRound(g, x, y, w - 3, 22, 4); g.fill();
+    labText(g, covered ? '32' : sz + '', x + (w - 3) / 2, y + 36, { size: 10, align: 'center', mono: true, col: lc(LC.mute, 1) }); x += w + 4; });
+  inCenterNote(L, g, covered ? 'Equal lengths carry no information.' : 'Reads back as:  “N o ,  d o  n o t  p a y”', b.y + b.h + 2, covered ? LC.good : LC.bad);
 }
 function inDrawDefend(L, g, P) {
-  const Ly = inLay(L), live = new Set(inLive(P.on).map(s => s.id)); inPipe(L, g, Ly);
+  const Ly = inLay(L), live = new Set(inLive(P.on).map(s => s.id)); inPipe(L, g, Ly); inEndpoints(L, g, Ly); inFlowDots(L, g, Ly);
   Ly.nodes.forEach((p, i) => { const st = IN_STAGES[i], open = live.has(st.id), fl = P.flash && P.flash[st.id] != null && L.t - P.flash[st.id] < 0.8 && !open;
-    if (fl) labGlow(g, p.x, p.y, Ly.r * 1.9, LC.good, 0.5 * (1 - (L.t - P.flash[st.id]) / 0.8));
+    if (fl) labGlow(g, p.x, p.y, Ly.r * 2, LC.good, 0.6 * (1 - (L.t - P.flash[st.id]) / 0.8));
     inNode(L, g, p, Ly, st, open, false);
-    const tag = open ? st.issue : 'covered', c = open ? LC.bad : LC.good, off = Ly.wide ? [0, Ly.r + 14] : [Ly.r + 8, 2];
-    g.font = "600 10px 'IBM Plex Sans', sans-serif"; const lines = piWrap(g, tag, Ly.wide ? Ly.r * 2.6 : L.w - Ly.x - Ly.r - 20);
-    fiClip(g, 0, 0, L.w, L.h, () => lines.slice(0, Ly.wide ? 3 : 1).forEach((t, j) => labText(g, (j ? '' : open ? '● ' : '✓ ') + t, p.x + off[0] - (Ly.wide ? g.measureText(t).width / 2 : 0), p.y + off[1] + 12 + j * 12, { size: 10, w: 600, mono: false, col: lc(c, 1) }))); });
+    // a clear status pill under each stage: red "exposed" or green "sealed ✓"
+    const c = open ? LC.bad : LC.good, py = p.y + Ly.r + (Ly.wide ? 20 : 8);
+    if (Ly.wide) { const label = open ? 'EXPOSED' : 'SEALED ✓', pw = 76, px = p.x - pw / 2;
+      g.fillStyle = lc(c, 0.14); inRound(g, px, py, pw, 20, 10); g.fill(); g.strokeStyle = lc(c, 0.7); inRound(g, px, py, pw, 20, 10); g.stroke();
+      labText(g, label, p.x, py + 14, { size: 10, w: 800, align: 'center', mono: false, col: lc(c, 1) }); }
+    else { g.fillStyle = lc(c, 1); g.beginPath(); g.arc(p.x, py + 6, 4, 0, 7); g.fill(); } });
+  const openN = inLive(P.on).length;
+  labText(g, openN ? openN + ' of 5 stages still exposed' : 'All 5 stages sealed', L.w / 2, L.h - 18, { size: 14, w: 700, align: 'center', mono: false, col: lc(openN ? LC.bad : LC.good, 1) });
 }
 
 NN_SIMS.push({ id: 'infer', title: 'Inside inference', kicker: 'Inference-time · side channels', blurb: 'Follow one request through tokeniser, shared GPU batch, KV cache, sampler and the streamed response, and watch every stage hand out something the answer never says.', mount: inMount,
