@@ -80,6 +80,8 @@ function home() {
       h('span', null, 'Present any section from here. Each lab also has a Deck tab with its module’s slides and speaker notes.')),
     h('a', { class: 'deckhero advhero', href: '#adv' }, h('span', { class: 'kicker' }, 'Advanced path · ' + ADV_CASES.length + ' real attacks'), h('b', null, 'How AI systems actually get broken'),
       h('span', null, ADV_TRACKS.map(t => t.name).join(' · '))),
+    h('a', { class: 'deckhero kithero', href: '#kit' }, h('span', { class: 'kicker' }, 'Take-home kit · for participants'), h('b', null, 'Take it to your CIO'),
+      h('span', null, 'Why now, 15 questions, a maturity check to score, the global framework map and a 90-day plan. Share the link at the end of the session.')),
     howItWorks(),
     h('div', { class: 'homegrid' },
       h('div', { class: 'tablebox' }, h('span', { class: 'label' }, 'Your table'), tbl,
@@ -210,17 +212,17 @@ App.render = function () {
   document.body.classList.remove('story');
   const app = document.getElementById('app'); const id = currentLabId(); const y = window.scrollY;
   const deckRoute = route === 'deck' || route.startsWith('deck-'); if (!deckRoute) App.deckJump = null;
-  const advRoute = route === 'adv' || route.startsWith('adv-');
+  const advRoute = route === 'adv' || route.startsWith('adv-'), kitRoute = route === 'kit';
   App.deckNav = null;
   const active = document.activeElement && document.activeElement.id;
   let view;
-  try { view = deckRoute ? deckPage(route) : advRoute ? advPage(route) : id ? labView(App.byId[id]) : home(); }
+  try { view = deckRoute ? deckPage(route) : advRoute ? advPage(route) : kitRoute ? kitPage() : id ? labView(App.byId[id]) : home(); }
   catch (e) { console.error(e); view = [box('', h('h3', null, 'This lab could not load'), h('p', { class: 'sub' }, 'Clear its answers to start again.'), id ? h('button', { type: 'button', class: 'btn warn', onclick: () => { delete S.labs[id]; commit(); } }, 'Clear this lab') : null)]; }
   app.replaceChildren(...[view].flat(Infinity).filter(Boolean));
-  const here = deckRoute ? 'deck' : advRoute ? route : id || '';
+  const here = deckRoute ? 'deck' : advRoute || kitRoute ? route : id || '';
   if (lastView === here) window.scrollTo(0, y); else window.scrollTo(0, 0);
   lastView = here;
-  const viewKey = (deckRoute ? 'deck' : advRoute ? route : id || 'labs') + ':' + (id ? (S.tab[id] || 'do') : '');
+  const viewKey = (deckRoute ? 'deck' : advRoute || kitRoute ? route : id || 'labs') + ':' + (id ? (S.tab[id] || 'do') : '');
   if (viewKey !== App.viewKey) { App.viewKey = viewKey; app.classList.remove('fresh'); void app.offsetWidth; app.classList.add('fresh'); clearTimeout(App.freshT); App.freshT = setTimeout(() => app.classList.remove('fresh'), 1200); }
   if (active) { const el = document.getElementById(active); if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) el.focus(); }
   paintChrome(); tick();

@@ -266,7 +266,8 @@ function renderSeason() {
       h('div', { class: 'seasonnav' },
         h('a', { class: 'navcard', href: '#labs' }, h('b', null, 'Workbench'), h('span', null, 'Full labs, quizzes, case studies and room results')),
         h('a', { class: 'navcard', href: '#deck' }, h('b', null, 'Program deck'), h('span', null, DECK.order.length + ' slides, every module, with speaker notes')),
-        h('a', { class: 'navcard', href: '#adv' }, h('b', null, 'Advanced path'), h('span', null, ADV_CASES.length + ' real attacks: inference, jailbreaks, poisoning, agents')))),
+        h('a', { class: 'navcard', href: '#adv' }, h('b', null, 'Advanced path'), h('span', null, ADV_CASES.length + ' real attacks: inference, jailbreaks, poisoning, agents')),
+        h('a', { class: 'navcard', href: '#kit' }, h('b', null, 'Take it to your CIO'), h('span', null, 'The take-home kit: 15 questions, a maturity check, the framework map')))),
     h('a', { class: 'raghero', href: '#rag' }, h('span', { class: 'kicker' }, 'Core lab · Modules 09 and 12'), h('b', null, 'Build Ask Meridian: a RAG pipeline under attack'), h('span', null, (S.rag && S.rag.runs && S.rag.runs.length ? 'Runs so far: ' + S.rag.runs.length + '. Last: ' + S.rag.runs[S.rag.runs.length - 1].bad + ' incidents.' : 'Design it, run a day in production, see what breaks, rebuild.'))),
     h('a', { class: 'raghero hdhero', href: '#harden' }, h('span', { class: 'kicker' }, 'Core lab · Modules 08 to 15'), h('b', null, 'Harden NEXUS: seven defence layers'), h('span', null, (() => { const n = HARDEN_LAYERS.filter(l => hdOn(l.id)).length;
       return n ? n + ' of 7 layers online. Fire NEXUS’s failures at your pipeline and see what still gets through.' : 'Fire NEXUS’s own failures at the pipeline, then clear a layer at a time until they stop.'; })())),

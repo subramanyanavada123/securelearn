@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -225,6 +225,25 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   go('adv'); if (doc.querySelectorAll('#app .card .meta').length < ADV_CASES.length) fail('index cards lack the hands-on marker');
   NN.sync = false;
   console.log('signatures: ' + ADV_CASES.length + ' unique interactions, each played to its payoff; ' + Object.keys(TAKE).length + ' Monday-morning cards');
+}
+// Take it to your CIO: the kit page renders, scores, filters and is linked from the landing pages
+{
+  const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const K = window.__T.KIT;
+  delete S.kit; go('kit');
+  if (doc.querySelectorAll('#app .kitsec').length !== 8) fail('kit: expected 8 sections, got ' + doc.querySelectorAll('#app .kitsec').length);
+  if (doc.querySelectorAll('#app .kitq').length !== 15) fail('kit: expected 15 questions');
+  if (doc.querySelectorAll('#app .kitmatrow').length !== K.maturity.length) fail('kit: maturity rows');
+  [...doc.querySelectorAll('#app .kitsee')].forEach(a => { const r = a.getAttribute('href').slice(1); if (/^adv-nn-/.test(r) ? !window.__T.NN_BY[r.slice(7)] : !window.__T.ADV_CASES.some(c => 'adv-' + c.id === r)) fail('kit: dead link ' + r); });
+  const cell = (row, k) => doc.querySelectorAll('#app .kitmatrow')[row].querySelectorAll('.kitcell')[k];
+  clk(cell(0, 0)); clk(cell(1, 0)); if (!/2 reds/.test(doc.querySelector('#app .kitverdict').textContent)) fail('kit: two reds should say start with inventory');
+  for (let i = 0; i < K.maturity.length; i++) clk(cell(i, 2)); if (!doc.querySelector('#app .kitverdict.good')) fail('kit: all green should pass');
+  const rows = () => doc.querySelectorAll('#app .kittable')[1].querySelectorAll('tbody tr').length;
+  if (rows() !== K.laws.length) fail('kit: all regions should list every row');
+  clk([...doc.querySelectorAll('#app .kitchip')].find(b => b.textContent === 'Asia')); if (rows() !== K.laws.filter(r => r[0] === 'Asia').length) fail('kit: region filter');
+  go(''); if (!doc.querySelector('#app a.navcard[href="#kit"]')) fail('kit: story landing lacks the kit card');
+  go('labs'); if (!doc.querySelector('#app a.kithero[href="#kit"]')) fail('kit: workbench lacks the kit card');
+  console.log('cio kit: 8 sections, 15 questions with live links, maturity verdicts and region filter work');
 }
 // Inside the model: the math does what the instruments claim, and each instrument plays through
 {
