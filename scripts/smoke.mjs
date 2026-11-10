@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -558,6 +558,44 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   clk(doc.querySelector('#app .labdef')); clk(lp(/Attacker sends/)); clk(lp(/Forward with this amount/)); if (IP2.tried.size !== 2) fail('impostor: verified attacks ' + IP2.tried.size); next(/Whose action/);
   clk(doc.querySelector('#app .labdef')); clk(lp(/02:14/)); if (!IP2.found) fail('impostor: attribution'); next(/Close the paths/);
   defs(); next(/Debrief/); if (!S.nn.impostor.done) fail('impostor debrief not reached');
+  // the four pipeline instruments: the maths behind each lesson, then each played to its debrief
+  { const W = T;
+    const sizes = [...Array(35)].map((_, k) => W.ckPolicy(6 + k, 0));
+    if (!sizes.includes('half') || !sizes.includes('full') || W.ckPolicy(18, 0) !== 'half') fail('chunk: chunk size should decide between a half-true and a complete answer');
+    if (W.ckMemoBad(8) || ![...Array(28)].some((_, p) => W.ckMemoBad(p))) fail('chunk: the memo should be safe at the start and splittable');
+    if (W.ckSim(W.CK_ASK[0]) < 0.99 || W.ckSim(W.CK_ASK[2]) > 0.5) fail('chunk: cache similarity');
+    if (W.ckProbe('merger').withheld !== 2 || W.ckProbe('merger').shown.length || W.ckProbe('layoffs').withheld || W.ckProbe('merger', true).withheld) fail('chunk: the withheld count should leak, and pre-filtering should stop it');
+    if (W.MW_HOT.length !== 4 || W.MW_FIELDS.length !== 8 || W.mwAimed(W.MW_CLEAN)) fail('mcpwire: four of eight manifest fields address the model');
+    if (W.mwHash(W.MW_CLEAN).length !== 64 || W.mwHash(W.MW_CLEAN) !== W.mwHash(W.MW_CLEAN) || W.mwDiff(W.mwHash(W.MW_CLEAN), W.mwHash(W.MW_CLEAN + '.')) < 40) fail('mcpwire: one character should change most of the hash');
+    if (W.mwCanary(false).length || W.mwCanary(true).length !== 1) fail('mcpwire: canary should find one new destination later');
+    if (W.mwResolve(['mail', 'weather'], 'last', 'send_email') !== 'weather' || W.mwResolve(['weather', 'mail'], 'first', 'send_email') !== 'weather' || W.mwResolve(['weather', 'mail'], 'ns', 'send_email', 'mail') !== 'mail') fail('mcpwire: name resolution');
+    { const r = W.nnRng(12), runs = [...Array(4)].map(() => W.fkTrials(r, 1).some(Boolean)); if (runs[0] || !runs.includes(true)) fail('flaky: the first run should pass and a later one fail');
+      const k = W.fkTrials(W.nnRng(3), 2000); if (k.filter(Boolean).length !== W.FK_P.filter(Boolean).length) fail('flaky: 2,000 trials should expose every flaky attack');
+      const [lo, hi] = W.fkWilson(0, 10); if (lo !== 0 || hi < 0.25 || hi > 0.32) fail('flaky: Wilson interval for 0 of 10');
+      if (W.fkAtLeastOnce(0.02, 150) < 0.95 || W.fkAtLeastOnce(0.02, 1) > 0.021) fail('flaky: odds over many tries');
+      const st2 = W.fkRing('staff'), sr = W.fkRing('strat'); if (st2.blocked || st2.riskyInRing || st2.harmed < 15 || !sr.blocked || sr.harmed >= st2.harmed) fail('flaky: a staff ring should miss the cohort and a stratified ring catch it'); }
+    { const all = { ext: true, sens: true, out: true }, one = W.nzEval({ c: { out: true }, scope: 'session', win: 5 }), seq = W.nzEval({ c: all, scope: 'session', win: 5 }), wide = W.nzEval({ c: all, scope: 'user', win: 7 }), hon = W.nzEval({ c: all, scope: 'session', win: 5, honey: true });
+      if (one.loud !== 3 || one.fp < 10 || seq.loud !== 3 || seq.fp > 1 || seq.slow !== 0) fail('noise: a sequence rule should beat a single-event rule');
+      if (wide.slow !== 3 || wide.fp < 3 || hon.slow !== 3 || hon.loud !== 3 || hon.fp > 1) fail('noise: widening should be noisy and a honeytoken clean');
+      const slow = W.nzFrog(0.05, true), fast = W.nzFrog(0.2, false); if (slow.alert >= 0 || slow.final < 5 || slow.capDay < 0 || fast.alert < 0) fail('noise: a slow ramp should evade the baseline and hit the cap');
+      if (W.nzKill('gw', 20) !== 0 || W.nzKill('ui', 20) !== 65 || W.nzKill('ui', 0) !== 0) fail('noise: kill switch counts'); }
+    const go2 = id => { T.LAB.id = null; go('adv-nn-' + id); return T.LAB.L; }, side = re => [...doc.querySelectorAll('#app .labside button')].find(b => re.test(b.textContent)), nx = () => { const b = doc.querySelector('#app .labbar .labbtn.go'); if (!b || b.disabled) return false; clk(b); return true; };
+    const slide = (L3, k, v) => { L3.sim.P[k] = v; const el = doc.querySelector('#app .labside input[type=range]'); el.value = v; el.dispatchEvent(new window.Event('input')); };
+    const finish = id => { defs(); if (!nx() || !S.nn[id] || !S.nn[id].done) fail(id + ' debrief not reached'); };
+    { const L3 = go2('chunk'); if (nx()) fail('chunk: step 1 should need both verdicts'); slide(L3, 'sz', 12); slide(L3, 'sz', 14); if (!nx()) fail('chunk: chunker step');
+      slide(L3, 'pad', 20); if (!nx()) fail('chunk: memo step'); clk(side(/Directors pay band this year/)); if (!L3.sim.P.cross || !nx()) fail('chunk: cache step');
+      clk(side(/^merger$/)); clk(side(/^layoffs$/)); if (!nx()) fail('chunk: probe step'); finish('chunk'); }
+    { const L3 = go2('mcpwire'); [...doc.querySelectorAll('#app .labside .labstack button')].forEach(clk); for (let i = 0; i < 8; i++) clk([...doc.querySelectorAll('#app .labside .labstack button')][i]); if (!nx()) fail('mcpwire: fields step');
+      clk(side(/Approve and pin/)); clk(side(/Add a full stop/)); if (!L3.sim.P.broke || !nx()) fail('mcpwire: pin step');
+      clk(side(/Run the canary/)); clk(side(/Three weeks later/)); clk(side(/Call get_weather/)); clk(side(/Run the canary/)); if (!L3.sim.P.caught || !nx()) fail('mcpwire: canary step');
+      if (!L3.sim.P.hij) fail('mcpwire: last-wins should hijack'); clk(side(/Namespaced/)); if (!nx()) fail('mcpwire: shadow step'); finish('mcpwire'); }
+    { const L3 = go2('flaky'); for (let i = 0; i < 4; i++) clk(side(/Run the suite once/)); if (!nx()) fail('flaky: suite step'); clk(side(/1000 more/)); if (!nx()) fail('flaky: rate step');
+      slide(L3, 'tr', 90); if (!L3.sim.P.saw95 || !nx()) fail('flaky: odds step'); clk(side(/our own staff/)); clk(side(/half from the risky/)); if (!nx()) fail('flaky: rings step'); finish('flaky'); }
+    { const L3 = go2('noise'); clk(side(/Read untrusted/)); clk(side(/Opened a sensitive/)); if (!L3.sim.P.clean || !nx()) fail('noise: sequence step');
+      clk(side(/One user, days/)); slide(L3, 'days', 7); if (!L3.sim.P.noisy) fail('noise: widening should be noisy'); clk(side(/One session, minutes/)); clk(side(/honeytoken/)); if (!L3.sim.P.solved || !nx()) fail('noise: slow step');
+      slide(L3, 'rt', 10); if (!L3.sim.P.evaded) fail('noise: 5% a day should evade'); clk(side(/Hard cap/)); if (!L3.sim.P.capped || !nx()) fail('noise: baseline step');
+      clk(side(/KILL/)); clk(side(/Revoke at the tool gateway/)); clk(side(/KILL/)); if (!nx()) fail('noise: kill step'); finish('noise'); }
+    if (!Object.values(T.AT_SIM).every(id => T.NN_BY[id])) fail('map stops should link to their instrument'); }
   // every instrument briefs the room and explains every step
   T.NN_SIMS.forEach(x => { if (!x.brief || !x.brief.what || !x.brief.real || x.brief.todo.length !== 3) fail(x.id + ' lacks a briefing');
     T.LAB.id = null; go('adv-nn-' + x.id); const n = T.LAB.L.sim.steps.length; if ((x.guide || []).length !== n) fail(x.id + ' guidance covers ' + (x.guide || []).length + ' of ' + n + ' steps');
@@ -566,7 +604,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.length) fail('advanced index lacks the simulation cards');
   go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
   T.NN.sync = false;
-  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; twelve instruments played start to finish; shell split, memory recall, tokens and agent MACs verified; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
+  console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; sixteen instruments played start to finish; shell split, memory recall, tokens and agent MACs verified; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
 }
 // Harden NEXUS: every failure gets through at first; play each layer with the right answers
 {

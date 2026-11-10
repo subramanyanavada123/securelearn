@@ -51,6 +51,7 @@ function atFor(labId, k) {
   return null;
 }
 function atTopic(st) { const l = AT_LINE[st.line], k = l.off + atOf(l.id).indexOf(st); return { lab: l.lab, k, t: syllabusTopics(l.lab)[k] }; }
+const AT_SIM = { rag: 'chunk', mcp: 'mcpwire', ship: 'flaky', soc: 'noise' };
 function atLabLines(labId) { return AT_LINES.filter(l => l.lab === labId); }
 
 /* ---------- the scene ---------- */
@@ -272,6 +273,7 @@ function atLock(st) {
       h('div', { class: 'btnrow' },
         tp.t ? h('button', { type: 'button', class: 'btn', onclick: () => atGoLab(tp.lab, 'topics', tp.k) }, 'Check yourself: one question') : null,
         atPractise(st),
+        NN_BY[AT_SIM[st.line]] ? h('a', { class: 'btn', href: '#adv-nn-' + AT_SIM[st.line] }, 'Instrument: ' + NN_BY[AT_SIM[st.line]].title) : null,
         next ? h('a', { class: 'btn primary', href: '#atlas-' + next.id }, 'Next stop: ' + next.t + ' →') : h('a', { class: 'btn primary', href: '#atlas' }, 'End of the line: back to the map →'))));
 }
 

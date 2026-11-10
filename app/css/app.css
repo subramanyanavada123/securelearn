@@ -1741,6 +1741,7 @@ body.labmode main#app { max-width: none; padding: 0; }
 @media print { .atstage .btnrow, .atskip, .atfilter { display: none !important; } }
 
 /* round two, checks and the playbook */
+.labbtn.on { border-color: #5CE1E6; color: #5CE1E6; } .labbtn.warn { border-color: #FF5A7A; color: #FF8FA5; } .labstack .labbtn, .labside > .labbtn { text-align: left; justify-content: flex-start; white-space: normal; line-height: 1.25; }
 .atshield.crack circle { fill: #FF5A7A; animation: shake .4s; } .atshield.crack path { stroke: #2B1526; stroke-dasharray: 3 2; }
 .ph-breach .atact { color: #F2B544; } .ph-breach { border-color: rgba(242,181,68,.45); }
 .atcard.atround, .atcard.atchecks { grid-column: 1 / -1; }
