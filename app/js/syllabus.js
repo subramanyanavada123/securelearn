@@ -33,7 +33,8 @@ function topicCard(lab, t, k) {
         'aria-disabled': done ? 'true' : null, onclick: () => { if (done) return; st[k] = oi; commit(); } },
         h('span', { class: 'mvkey' }, String.fromCharCode(65 + j)), h('span', { class: 'mvtext' }, t.o[oi]))))),
     done ? h('div', { class: 'answer ' + (ok ? 'good' : 'bad') }, h('b', null, ok ? 'Right.' : 'The strongest answer is marked with a dashed border.'), h('p', null, t.why)) : null,
-    t.go ? h('p', { class: 'small topicgo' }, 'Practise it: ', practiseLink(lab, t.go)) : null);
+    t.go ? h('p', { class: 'small topicgo' }, 'Practise it: ', practiseLink(lab, t.go)) : null,
+    atFor(lab.id, k) ? h('p', { class: 'small topicgo' }, 'Watch it: ', h('a', { href: '#atlas-' + atFor(lab.id, k).id }, 'the animated stop on the 10-hour map')) : null);
 }
 
 function syllabusPane(lab) {

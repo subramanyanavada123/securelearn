@@ -13,6 +13,8 @@ The scenario and discussion text, including the facilitators' model answers, is 
 
 **Syllabus.** Every syllabus topic for Modules 10–15 (82 topics) has a card on that module's Syllabus tab, with an explanation, a Meridian example, a check question and a link to where it is practised. Four quiz drills fill the gaps the syllabus exposed: *Trust boundaries, and trust that is re-checked* (M10), *Secure indexing and retrieval* (M12), *Release it safely, and prove what went live* (M13) and *Decide, report and audit like a board* (M15).
 
+**The 10-hour map.** Every syllabus topic for Modules 12–14 (44 topics) also has an animated stop on the map (`#atlas`): the failure, where the control goes, the same scene holding, a documented case, three ways the secure design still fails with their hardening, and four checks (collected in the playbook at `#atlas-playbook`). The smoke test checks that the stops match the syllabus one for one and that every scene plays to the end.
+
 | Deck slide | Covered in |
 |---|---|
 | **Opening challenge · Project NEXUS** | |

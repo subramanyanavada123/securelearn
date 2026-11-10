@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -225,6 +225,108 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   go('adv'); if (doc.querySelectorAll('#app .card .meta').length < ADV_CASES.length) fail('index cards lack the hands-on marker');
   NN.sync = false;
   console.log('signatures: ' + ADV_CASES.length + ' unique interactions, each played to its payoff; ' + Object.keys(TAKE).length + ' Monday-morning cards');
+}
+// The 10-hour map: 44 stops in syllabus order, 600 minutes, every scene well-formed and playable to the end
+{
+  const { ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, ADV_CASES: CASES } = window.__T;
+  const click = b => b && b.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const btn = re => [...doc.querySelectorAll('#atview button')].find(b => re.test(b.textContent));
+  if (ATLAS.length !== 44) fail('atlas: expected 44 stops, got ' + ATLAS.length);
+  if (ATLAS.reduce((n, st) => n + st.min, 0) !== 600) fail('atlas: minutes should add up to 600');
+  if (new Set(ATLAS.map(st => st.id)).size !== ATLAS.length) fail('atlas: duplicate stop id');
+  for (const l of AT_LINES) {
+    const list = ATLAS.filter(st => st.line === l.id), topics = syllabusTopics(l.lab);
+    if (ATLAS.indexOf(list[list.length - 1]) - ATLAS.indexOf(list[0]) !== list.length - 1) fail('atlas: line ' + l.id + ' is not contiguous');
+    list.forEach((st, k) => { const t = topics[l.off + k];
+      if (!t || t.t.toLowerCase() !== st.t.toLowerCase()) fail('atlas ' + st.id + ' does not match syllabus topic ' + (t && t.t));
+      if (atFor(l.lab, l.off + k) !== st || atTopic(st).k !== l.off + k) fail('atlas ' + st.id + ' syllabus mapping'); });
+  }
+  if (['m12', 'm13', 'm14'].some(m => syllabusTopics(m).some((_, k) => !atFor(m, k)))) fail('atlas: a Module 12–14 syllabus topic has no stop');
+  for (const st of ATLAS) {
+    const ids = st.nodes.map(n => n[0]), bad = m => fail('atlas ' + st.id + ': ' + m);
+    if (!(st.hook && st.impact && st.miss && st.like && st.real && st.ask && st.fix && st.fix.name && st.fix.stop)) bad('missing text');
+    if (new Set(ids).size !== ids.length) bad('duplicate node id');
+    st.nodes.forEach(n => { if (!AT_ICON[n[2]]) bad('unknown kind ' + n[2]); if (n[1].length > 14) bad('label too long: ' + n[1]); if (n[3] < 0 || n[3] > 2 || n[4] < 0 || n[4] > 2) bad('node off the grid'); });
+    if (new Set(st.nodes.map(n => n[3] + ',' + n[4])).size !== ids.length) bad('two nodes share a cell');
+    const all = [...st.beats, ...(st.fix.then || [])];
+    all.forEach(b => { if (!ids.includes(b[0]) || !ids.includes(b[1]) || b[0] === b[1] || !['ok', 'bad', 'data'].includes(b[2]) || !b[3]) bad('bad beat ' + b.slice(0, 3).join('>'));
+      const [x1, y1] = atPos(st, b[0]), [x2, y2] = atPos(st, b[1]);
+      for (const id of ids) { if (id === b[0] || id === b[1]) continue; const [px, py] = atPos(st, id), dx = x2 - x1, dy = y2 - y1, t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / (dx * dx + dy * dy)));
+        if (Math.hypot(px - x1 - t * dx, py - y1 - t * dy) < 40) bad('edge ' + b[0] + '>' + b[1] + ' runs through ' + id); } });
+    if (st.beats.length < 4 || st.fix.cut < 0 || st.fix.cut >= st.beats.length) bad('cut out of range');
+    const fixKind = st.nodes.find(n => n[0] === atFixNode(st))[2];
+    if (fixKind === 'atk' || fixKind === 'out') bad('control sits on a box that cannot be picked');
+    (st.fix.also || []).forEach(id => { if (!ids.includes(id)) bad('also: unknown node ' + id); });
+    const wrong = st.nodes.find(n => n[2] !== 'atk' && n[2] !== 'out' && n[0] !== atFixNode(st) && !(st.fix.also || []).includes(n[0]));
+    if (!wrong) bad('no wrong box to pick');
+    if (st.adv && !CASES.some(c => c.id === st.adv)) bad('unknown advanced case ' + st.adv);
+    if (atBeats(st, true).filter(b => b.held).length !== 1) bad('defended run should hold exactly once');
+    // play it: step through the attack, pick a wrong box, pick the right one, step through the defended run, lock in
+    delete S.atlas; go('atlas-' + st.id);
+    if (!doc.querySelector('#atview .atsvg') || doc.querySelectorAll('#atview .atnode').length !== ids.length) bad('scene not drawn');
+    if (doc.querySelector('#atview .atlock')) bad('summary shown before the scene is played');
+    for (let k = 0; k < st.beats.length; k++) click(btn(/^Step/));
+    if (doc.querySelectorAll('#atview .atlog li').length !== st.beats.length || !doc.querySelector('#atview .atbanner.bad')) bad('attack did not play to its impact');
+    click(btn(/Now stop it/));
+    const node = id => doc.querySelector('#atview .atnode[data-n="' + id + '"]');
+    if (node(ids.find(id => st.nodes.find(n => n[0] === id)[2] === 'atk') || '') && node(st.nodes.find(n => n[2] === 'atk')[0]).getAttribute('role')) bad('attacker box is pickable');
+    click(node(wrong[0]));
+    if (AtV.phase !== 'place' || AtV.tries !== 1 || !/Not at/.test(doc.querySelector('#atview').textContent)) bad('wrong box not explained');
+    click(node(atFixNode(st)));
+    if (AtV.phase !== 'fixed' || !doc.querySelector('#atview .atshield')) bad('control not placed');
+    for (let k = 0; k < 12 && !btn(/Lock it in/); k++) click(btn(/^Step/));
+    if (!doc.querySelector('#atview .atlog li.held')) bad('held beat not shown');
+    click(btn(/Lock it in/));
+    if (AtV.phase !== 'lock' || doc.querySelectorAll('#atview .atlock .atcard').length < 4 || S.atlas.done[st.id] !== 1) bad('did not lock in');
+    if (st.play && !doc.querySelector('#atview .atpg')) bad('playground missing');
+    // round two: three bypasses, each replayed against the control, then four checks
+    const D = window.__T.AT_DEEP[st.id];
+    if (!D || D.hard.length !== 3 || D.hard.some(x => x.length !== 3 || !x[0] || x[1].length < 40 || x[2].length < 30) || D.checks.length !== 4 || D.checks.some(t => !t)) { bad('needs three failure modes and four checks'); continue; }
+    if (doc.querySelectorAll('#atview .athard').length !== 3 || doc.querySelector('#atview .athard.seen')) bad('bypasses should start unrevealed');
+    for (let b = 0; b < 3; b++) {
+      click(doc.querySelector('#atview [data-k="hard-' + b + '"]'));
+      if (AtV.phase !== 'breach' || !doc.querySelector('#atview .atshield')) bad('bypass ' + b + ' did not start');
+      for (let k = 0; k < 12 && btn(/^Step/); k++) click(btn(/^Step/));
+      if (!doc.querySelector('#atview .atshield.crack') || !/Harden it/.test(doc.querySelector('#atview').textContent) || !doc.querySelector('#atview').textContent.includes(D.hard[b][2])) bad('bypass ' + b + ' did not show its hardening');
+      click(btn(/Back to the summary/));
+    }
+    if (AtV.phase !== 'lock' || doc.querySelectorAll('#atview .athard.seen').length !== 3 || Object.keys(S.atlas.deep[st.id]).length !== 3) bad('bypasses not recorded');
+    if (doc.querySelectorAll('#atview .atcheck').length !== 4) bad('checks missing');
+    click(doc.querySelector('#atview .atcheck'));
+    if (!doc.querySelector('#atview .atcheck.on') || !S.atlas.chk[st.id][0]) bad('check did not tick');
+    if (st.play) for (let k = 0; k < 8; k++) [...doc.querySelectorAll('#atview .atpg button')].forEach(click);
+    AtV.id = null; go('atlas-' + st.id); for (let k = 0; k < st.beats.length; k++) click(btn(/^Step/)); click(btn(/Now stop it/)); click(node(atFixNode(st)));
+    for (let k = 0; k < 12 && !btn(/Lock it in/); k++) click(btn(/^Step/)); click(btn(/Lock it in/));
+    if (S.atlas.done[st.id] !== 2) bad('first-try placement not recorded');
+  }
+  // the playground models behave as the text says
+  if (atEmbRank(0, false).slice(0, 3).some(d => d.atk) || atEmbRank(3, false)[0].atk !== true || atEmbRank(3, true).slice(0, 3).some(d => d.atk)) fail('atlas: embedding playground ranking');
+  { const lo = atDetScore(600, false), both = atDetScore(600, true), hi = atDetScore(1500, false);
+    if (lo.caught !== 3 || lo.noise < 4 || both.caught !== 3 || both.noise > 1 || hi.missed !== 2) fail('atlas: detection playground numbers'); }
+  // the playbook page gathers all of it
+  { delete S.atlas; go('atlas-playbook'); const T = window.__T;
+    if (doc.querySelectorAll('#app .atbookstop').length !== 44 || doc.querySelectorAll('#app .atcheck').length !== 176) fail('playbook should list 44 topics and 176 checks');
+    click(doc.querySelector('#app .atcheck')); if (doc.querySelectorAll('#app .atcheck.on').length !== 1 || !/1 \/ 176/.test(doc.querySelector('#app .atbookbar').textContent)) fail('playbook check did not tick');
+    const text = T.atPlaybookAll();
+    for (const st of ATLAS) { if (!text.includes('## ' + st.t) || T.AT_DEEP[st.id].hard.some(x => !text.includes(x[2])) || T.AT_DEEP[st.id].checks.some(c => !text.includes(c))) fail('playbook text lacks ' + st.id); }
+    if (!text.includes('[x] ')) fail('playbook text should carry ticked checks');
+    if (Object.keys(T.AT_DEEP).length !== 44) fail('round-two data should cover exactly the 44 stops'); }
+  // the map: every stop listed, filters, progress, links in from the landing pages, the labs and the syllabus
+  const done = {}; ATLAS.forEach(st => { done[st.id] = 2; }); S.atlas = { done }; AtV.filter = 'all'; go('atlas');
+  if (doc.querySelectorAll('#app .atstop').length !== 44 || doc.querySelectorAll('#app .mtstop').length !== 44 || doc.querySelectorAll('#app .atstop.done').length !== 44) fail('atlas map should list 44 stops, all seen');
+  click([...doc.querySelectorAll('#app .atfilter button')][1]);
+  if (doc.querySelectorAll('#app .atstop').length !== ATLAS.filter(st => st.hero).length) fail('atlas highlights filter');
+  click([...doc.querySelectorAll('#app .atfilter button')][2]);
+  if (doc.querySelectorAll('#app .atstop').length !== 0) fail('atlas not-seen filter');
+  AtV.filter = 'all'; delete S.atlas; go('atlas');
+  if (!doc.querySelector('#app .atstop.next') || !doc.querySelector('#app a.btn.primary[href="#atlas-' + ATLAS[0].id + '"]')) fail('atlas map lacks a start button');
+  go(''); if (!doc.querySelector('#app a.athero[href="#atlas"]')) fail('story home lacks the 10-hour map');
+  go('labs'); if (!doc.querySelector('#app a.athero[href="#atlas"]')) fail('workbench home lacks the 10-hour map');
+  for (const m of ['m12', 'm13', 'm14']) { S.tab[m] = 'topics'; go(m);
+    if (!doc.querySelector('#app a.atlablink')) fail(m + ' lacks the map link');
+    if (doc.querySelectorAll('#app .topic a[href^="#atlas-"]').length !== syllabusTopics(m).length) fail(m + ' syllabus cards lack their animated stop'); }
+  S.tab.m11 = 'topics'; go('m11'); if (doc.querySelector('#app a.atlablink') || doc.querySelector('#app .topic a[href^="#atlas-"]')) fail('m11 should not link to the map');
+  console.log('atlas: ' + ATLAS.length + ' stops played (wrong box, right box, held, three bypasses, checks) · playbook 176 checks · ' + ATLAS.reduce((n, st) => n + st.min, 0) + ' minutes · ' + ATLAS.filter(st => st.hero).length + ' highlights');
 }
 // Take it to your CIO: the kit page renders, scores, filters and is linked from the landing pages
 {
