@@ -232,7 +232,7 @@ function mcMount(L) {
       [['FENCE', () => ({ none: 'NONE', static: 'STATIC', nonce: 'NONCE', escape: 'NONCE + ESCAPE' })[P.mode]], ['ISSUE CHARS PAST THE FENCE', () => String(mcFence(P.mode, P.atk, P.call).out), 'bad']],
       [['INSTALLS', () => { const V = vet(); return V && V.r ? V.p.name.length > 18 ? '…' + V.p.name.slice(-12) + '@' + V.r.v : V.p.name + '@' + V.r.v : '—'; }], ['CHECKS PASSED', () => { const V = vet(); return V ? V.checks.filter(c => c[1]).length + '/6' : '—'; }, 'bad']],
       [['THE OS OPENS', () => mcOpen(P.path).path], ['CHECKERS FOOLED', () => { const o = mcOpen(P.path); return mcHarm(o.kind) ? MC_CHECK.filter(k => k.test(P.path)).length + '/3' : '0/3'; }, 'bad']],
-      [['SESSIONS WITH ALL THREE', () => String(mcTriCount(P.cfg)), 'bad'], ['TASK', () => mcTaskOk(P.cfg) ? 'RUNS' : 'BROKEN']],
+      [['LETHAL TRIFECTA SESSIONS', () => String(mcTriCount(P.cfg)), 'bad'], ['TASK', () => mcTaskOk(P.cfg) ? 'RUNS' : 'BROKEN']],
       [['GET IN', () => MC_ATTK.filter(a => a.in(P.dep)).length + '/4'], ['RUN AS YOU', () => MC_ATTK.filter(a => mcAttack(P.dep, a) === 'breach').length + '/4', 'bad']],
       [['COMPLIANT', () => fl().filter(m => m.ok).length + '/48', 'good'], ['SHADOW SERVERS', () => P.deep ? String(MC_FLEET.flat().filter(s => s.hid).length) : '?', 'bad']],
       axDefHud(P, MC_VEC, MC_DEF), axDefHud(P, MC_VEC, MC_DEF)][L2.step],
@@ -241,26 +241,26 @@ function mcMount(L) {
       (a, b) => axDrawDefend(a, b, P, MC_GROUPS, MC_VEC, MC_DEF), (a, b) => axDrawDefend(a, b, P, MC_GROUPS, MC_VEC, MC_DEF)][L2.step](L2, g),
     steps: [
       // 1 · attack vectors
-      { say: () => { const r = R0(); if (!P.e) return 'A triage agent with four MCP servers. The attacker controls one thing. Pick where they start.';
-          return (P.e === 'pkg' ? 'A bad release skips the model entirely: ' : 'From one ' + MC_ENTRY.find(e => e.id === P.e).name.toLowerCase() + ': ') + r.assets.length + ' kinds of private data, ' + r.exits.length + ' ways out.' + (P.ents.size < 2 ? ' Try another start.' : ' Every text entry reaches the same place.'); },
+      { say: () => { const r = R0(); if (!P.e) return 'Attack surface: a triage agent with four MCP servers. The attacker controls one input. Pick the entry point.';
+          return (P.e === 'pkg' ? 'Supply-chain entry: the code runs without asking the model. ' : P.e === 'desc' ? 'Tool poisoning: the description is in context before any call. ' : 'Indirect prompt injection: the text drives every tool in the session. ') + r.assets.length + ' data assets, ' + r.exits.length + ' exfiltration channels.' + (P.ents.size < 2 ? ' Try another entry point.' : ''); },
         side: L2 => [h('span', { class: 'labk' }, 'Where the attacker starts'),
           h('div', { class: 'labprompts' }, MC_ENTRY.map(e => h('button', { type: 'button', class: 'labp bad' + (P.e === e.id ? ' on' : ''), onclick: () => { P.e = e.id; P.ents.add(e.id); P.reachAt = L2.t; L2.repaint(); } }, e.name))),
           h('div', { class: 'fiout' }, h('span', { class: 'labk' }, 'The task'), h('div', null, 'Label new issues on meridian/web and post a short reply.'), h('div', { class: 'bad' }, 'Servers: GitHub (classic PAT), filesystem, Postgres (service role), web-tools (community)'))],
         acts: L2 => [labNext(L2, 'Read it like the model →', P.ents.size < 2)] },
       // 2 · context poisoning
-      { say: () => P.lens === 'human' && P.lenses.size === 1 ? 'This is what the people who approved this saw. Now switch to what the model receives.'
-          : P.lenses.size < 3 ? 'Same context, another lens. Try all three.'
-          : !P.morning ? 'Three untrusted segments give orders, one of them legitimately. Now jump to the next morning.'
-          : 'By label, still ' + mcUntrustedOrders(true) + ' untrusted orders. By lineage, ' + mcLineageOrders(true) + ': the agent’s own note now carries the issue’s order under a trusted label.',
+      { say: () => P.lens === 'human' && P.lenses.size === 1 ? 'Context poisoning. Lens 1: what the approvers saw. Switch to what the model receives.'
+          : P.lenses.size < 3 ? 'Same context window, another lens. Try all three.'
+          : !P.morning ? 'Hidden instructions: an HTML comment in the issue and a tool-description tail. Now the next morning: memory poisoning.'
+          : 'Memory poisoning. By label, still ' + mcUntrustedOrders(true) + ' untrusted orders. By lineage, ' + mcLineageOrders(true) + ': the agent’s own note now carries the issue’s order under a trusted label.',
         side: L2 => [h('span', { class: 'labk' }, 'Lens'),
           h('div', { class: 'labprompts' }, [['human', 'What people saw'], ['wire', 'What the model receives'], ['prov', 'Where each part came from']].map(([k, t]) => h('button', { type: 'button', class: 'labp' + (P.lens === k ? ' on' : ''), onclick: () => { P.lens = k; P.lenses.add(k); L2.repaint(); } }, t))),
           labBtn(P.morning ? '✓ Next morning: the agent reads its notes' : '☀ Next morning: the agent reads its notes', () => { P.morning = true; P.morningAt = L2.t; P.lens = 'prov'; L2.repaint(); }, P.morning ? 'on' : '', P.morning || P.lenses.size < 3),
           P.morning ? h('div', { class: 'labbig' }, labStat(MC_TRUST[MC_NOTE.trust][1], 'label on the notes', 'good'), labStat(mcLineage(MC_NOTE).sim.toFixed(2), 'word overlap with issue #4127', 'bad')) : null],
         acts: L2 => [labNext(L2, 'Fence it →', !(P.lenses.size >= 3 && P.morning))] },
       // 3 · context boundary
-      { say: () => !P.forged ? 'The host wraps every tool result in a fence. Type into the issue, or try to close the fence from inside.'
-          : !P.held ? 'A static tag is public. Switch to a per-call nonce and try again.'
-          : 'Held. The text inside still says “paste .env”. A fence marks data; it does not stop the model obeying it.',
+      { say: () => !P.forged ? 'Context boundary: the host delimits every tool result. Try delimiter injection: close the fence from inside the issue.'
+          : !P.held ? 'Delimiter injection worked: a static tag is public. Switch to a per-call nonce delimiter.'
+          : 'Boundary held. The text inside still says “paste .env”: delimiting (spotlighting) marks data, it does not stop the model obeying it.',
         side: L2 => [h('span', { class: 'labk' }, 'The host’s fence'),
           h('div', { class: 'labprompts' }, [['none', 'None'], ['static', '<untrusted>'], ['nonce', 'Per-call nonce'], ['escape', 'Nonce + escape <']].map(([k, t]) => h('button', { type: 'button', class: 'labp' + (P.mode === k ? ' on' : ''), onclick: () => { P.mode = k; P.call++; P.atkAt = L2.t; noteFence(); L2.repaint(); } }, t))),
           axInput(L2, P, 'atk', { label: 'THE ISSUE BODY · THE ATTACKER WRITES IT', area: true, max: 200, ok: () => P.forged && P.held, on: noteFence, presets: MC_ATK }),
@@ -268,20 +268,21 @@ function mcMount(L) {
         acts: L2 => [labNext(L2, 'Install a server →', !(P.forged && P.held))] },
       // 4 · tool trust validation
       { say: () => { const V = vet(); if (!V) return 'Type a package spec.'; if (!V.r) return 'Nothing in the registry by that name.';
-          return V.pass ? 'All six checks pass: ' + V.p.name + '@' + V.r.v + '.' + (P.vetBad ? '' : ' Now try a spec that looks just as safe.') : 'Installs ' + V.r.v + ': ' + V.checks.filter(c => !c[1]).length + ' of 6 checks fail.' + (P.vetGood ? '' : ' Find a spec that passes all six.'); },
+          const why = !V.checks[0][1] ? 'Typosquat. ' : !V.checks[1][1] ? 'Floating version. ' : '';
+          return V.pass ? 'Tool trust validated. All six checks pass: ' + V.p.name + '@' + V.r.v + '.' + (P.vetBad ? '' : ' Now try a spec that looks just as safe.') : why + 'Installs ' + V.r.v + ': ' + V.checks.filter(c => !c[1]).length + ' of 6 checks fail.' + (P.vetGood ? '' : ' Find a spec that passes all six.'); },
         side: L2 => [axInput(L2, P, 'spec', { label: 'THE LINE IN mcp.json', max: 80, ok: () => P.vetBad && P.vetGood, on: noteVet, presets: MC_SPECS }),
           h('p', { class: 'labsm' }, 'Approved last quarter: issue-labeler-mcp, published by kavya-dev.')],
         acts: L2 => [labNext(L2, 'Escape the folder →', !(P.vetBad && P.vetGood))] },
       // 5 · resource isolation
-      { say: () => !P.prefixSeen && !P.linkSeen ? 'The filesystem server may only read ' + MC_ROOT + '. Ask for a path outside it.'
-          : !P.linkSeen ? 'The prefix check fell. The normalising check stops that one. Find a path that beats it too.'
-          : 'Normalising reads the text of the path. Only resolving links checks where the operating system will actually go.',
+      { say: () => !P.prefixSeen && !P.linkSeen ? 'Resource isolation: the filesystem server’s root is ' + MC_ROOT + '. Try path traversal out of it.'
+          : !P.linkSeen ? 'Path traversal / prefix confusion beat startsWith(). Normalisation stops it. Now beat normalisation.'
+          : 'Symlink escape: normalising checks the text of the path; only resolving links checks where open() really goes.',
         side: L2 => [axInput(L2, P, 'path', { label: 'THE PATH THE MODEL ASKS FOR', max: 80, ok: () => P.linkSeen, on: notePath, presets: MC_PATHS }),
           h('p', { class: 'labsm' }, 'A developer once linked docs/runbooks to their ~/.ssh for convenience. Nobody removed it.')],
         acts: L2 => [labNext(L2, 'Cut the privilege →', !P.linkSeen)] },
       // 6 · least privilege
       { enter: L2 => { P.cfg = Object.assign({}, MC_DEF0); P.reachAt = L2.t; },
-        say: () => { const n = mcTriCount(P.cfg); return !mcTaskOk(P.cfg) ? 'Safe, but triage no longer works: it needs the label list and the docs.' : n ? n + ' session' + (n > 1 ? 's hold' : ' holds') + ' untrusted text, private data and a way out. Cut until none does.' : 'No session holds all three, and triage still runs. That is least privilege, measured.'; },
+        say: () => { const n = mcTriCount(P.cfg); return !mcTaskOk(P.cfg) ? 'Over-restricted: triage needs the label list and the docs.' : n ? 'Least privilege: ' + n + ' session' + (n > 1 ? 's hold' : ' holds') + ' the lethal trifecta (untrusted input + private data + exfiltration channel). Remove a leg.' : 'No session holds the lethal trifecta, and triage still runs. Least privilege, measured.'; },
         side: L2 => [mcKnob(L2, P, 'gh', 'GitHub token', [['all', 'Classic PAT: all repos, read/write', 'bad'], ['one', 'meridian/web only: issues, read code', 'ok']]),
           mcKnob(L2, P, 'db', 'Postgres', [['admin', 'service_role', 'bad'], ['ro', 'Read-only view: labels', 'ok'], ['off', 'Disconnect']]),
           mcKnob(L2, P, 'fs', 'Filesystem', [['root', 'Root ' + MC_ROOT, 'bad'], ['off', 'Disconnect', 'ok']]),
@@ -289,15 +290,15 @@ function mcMount(L) {
           mcKnob(L2, P, 'split', 'Architecture', [[false, 'One session'], [true, 'Split: quarantined reader → labels only', 'ok']])],
         acts: L2 => [labNext(L2, 'Deploy it →', !(mcTaskOk(P.cfg) && !mcTriCount(P.cfg)))] },
       // 7 · secure deployment
-      { say: () => { const b = MC_ATTK.filter(a => mcAttack(P.dep, a) === 'breach').length; return mcDepOk(P.dep) ? 'Three blocked at the door, the fourth boxed in. Localhost is not a boundary; these settings are.'
-          : b ? b + ' of 4 run code as you on a developer laptop. Switch on settings.' : 'Nothing runs as you. But “contained” still means a stranger’s code is running. Block what you can.'; },
+      { say: () => { const b = MC_ATTK.filter(a => mcAttack(P.dep, a) === 'breach').length; return mcDepOk(P.dep) ? 'Secure deployment: three blocked at the door, the fourth sandboxed. Localhost is not a security boundary.'
+          : b ? 'Secure deployment: ' + b + ' of 4 get code execution as you (drive-by localhost, LAN exposure, OAuth metadata injection, malicious server). Harden it.' : 'Nothing runs as you. But “contained” still means a stranger’s code is running. Block what you can.'; },
         side: L2 => [h('div', { class: 'labstack' }, MC_TOG.map(([k, t, s2]) => h('button', { type: 'button', class: 'labdef' + (P.dep[k] ? ' on' : ''), 'aria-pressed': String(P.dep[k]),
           onclick: () => { P.dep[k] = !P.dep[k]; P.depAt = L2.t; L2.repaint(); } }, h('i', null, P.dep[k] ? '■' : '□'), h('b', null, t), h('small', null, s2))))],
         acts: L2 => [labNext(L2, 'Govern the fleet →', !mcDepOk(P.dep))] },
       // 8 · governance
-      { say: () => { const F = fl(), ok = F.filter(m => m.ok).length; if (nRules() < 3) return 'Your policy goes to 48 developer laptops. Switch on at least three rules.';
+      { say: () => { const F = fl(), ok = F.filter(m => m.ok).length; if (nRules() < 3) return 'Governance: your MCP policy goes to 48 developer laptops. Switch on at least three rules.';
           if (!P.deep) return ok + ' of 48 comply. The scan read config files. Now scan processes and network too.';
-          const sh = F.filter(m => m.okShallow && m.hid).length; return sh + ' laptop' + (sh === 1 ? '' : 's') + ' that passed run servers no config file lists, registered by editor extensions.'; },
+          const sh = F.filter(m => m.okShallow && m.hid).length; return 'Shadow MCP: ' + sh + ' laptop' + (sh === 1 ? '' : 's') + ' that passed run servers no config file lists, registered by editor extensions.'; },
         side: L2 => [h('div', { class: 'labstack' }, MC_RULE.map(r => h('button', { type: 'button', class: 'labdef' + (P.rules[r.id] ? ' on' : ''), 'aria-pressed': String(!!P.rules[r.id]),
             onclick: () => { P.rules[r.id] = !P.rules[r.id]; L2.repaint(); } }, h('i', null, P.rules[r.id] ? '■' : '□'), h('b', null, r.name), h('small', null, r.how)))),
           labBtn(P.deep ? '✓ Scanned processes and network' : '⌕ Scan processes and network', () => { P.deep = true; P.deepAt = L2.t; L2.repaint(); }, P.deep ? 'on' : '', P.deep || nRules() < 3)],
@@ -323,7 +324,103 @@ function mcMount(L) {
             copyButton(() => 'MCP security checks\n' + MC_CHECKS.map((t, i) => (i + 1) + '. ' + t).join('\n'), 'Copy the checks')]),
         acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
     ] };
+  // Each topic opens with its animated explainer (auto-plays on first visit); the debrief replays any of them and copies the notes.
+  sim.steps.slice(0, MC_EX.length).forEach((sp, i) => { const s0 = sp.side; sp.side = L2 => [mcExBtn(L2, i), s0 ? s0(L2) : null]; });
+  const dbf = sim.steps[sim.steps.length - 1].side; sim.steps[sim.steps.length - 1].side = L2 => [h('span', { class: 'labk' }, 'Replay a concept'),
+    h('div', { class: 'labprompts' }, MC_CONCEPTS.map((c, i) => h('button', { type: 'button', class: 'labp', onclick: () => mcExOpen(L2, i) }, '▶ ' + c.term))),
+    copyButton(mcConceptText, 'Copy the concept notes (handout)'), dbf(L2)];
+  P.exSeen = new Set();
+  sim.tick = L2 => { if (!NN.sync && L2.w && L2.step < MC_EX.length && !L2.briefOpen && !P.ex && !P.exSeen.has(L2.step)) mcExOpen(L2, L2.step); if (P.ex) mcExTick(L2, P); };
   return sim;
+}
+function mcExBtn(L, i) {
+  return h('button', { type: 'button', class: 'mcconceptbtn', onclick: () => mcExOpen(L, i) }, h('i', null, '▶ Watch · concept ' + (i + 1) + ' of ' + MC_EX.length), h('b', null, MC_CONCEPTS[i].term), h('small', null, MC_EX[i].beats.length + ' short scenes, then you try it'));
+}
+
+/* ---------- the animated explainer ---------- */
+const MC_GAP = 0.85, MC_FLY = 0.7;
+const mcExDur = b => Math.max(2.8, 0.3 + (b.msgs || []).length * MC_GAP + MC_FLY + 1.6);
+// The cast on stage at beat k: the latest show list at or before it, or everyone.
+function mcExCast(E, k) { for (let j = k; j >= 0; j--) if (E.beats[j].show) return E.beats[j].show; return Object.keys(E.actors); }
+function mcExOpen(L, i) {
+  const P = L.sim.P, E = MC_EX[i], C = MC_CONCEPTS[i]; mcExClose(L); P.exSeen.add(i);
+  const cv = h('canvas', { class: 'mcexcv', 'aria-hidden': 'true' }), cap = h('p', { class: 'mcexcap', 'aria-live': 'polite' }), det = h('p', { class: 'mcexdet' }),
+    dots = h('div', { class: 'mcexdots' }), play = h('button', { type: 'button', class: 'labbtn' });
+  const X = P.ex = { i, b: 0, t0: L.t, play: true, cv, cap, dots, playBtn: play, det };
+  const go = k => { X.b = Math.max(0, Math.min(E.beats.length - 1, k)); X.t0 = L.t; mcExPaint(X, E); };
+  X.go = go;
+  play.onclick = () => { if (!X.play && X.b === E.beats.length - 1 && L.t - X.t0 > mcExDur(E.beats[X.b])) go(0); X.play = !X.play; mcExPaint(X, E); };
+  dots.append(...E.beats.map((_, k) => h('button', { type: 'button', 'aria-label': 'Scene ' + (k + 1), onclick: () => { X.play = false; go(k); } })));
+  L.root.append(h('div', { class: 'mcex', role: 'dialog', 'aria-label': C.term },
+    h('div', { class: 'mcexcard' },
+      h('div', { class: 'mcexhead' }, h('span', { class: 'labk' }, 'Concept ' + (i + 1) + ' of ' + MC_EX.length), h('h2', null, C.term), h('button', { type: 'button', class: 'mcexx', 'aria-label': 'Close', onclick: () => mcExClose(L) }, '×')),
+      h('div', { class: 'mcexstage' }, cv), cap,
+      h('div', { class: 'mcexbar' }, labBtn('◀', () => { X.play = false; go(X.b - 1); }, 'ghost'), play, labBtn('▶▶', () => { X.play = false; go(X.b + 1); }, 'ghost'), dots,
+        h('button', { type: 'button', class: 'labbtn go', onclick: () => mcExClose(L) }, 'Try it →')),
+      h('div', { class: 'mcexmore' }, h('span', { class: 'labk' }, 'Other ways it happens · tap one'),
+        h('div', { class: 'mcexchips' }, C.cases.map(([n, how, , fix, here]) => h('button', { type: 'button', class: 'mcexchip' + (here ? ' here' : ''),
+          onclick: e => { X.det.replaceChildren(h('b', null, n + ': '), how + ' ', h('em', null, 'Fix: ' + fix)); X.det.parentNode.querySelectorAll('.mcexchip').forEach(b => b.classList.toggle('on', b === e.currentTarget)); } }, n))), det))));
+  go(0);
+}
+function mcExPaint(X, E) {
+  X.cap.textContent = E.beats[X.b].say;
+  X.playBtn.textContent = X.play ? '❚❚ Pause' : '▶ Play';
+  [...X.dots.children].forEach((d, k) => { d.className = k < X.b ? 'done' : k === X.b ? 'now' : ''; });
+}
+function mcExClose(L) { const P = L.sim.P, d = L.root.querySelector('.mcex'); if (d) d.remove(); P.ex = null; }
+function mcExTick(L, P) {
+  const X = P.ex, E = MC_EX[X.i], b = E.beats[X.b], t = L.t - X.t0;
+  if (!X.cv.isConnected) { P.ex = null; return; }
+  if (X.play && t > mcExDur(b)) { if (X.b < E.beats.length - 1) X.go(X.b + 1); else { X.play = false; mcExPaint(X, E); } }
+  const cv = X.cv, w = cv.clientWidth, hh = cv.clientHeight, d = Math.min(2, window.devicePixelRatio || 1); if (!w || !hh) return;
+  if (cv.width !== Math.round(w * d) || cv.height !== Math.round(hh * d)) { cv.width = Math.round(w * d); cv.height = Math.round(hh * d); }
+  const g = cv.getContext && cv.getContext('2d'); if (!g) return;
+  g.setTransform(d, 0, 0, d, 0, 0); g.clearRect(0, 0, w, hh); mcExDraw(g, w, hh, E, X.b, t, L.t);
+}
+function mcExDraw(g, W, H, E, k, t, now) {
+  const b = E.beats[k], cast = mcExCast(E, k), before = k ? mcExCast(E, k - 1) : [], wide = W > 620;
+  const bw = Math.max(96, Math.min(196, W * 0.22)), bh = wide ? 54 : 44, fs = wide ? 12 : 10;
+  const pos = id => { const a = E.actors[id]; return { x: Math.max(bw / 2 + 8, Math.min(W - bw / 2 - 8, a[0] * W)), y: Math.max(bh / 2 + 8, Math.min(H - bh / 2 - 22, a[1] * H)) }; };
+  const msgs = b.msgs || [], start = j => 0.3 + j * MC_GAP, done = msgs.length ? start(msgs.length - 1) + MC_FLY : 0.3, settled = t > done;
+  const ease = x => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
+  // where a line leaves a box: the edge of the box toward the other end
+  const edge = (p, q) => { const dx = q.x - p.x, dy = q.y - p.y, s = Math.min(Math.abs(dx) > 0.01 ? (bw / 2 + 4) / Math.abs(dx) : 1e9, Math.abs(dy) > 0.01 ? (bh / 2 + 4) / Math.abs(dy) : 1e9); return { x: p.x + dx * s, y: p.y + dy * s }; };
+  (b.cut || []).forEach(([a1, a2]) => { const p = edge(pos(a1), pos(a2)), q = edge(pos(a2), pos(a1)); g.save(); g.setLineDash([5, 6]); g.strokeStyle = lc(LC.mute, 0.5); g.lineWidth = 2; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(q.x, q.y); g.stroke(); g.restore();
+    labText(g, '✂', (p.x + q.x) / 2, (p.y + q.y) / 2 + 7, { size: 20, align: 'center', col: lc(LC.good, 1) }); });
+  // links and packets
+  msgs.forEach(([a1, a2, lab, col, blocked], j) => {
+    // a second message on the same link (either way) rides beside the first
+    const twin = msgs.slice(0, j).filter(m => (m[0] === a1 && m[1] === a2) || (m[0] === a2 && m[1] === a1)).length, A0 = pos(a1), B0 = pos(a2), dl = Math.hypot(B0.x - A0.x, B0.y - A0.y) || 1, off = twin * 26;
+    const sh = o => ({ x: o.x - (B0.y - A0.y) / dl * off, y: o.y + (B0.x - A0.x) / dl * off });
+    const p = sh(edge(A0, B0)), q = sh(edge(B0, A0)), c = LC[col] || LC.blue, s = (t - start(j)) / MC_FLY; if (s < 0) return;
+    const stop = blocked ? 0.5 : 1, e = ease(s) * stop, x = p.x + (q.x - p.x) * e, y = p.y + (q.y - p.y) * e;
+    g.strokeStyle = lc(c, 0.55); g.lineWidth = 2; g.beginPath(); g.moveTo(p.x, p.y); g.lineTo(x, y); g.stroke(); g.lineWidth = 1;
+    if (s >= 1 && !blocked) axFlow(g, { t: now }, p.x, p.y, q.x, q.y, c, 3, 0.45);
+    if (blocked && s >= 1) labText(g, '✕', x, y + 8, { size: 24, w: 800, align: 'center', col: lc(LC.good, 1) });
+    // the packet: a label chip riding the line, parked near the far end once it lands
+    const pe = blocked ? Math.min(e, 0.32) : Math.min(e, twin ? 0.36 : 0.62), px = p.x + (q.x - p.x) * pe, py = p.y + (q.y - p.y) * pe - (s < 1 ? 0 : 0);
+    g.font = '700 ' + fs + "px 'IBM Plex Mono', monospace"; const tw = Math.min(W * 0.46, g.measureText(lab).width + 16), th = fs + 12;
+    axRound(g, px - tw / 2, py - th / 2, tw, th, th / 2); g.fillStyle = '#0B1226'; g.fill(); g.fillStyle = lc(c, 0.2); g.fill(); g.strokeStyle = lc(c, 0.95); g.lineWidth = 1.5; g.stroke(); g.lineWidth = 1;
+    fiClip(g, px - tw / 2 + 4, py - th / 2, tw - 8, th, () => labText(g, lab, px, py + fs * 0.36, { size: fs, w: 700, align: 'center', col: lc(c === LC.mute ? LC.text : c, 1) })); });
+  // actors
+  cast.forEach(id => {
+    const a = E.actors[id], P2 = pos(id), c = LC[a[3]] || LC.blue, fresh = !before.includes(id) && k > 0, al = fresh ? ease(t * 2.5) : 1;
+    const hit = msgs.map((m, j) => m[1] === id ? start(j) + MC_FLY : null).filter(v => v != null && t > v).map(v => t - v), flash = hit.length ? Math.max(0, 1 - Math.min(...hit) * 2) : 0;
+    const hot = settled && (b.hot || []).includes(id), ok = settled && (b.ok || []).includes(id);
+    g.save(); g.globalAlpha = al;
+    if (hot) labGlow(g, P2.x, P2.y, bw * 0.9, LC.bad, 0.35 + 0.15 * Math.sin(now * 5)); if (ok) labGlow(g, P2.x, P2.y, bw * 0.8, LC.good, 0.3);
+    if (flash) labGlow(g, P2.x, P2.y, bw * 0.7, c, 0.4 * flash);
+    axRound(g, P2.x - bw / 2, P2.y - bh / 2, bw, bh, 12); g.fillStyle = '#0B1226'; g.fill(); g.fillStyle = lc(hot ? LC.bad : ok ? LC.good : c, 0.12); g.fill();
+    g.strokeStyle = lc(hot ? LC.bad : ok ? LC.good : c, 0.9); g.lineWidth = hot || ok ? 2.5 : 1.5; g.stroke(); g.lineWidth = 1;
+    labText(g, a[4], P2.x - bw / 2 + (wide ? 22 : 16), P2.y + (wide ? 7 : 6), { size: wide ? 20 : 15, align: 'center', mono: false });
+    const room = bw - (wide ? 44 : 34); let nf = fs + 1; g.font = '700 ' + nf + "px 'IBM Plex Sans', system-ui, sans-serif"; while (nf > 8 && g.measureText(a[2]).width > room) { nf--; g.font = '700 ' + nf + "px 'IBM Plex Sans', system-ui, sans-serif"; }
+    labText(g, a[2], P2.x - bw / 2 + (wide ? 38 : 30), P2.y + nf * 0.4, { size: nf, w: 700, mono: false, col: lc(LC.text, 1) });
+    const tag = (b.tag || {})[id];
+    if (tag && t > done * 0.6) { const ta = ease((t - done * 0.6) * 3); g.globalAlpha = al * ta; g.font = '700 ' + fs + "px 'IBM Plex Sans', system-ui, sans-serif";
+      const tw = g.measureText(tag).width + 16, ty = P2.y + bh / 2 + 6, tc = hot ? LC.bad : ok ? LC.good : LC.ink;
+      axRound(g, P2.x - tw / 2, ty, tw, fs + 10, 6); g.fillStyle = '#0B1226'; g.fill(); g.strokeStyle = lc(tc, 0.9); g.stroke();
+      labText(g, tag, P2.x, ty + fs + 2, { size: fs, w: 700, align: 'center', mono: false, col: lc(tc, 1) }); }
+    g.restore(); });
 }
 function mcKnob(L, P, k, t, opts) {
   return [h('span', { class: 'labk' }, t), h('div', { class: 'labprompts' }, opts.map(([v, txt, cls]) => h('button', { type: 'button', class: 'labp' + (cls ? ' ' + cls : '') + (P.cfg[k] === v ? ' on' : ''),

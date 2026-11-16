@@ -1763,3 +1763,22 @@ body.labmode main#app { max-width: none; padding: 0; }
 .atbookctl { font-size: 15px; } .atbookctl span { color: var(--muted); }
 .atbookhard { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; }
 @media print { .atbook .atbookbar .btnrow, .atbook .back { display: none !important; } .atbookstop, .atcheck, .atlinehead { background: #fff !important; box-shadow: none !important; } .atbook .hero p, .atbookctl span { color: #3E4A63; } .l-rag, .l-mcp, .l-ship, .l-soc { --lc: #16234A; } .atbadge { color: #fff; } }
+
+/* MCP concept cards (mcpstack) */
+.mcconceptbtn { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(242,181,68,.55); background: rgba(242,181,68,.08); color: #E8ECF5; cursor: pointer; }
+.mcconceptbtn:hover { background: rgba(242,181,68,.16); }
+.mcconceptbtn i { font: 600 10px var(--f-mono); color: #F2B544; font-style: normal; text-transform: uppercase; letter-spacing: 1px; }
+.mcconceptbtn b { font: 700 16px var(--f-body); } .mcconceptbtn small { font-size: 12px; color: #8391AE; }
+.mcex { position: absolute; inset: 0; z-index: 40; display: grid; place-items: center; padding: 14px; background: rgba(4,7,15,.9); animation: fadeUp .3s both; }
+.mcexcard { width: 100%; max-width: 1060px; height: 100%; max-height: 760px; display: grid; grid-template-rows: auto minmax(180px, 1fr) auto auto auto; gap: 10px; padding: 16px 20px; border-radius: 18px; background: #0E1630; border: 1px solid rgba(141,182,242,.25); box-shadow: 0 20px 60px rgba(0,0,0,.5); overflow: hidden; }
+.mcexhead { display: grid; grid-template-columns: 1fr auto; align-items: start; } .mcexhead h2 { grid-column: 1; font-family: var(--f-display); font-size: 26px; margin: 0; } .mcexhead .labk { grid-column: 1; }
+.mcexx { grid-column: 2; grid-row: 1 / span 2; width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(141,182,242,.35); background: none; color: #D6DEEE; font-size: 22px; cursor: pointer; }
+.mcexstage { position: relative; min-height: 0; border-radius: 12px; background: #070C18; border: 1px solid rgba(141,182,242,.12); } .mcexcv { position: absolute; inset: 0; width: 100%; height: 100%; }
+.mcexcap { margin: 0; text-align: center; font: 700 26px var(--f-body); color: #F2F5FB; min-height: 1.3em; animation: fadeUp .35s both; }
+.mcexbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .mcexbar .labbtn.go { margin-left: auto; }
+.mcexdots { display: flex; gap: 6px; } .mcexdots button { width: 22px; height: 6px; border-radius: 3px; border: 0; padding: 0; background: rgba(141,182,242,.25); cursor: pointer; } .mcexdots .done { background: rgba(242,181,68,.55); } .mcexdots .now { background: #F2B544; }
+.mcexmore { display: flex; flex-direction: column; gap: 6px; } .mcexchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.mcexchip { padding: 4px 10px; border-radius: 999px; border: 1px solid rgba(141,182,242,.3); background: none; color: #C9D3E6; font: 600 12px var(--f-body); cursor: pointer; }
+.mcexchip.here { border-color: rgba(242,181,68,.7); color: #F2B544; } .mcexchip.on { background: rgba(141,182,242,.16); color: #fff; }
+.mcexdet { margin: 0; min-height: 1.4em; font-size: 14px; color: #D6DEEE; } .mcexdet em { font-style: normal; color: #5FD08F; }
+@media (max-width: 760px) { .mcex { padding: 6px; } .mcexcard { padding: 12px; gap: 8px; } .mcexhead h2 { font-size: 20px; } .mcexcap { font-size: 18px; } .mcexchip { font-size: 11px; } .mcexmore .mcexchips { max-height: 64px; overflow-y: auto; } }
