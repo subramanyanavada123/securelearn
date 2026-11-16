@@ -91,6 +91,7 @@ The scenario and discussion text, including the facilitators' model answers, is 
 | Six RAG controls | Lab: pipeline control picker |
 | MCP attack vectors | Lab: approval board and rug-pull round; Drill "Every MCP connection is a door" |
 | Secure MCP deployment & governance | Lab: approval conditions; Drill "A governed catalogue" |
+| MCP security, end to end: attack vectors, context poisoning, tool trust validation, resource isolation, context boundary protection, secure deployment, least privilege, governance | Advanced: instrument "One issue, eight boundaries" (`#adv-nn-mcpstack`), one step per topic, with a defence board and a copyable checklist |
 | Toxic trio | Drill "The toxic trio" |
 | Scenarios: postmark-mcp, GitHub MCP, Supabase MCP, "Ask HR" | Scen. ×4 |
 | Leadership discussion | Disc. |
