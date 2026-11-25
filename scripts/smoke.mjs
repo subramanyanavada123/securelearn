@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, GV_SIMS, GV_FW, GV_EV, GV_USES, GV_TOPICS, GV_PEOPLE, GV_PEOPLE_EQ, GV_CLAIMS, GV_LADDERS, GV_APPLICANT, GV_TWIN, gvCover, gvClassify, gvSearch, gvFair, gvProxy, gvSlices, gvContrib, gvCounterfactual, gvApproved, gvFidelity, gvChain, gvVerify, gvBoardSim, gvBoardOk, gvMismatch, gvRole, gvTriggered, FEEDS, FEED_ALL, FeedV, FeedTab, Theme, NewsV, NEWS, newsParse, newsTopics, newsRank, newsHot, newsMerge, newsRefresh, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, GV_SIMS, GV_FW, GV_EV, GV_USES, GV_TOPICS, GV_PEOPLE, GV_PEOPLE_EQ, GV_CLAIMS, GV_LADDERS, GV_APPLICANT, GV_TWIN, gvCover, gvClassify, gvSearch, gvFair, gvProxy, gvSlices, gvContrib, gvCounterfactual, gvApproved, gvFidelity, gvChain, gvVerify, gvBoardSim, gvBoardOk, gvMismatch, gvRole, gvTriggered, FEEDS, FEED_ALL, FeedV, FeedTab, Theme, NewsV, NEWS, newsParse, newsTopics, newsRank, newsHot, newsMerge, newsRefresh, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, OP_SIMS, OP_TOPICS, OP_Q, OP_PACK0, OP_TRACES, OP_PIV, OP_PROMOTE, OP_IR, OP_MODE0, OP_DIFF, opGb, opAnswered, opPipe, opPipeOk, opDetect, opPackOk, opAnomaly, opAnomOk, opShift, opShiftOk, opContain, opContainOk, opStack, opCoverage, opHuntFound, opIrTry, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -185,7 +185,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   const { ADV_CASES, ADV_TRACKS } = window.__T;
   const { AdvV, NN_SIMS } = window.__T;
   delete S.adv; AdvV.v = 'sims'; AdvV.t = 'all'; go('adv');
-  if (doc.querySelectorAll('#app .card').length || doc.querySelectorAll('#app .nnhero').length !== NN_SIMS.filter(x => x.track !== 'gov').length) fail('advanced index should open on the simulations only');
+  if (doc.querySelectorAll('#app .card').length || doc.querySelectorAll('#app .nnhero').length !== NN_SIMS.filter(x => x.track !== 'gov' && x.track !== 'ops').length) fail('advanced index should open on the simulations only');
   clk([...doc.querySelectorAll('#app .advswitch button')].find(b => /Real cases/.test(b.textContent)));
   if (AdvV.v !== 'cases' || doc.querySelectorAll('#app .card').length !== ADV_CASES.length) fail('advanced index should list every case');
   if (doc.querySelectorAll('#app .sylgroup').length !== ADV_TRACKS.length) fail('advanced index should show every track');
@@ -632,7 +632,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
     T.LAB.id = null; go('adv-nn-' + x.id); const n = T.LAB.L.sim.steps.length; if ((x.guide || []).length !== n) fail(x.id + ' guidance covers ' + (x.guide || []).length + ' of ' + n + ' steps');
     if (!(x.guide || []).every(g2 => g2.why)) fail(x.id + ' has a step with no why-line'); });
   go('adv'); if (doc.body.classList.contains('labmode')) fail('leaving the lab should leave lab mode');
-  if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.filter(x => x.track !== 'gov').length) fail('advanced index lacks the simulation cards');
+  if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.filter(x => x.track !== 'gov' && x.track !== 'ops').length) fail('advanced index lacks the simulation cards');
   go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
   T.NN.sync = false;
   console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; sixteen instruments played start to finish; shell split, memory recall, tokens and agent MACs verified; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
@@ -845,6 +845,81 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
     ['Any retraining', 'Any upstream', 'Any new use', 'Any change to thresholds'].forEach(t => clk(chip(new RegExp('^' + t)))); nx('gvboard triggers'); finish('gvboard'); }
   T.NN.sync = false;
   console.log('governance: 6 instruments, ' + T.GV_TOPICS.length + ' topics; one model in four tiers; fairness impossible at unequal base rates (' + eq.all3 + ' pairs at equal); proxy ' + Math.round(T.gvProxy(T.GV_PEOPLE) * 100) + '%; fidelity ' + Math.round(fd.agree * 100) + '%; SHA-256 chain; board ' + Math.round(base.shadow * 100) + '% shadow → targets met; all played to the debrief');
+}
+// AI security operations: six instruments for operations engineers, one incident through all of them
+{
+  const T = window.__T, doc = window.document, clk = b => b && b.dispatchEvent(new window.MouseEvent('click', { bubbles: true })), chk = (c, m) => { if (!c) fail('ops: ' + m); };
+  chk(T.OP_SIMS.length === 6 && T.OP_SIMS.every(x => x.track === 'ops'), 'six ops instruments');
+  chk(T.OP_TOPICS.length === 14 && T.OP_TOPICS.every(([, id]) => T.OP_SIMS.some(x => x.id === id)) && T.OP_SIMS.every(x => T.OP_TOPICS.some(t => t[1] === x.id)), 'every ops topic maps to an instrument, and back');
+  // telemetry: the classic logs answer nothing; small structured AI fields answer all six inside the budget
+  chk(T.OP_Q.every(q => !T.opAnswered({ gw: 1, egress: 1 }, q)), 'gateway and proxy logs should answer none of the incident questions');
+  const tel = { gw: 1, egress: 1, meta: 1, retr: 1, tool: 1, obo: 1, kb: 1, ver: 1 };
+  chk(T.OP_Q.every(q => T.opAnswered(tel, q)) && T.opGb(tel) <= 25 && T.opGb({ gw: 1, egress: 1, prompt: 1 }) > 25, 'AI fields answer all six within budget; full transcripts blow it');
+  chk(T.opPipe({ sample: '10', redact: 'drop', retain: '7', parse: 'blob' }).ok.length === 0, 'the default pipeline should kill every answer');
+  chk(!T.opPipeOk({ sample: '100', redact: 'none', retain: '30', parse: 'schema' }) && T.opPipeOk({ sample: '100', redact: 'token', retain: '30', parse: 'schema' }), 'raw PII fails the pipeline; tokenising passes');
+  // detection: the default floods; the classifier alone misses every attack that touched data; behaviour survives rewording
+  const d0 = T.opDetect(T.OP_PACK0), clf = T.opDetect({ clf: true, t: 0.9 }), pack = { clf: true, t: 0.98, doc: true, seq: true, dom: true, can: true }, w2 = T.opDetect(pack, true);
+  chk(d0.over && d0.triaged <= 2, 'vendor default should flood the queue: ' + d0.alerts);
+  chk(!clf.over && clf.harm === 0 && clf.tp >= 5, 'classifier alone, under capacity, catches loud attacks and none that touched data');
+  chk(T.opPackOk(pack) && w2.by.clf.tp === 0 && w2.harm === 6, 'layered pack fits capacity; week two the classifier falls and behaviour holds');
+  // baselines: the rolling window learns the ramp; a fixed reference catches it; first-seen catches the sales leak
+  const r7 = T.opAnomaly({ win: '7', k: 3 }), rf = T.opAnomaly({ win: 'ref', k: 3 }), fleet = { win: 'ref', k: 3, season: true, first: true, chg: true };
+  chk(r7.delay >= 8 && rf.delay <= 3, 'rolling 7 days should be late (' + r7.delay + '), the fixed reference early (' + rf.delay + ')');
+  chk(T.opAnomOk(fleet) && !T.opAnomOk(Object.assign({}, fleet, { first: false })) && !T.opAnomOk(Object.assign({}, fleet, { chg: false })), 'fleet target needs first-seen rules and the change calendar');
+  // the SOC's own AI: vendor defaults miss two and cause two outages; all-human runs out of time; by blast radius passes
+  const s0 = T.opShift(T.OP_MODE0, {}), sh = T.opShift({ enrich: 'human', close: 'human', block: 'human', disable: 'human', isolate: 'human' }, {});
+  chk(s0.missed === 2 && s0.outages.length === 2 && sh.backlog > 0 && sh.missed > 0, 'shift: defaults and all-human both fail');
+  chk(T.opShiftOk({ enrich: 'auto', close: 'approve', block: 'approve', disable: 'approve', isolate: 'approve' }, {}) && T.opShiftOk({ enrich: 'auto', close: 'approve', block: 'auto', disable: 'auto', isolate: 'auto' }, { breaker: true }), 'approval by blast radius, or a circuit breaker, passes');
+  chk(T.opIrTry([], 'erad') && !T.opIrTry(['declare', 'contain', 'preserve'], 'erad'), 'eradicating before preserving should be refused');
+  // containment: precise levers win; the platform switch is costly and misses the copied token
+  const best = T.opContain([{ id: 'quar', at: 0 }, { id: 'drain', at: 0 }, { id: 'revoke', at: 0 }]), big = T.opContain([{ id: 'kill', at: 0 }]);
+  chk(T.opContainOk(best) && !big.all && !big.stopped.includes('token') && big.impact > 150, 'precise levers contain cheaply; the big red button misses the token');
+  chk(T.opStack({ gw: true, idp: true }).length === 4 && T.opStack({ flag: true, infra: true }).length < 4, 'gateway plus identity survives all four nights');
+  // the hub
+  T.AdvV.v = 'sims'; go('adv-ops'); chk(T.AdvV.v === 'ops' && doc.querySelectorAll('#app .opscard').length === 6 && doc.querySelectorAll('#app .opsrow').length === T.OP_DIFF.length + 1, 'ops hub: 6 instruments and the playbook grid');
+  chk(doc.querySelectorAll('#app .opscard .govtopics i').length === 14, 'ops hub lists every topic');
+  chk(doc.querySelector('#app .advswitch button[aria-pressed="true"]').textContent.includes('AI security operations'), 'ops tab pressed');
+  go('adv'); chk(T.AdvV.v === 'sims' && !doc.querySelector('#app .nnsims a[href="#adv-nn-optel"]'), '#adv leaves the ops tab, and ops instruments stay off the simulations list');
+  go('m14'); chk(doc.querySelector('#app a.opslink[href="#adv-nn-optel"]'), 'M14 links to its ops instruments');
+  // play every instrument
+  T.NN.sync = true;
+  const go2 = id => { T.LAB.id = null; go('adv-nn-' + id); return T.LAB.L; };
+  const esc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const btns = () => [...doc.querySelectorAll('#app .labside button')];
+  const side = re => btns().find(b => re.test(b.textContent));
+  const tap = (re, m) => { const b = side(re); if (!b) { fail('ops: no button ' + re + ' (' + m + ')'); return; } clk(b); };
+  const nx = m => { const b = doc.querySelector('#app .labbar .labbtn.go'); if (!b || b.disabled) { fail('ops: ' + m + ' (next disabled)'); return false; } clk(b); return true; };
+  const blocked = m => { const b = doc.querySelector('#app .labbar .labbtn.go'); chk(b && b.disabled, 'ops: ' + m + ' should not pass yet'); };
+  const slide = (P3, k, v) => { P3[k] = v; const el = doc.querySelector('#app .labside input[type=range]'); el.value = v; el.dispatchEvent(new window.Event('input')); };
+  const finish = id => { doc.querySelectorAll('#app .labdef').forEach(clk); nx(id + ' defend'); chk(S.nn[id] && S.nn[id].done, id + ' debrief not reached'); chk(doc.querySelector('#app a.labx[href="#adv-ops"]'), id + ' close should return to AI SecOps'); };
+  { go2('optel'); blocked('optel sources');
+    ['Answer metadata', 'Retrieval log', 'Tool-call log', 'On-behalf-of', 'Knowledge-base change', 'Version stamp'].forEach(t => tap(new RegExp('^' + t), 'optel')); nx('optel sources');
+    blocked('optel pipeline'); ['Keep every event', 'Tokenise', '30 days hot', 'Mapped to a schema'].forEach(t => tap(new RegExp('^' + t), 'optel pipe')); nx('optel pipeline');
+    T.OP_Q.forEach(q => tap(new RegExp(esc(q.t)), 'optel ask')); nx('optel siem'); finish('optel'); }
+  { const L3 = go2('opdetect'), P3 = L3.sim.P; blocked('opdetect flood');
+    tap(/^Keyword list$/, 'kw off'); slide(P3, 'tv', 82); nx('opdetect capacity');
+    blocked('opdetect pack'); ['…also on retrieved', 'Retrieve → bulk', 'Link to a domain', 'Canary phrase'].forEach(t => tap(new RegExp('^' + esc(t)), 'pack')); slide(P3, 'tv', 98);
+    chk(T.opPackOk(Object.assign({}, P3.pack, { t: 0.5 + 0.49 * 0.98 })), 'opdetect pack should meet the target'); nx('opdetect pack');
+    tap(/Week 2/, 'week 2'); nx('opdetect adapt'); finish('opdetect'); }
+  { const L3 = go2('opbase'), P3 = L3.sim.P; blocked('opbase one'); tap(/^Fixed reference/, 'ref'); nx('opbase one');
+    blocked('opbase fleet'); ['Seasonal', 'First-seen', 'Change calendar'].forEach(t => tap(new RegExp('^' + t), 'fleet')); nx('opbase fleet');
+    const first = T.OP_TRACES[0]; tap(first.bad ? /Normal/ : /Suspicious/, 'wrong'); chk(P3.ti === 0 && P3.wrong === first.id, 'a wrong call should not advance');
+    T.OP_TRACES.forEach(t => tap(t.bad ? /Suspicious/ : /Normal/, 'trace ' + t.id)); chk(P3.ti === T.OP_TRACES.length, 'all traces sorted'); nx('opbase traces'); finish('opbase'); }
+  { const L3 = go2('ophunt'), P3 = L3.sim.P; btns().forEach(b => clk(b)); nx('ophunt channels');
+    blocked('ophunt hunt'); ['imgs', 'first', 'decode', 'retr', 'who', 'mail'].forEach(id => tap(new RegExp('^▶ ' + esc(T.OP_PIV.find(p => p.id === id).t)), 'pivot ' + id));
+    chk(T.opHuntFound(P3.done).length === 4, 'hunt found all four'); nx('ophunt hunt');
+    T.OP_PROMOTE.filter(p => !p.good).forEach(p => tap(new RegExp(esc(p.t)), 'bad promote')); chk(!Object.keys(P3.picked).length, 'a block or a flood rule is not a detection');
+    T.OP_PROMOTE.filter(p => p.good).forEach(p => tap(new RegExp(esc(p.t)), 'promote')); chk(T.opCoverage(P3.picked).length === 6, 'all six channels covered'); nx('ophunt promote'); finish('ophunt'); }
+  { const L3 = go2('opsoar'), P3 = L3.sim.P; tap(/Run the shift/, 'run 1'); chk(P3.run.missed === 2, 'round one misses two'); nx('opsoar r1');
+    [1, 2, 3, 4].forEach(i => clk([...doc.querySelectorAll('#app .labside .labchipset')][i].querySelectorAll('button')[1])); tap(/Run the shift/, 'run 2'); chk(P3.ok2, 'opsoar redesign should pass: ' + JSON.stringify(P3.mode)); nx('opsoar r2');
+    tap(/^Eradicate/, 'erad first'); chk(!P3.placed.length && P3.wrong, 'eradicating first should be refused');
+    T.OP_IR.forEach(s2 => tap(new RegExp('^' + esc(s2.t)), 'ir ' + s2.id)); chk(P3.placed.length === 8, 'ir all placed'); nx('opsoar ir'); finish('opsoar'); }
+  { const L3 = go2('opkill'), P3 = L3.sim.P; tap(/Start the clock/, 'start'); tap(/^Shut the whole/, 'kill'); tap(/Fast-forward/, 'ff'); blocked('opkill big red button');
+    tap(/Run it again/, 'again'); tap(/Start the clock/, 'start 2'); ['Quarantine', 'Pause and drain', 'Revoke the CRM'].forEach(t => tap(new RegExp('^' + t), 'lever')); tap(/Fast-forward/, 'ff 2');
+    chk(T.opContainOk(T.opContain(P3.pulls)), 'opkill precise run should contain'); nx('opkill live');
+    btns().forEach(b => clk(b)); tap(/^Deny at the AI gateway/, 'gw'); tap(/^Disable the agent/, 'idp'); nx('opkill drill'); finish('opkill'); }
+  T.NN.sync = false;
+  console.log('ai secops: 6 instruments, 14 topics; default pack ' + d0.alerts + ' alerts → layered pack within ' + 60 + '; rolling baseline ' + r7.delay + ' days late vs ' + rf.delay + '; vendor SOAR missed ' + s0.missed + ' + ' + s0.outages.length + ' outages; contained ' + best.leaked + ' records at impact ' + best.impact + ' vs platform switch ' + big.impact + '; all played to the debrief');
 }
 // Theme: a toggle in the top bar and on the story home, persisted, dark by default
 {

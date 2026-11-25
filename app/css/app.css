@@ -2125,3 +2125,9 @@ html[data-theme="light"] .govtopics i { background: #FCEFD0; border-color: rgba(
 html[data-theme="light"] .govn { color: rgba(43,93,166,.16); }
 html[data-theme="light"] .govfwrow:not(.head) > * { background: #fff; }
 html[data-theme="light"] .govfwrow .hot { background: #FDECEC; } html[data-theme="light"] .govfwrow .warm { background: #F0EBFD; }
+
+/* ---------- AI SecOps hub: the playbook comparison (5 columns) ---------- */
+.govfwrow.opsrow { grid-template-columns: 130px repeat(4, minmax(150px, 1fr)); min-width: 820px; }
+.govfwrow.opsrow > span { line-height: 1.45; }
+.opscard::before { background: linear-gradient(90deg, #5CE1E6, #8DB6F2, #F2B544); }
+.raglink.opslink { border-color: rgba(92,225,230,.4); }

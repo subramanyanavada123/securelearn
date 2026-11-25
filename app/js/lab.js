@@ -32,7 +32,7 @@ function labPaint(L) {
   const sp = L.sim.steps[L.step], n = L.sim.steps.length;
   L.chips = [];
   const chip = ([k, fn, tone]) => { const b = h('b'); L.chips.push({ el: b, fn }); b.textContent = fn(); return h('span', { class: 'labchip ' + (tone || '') }, h('i', null, k), b); };
-  L.hud.replaceChildren(h('a', { class: 'labx', href: L.def.track === 'gov' ? '#adv-gov' : '#adv', 'aria-label': 'Back to the Advanced path' }, '×'),
+  L.hud.replaceChildren(h('a', { class: 'labx', href: L.def.track === 'gov' ? '#adv-gov' : L.def.track === 'ops' ? '#adv-ops' : '#adv', 'aria-label': 'Back to the Advanced path' }, '×'),
     h('div', { class: 'labttl' }, h('i', null, L.def.kicker), h('b', null, L.def.title)),
     h('ol', { class: 'labdots', 'aria-label': 'Step ' + (L.step + 1) + ' of ' + n }, L.sim.steps.map((_, i) => h('li', { class: i < L.step ? 'done' : i === L.step ? 'now' : '' }))),
     h('div', { class: 'labchips' }, (L.sim.hud ? L.sim.hud(L) : []).map(chip)));

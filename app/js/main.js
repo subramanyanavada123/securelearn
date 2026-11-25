@@ -199,7 +199,7 @@ function labView(lab) {
       h('span', { class: 'eyebrow' }, sy ? 'Module ' + lab.n + ' · ' + sy.hours + ' hours · ' + sp.total + ' syllabus topics' : 'Module ' + lab.n + ' · ' + lab.mod + ' · ' + lab.format + ' · ' + lab.min + ' min'),
       h('h1', null, sy ? sy.name : lab.title), sy ? h('p', { class: 'worktitle' }, h('b', null, 'Work task (' + lab.min + ' min): '), lab.title) : null, h('p', { class: 'leadq big' }, 'The leadership question: ' + LEAD_Q[lab.id]), h('p', { class: 'task' }, lab.task),
       h('div', { class: 'roles' }, lab.roles.map(r => h('span', { class: 'role' }, r)))),
-    atLabLink(lab.id), govLabLink(lab.id),
+    atLabLink(lab.id), govLabLink(lab.id), opsLabLink(lab.id),
     h('div', { class: 'tabs', role: 'tablist' }, tabs.map(([k, t]) => h('button', { type: 'button', class: 'tab', role: 'tab', 'aria-selected': String(tab === k),
       onclick: () => { S.tab[lab.id] = k; commit(); if (k === 'room') watchRoom(lab.id); } }, t, k === 'ans' && rev ? ' ·' : ''))),
     h('div', { class: 'pane' }, body),

@@ -20,6 +20,8 @@ The Reading page (`#feeds`) is built from `app/ai-security-governance-mlops.opml
 
 The Advanced path has a **Governance & responsible AI** tab (`#adv-gov`): six instruments covering 25 topics (NIST AI RMF, ISO/IEC 42001 and 23894, the EU AI Act, OECD principles, risk classification, fairness and bias, explainability, transparency, auditability, human oversight, accountability, approval boards and operating models). Engines and tables are in `app/js/gov-data.js`, the instruments in `gov1.js` and `gov2.js`. Clause and article references are for orientation; check the current text before quoting them.
 
+The **AI security operations** tab (`#adv-ops`) is written for operations engineers, with no code or queries. It has six instruments covering 14 topics (AI telemetry, monitoring pipelines, SIEM and SOAR integration, AI in the SOC, detection engineering, prompt-attack detection, runtime anomaly detection, agent behaviour monitoring, threat hunting, exfiltration detection, incident response, kill switches and containment). One incident runs through all six. Engines and tables are in `app/js/ops-data.js`, the instruments in `ops1.js` and `ops2.js`. Volumes, rates and costs are illustrative.
+
 Headlines on the Reading page come from three layers, so the page always shows something:
 
 1. **Snapshot.** `npm run news` pulls all feeds server-side and writes `app/js/news-data.js` (a feed that fails keeps its previous items). Run it before a session or a deploy; it is what the page shows offline and from `file://`.

@@ -82,9 +82,10 @@ function advTake(c) {
 const AdvV = { v: 'sims', t: 'all' };
 function advIndex() {
   const done = ADV_CASES.filter(advDone).length, pts = sum(ADV_CASES.map(advScore));
-  const sims = NN_SIMS.filter(x => x.track !== 'gov'), simsDone = sims.filter(x => S.nn && S.nn[x.id] && S.nn[x.id].done).length;
-  const govDone = GV_SIMS.filter(x => S.nn && S.nn[x.id] && S.nn[x.id].done).length;
-  const pick = (k, v) => { AdvV[k] = v; App.viewKey = null; if (location.hash === '#adv-gov') location.hash = 'adv'; rerender(); };
+  const sims = NN_SIMS.filter(x => x.track !== 'gov' && x.track !== 'ops'), simsDone = sims.filter(x => S.nn && S.nn[x.id] && S.nn[x.id].done).length;
+  const govDone = GV_SIMS.filter(x => S.nn && S.nn[x.id] && S.nn[x.id].done).length, opsDone = OP_SIMS.filter(x => S.nn && S.nn[x.id] && S.nn[x.id].done).length;
+  const pick = (k, v) => { AdvV[k] = v; App.viewKey = null; if (location.hash === '#adv-gov' || location.hash === '#adv-ops') location.hash = 'adv'; rerender(); };
+  const tab = v => { AdvV.v = v; App.viewKey = null; location.hash = 'adv-' + v; rerender(); };
   const tracks = ADV_TRACKS.filter(t => AdvV.t === 'all' || AdvV.t === t.id);
   const caseCard = c => { const d = advDone(c), started = advSeen(c.id) > 0 || Object.keys(((advState().pk || {})[c.id]) || {}).length;
     return h('a', { class: 'card glow casecard', href: '#adv-' + c.id },
@@ -94,7 +95,9 @@ function advIndex() {
     h('section', { class: 'hero' },
       h('a', { class: 'back', href: '#labs' }, '← Workbench'),
       h('span', { class: 'eyebrow' }, 'Advanced path · for people who already run the controls'),
-      AdvV.v === 'gov' ? [h('h1', null, 'Governance that holds under pressure'),
+      AdvV.v === 'ops' ? [h('h1', null, 'Run it, watch it, stop it'),
+        h('p', null, 'AI security operations for the people on call: what to collect, what to alert on, what normal looks like, how to hunt, how to automate safely, and how to pull the plug.')]
+      : AdvV.v === 'gov' ? [h('h1', null, 'Governance that holds under pressure'),
         h('p', null, 'The frameworks, the law and the principles, taught by doing: classify, measure, explain, review and approve, then watch where a compliant programme still fails.')]
       : [h('h1', null, 'How AI systems actually get broken'),
         h('p', null, 'Live simulations of the mechanism on this device, then documented attacks from 2023–2025: the chain stage by stage, why the defence lost, what detection would have seen. Mechanisms, not payloads.')]),
@@ -102,9 +105,10 @@ function advIndex() {
       h('div', { class: 'seg bigseg', role: 'group', 'aria-label': 'Show' },
         h('button', { type: 'button', 'aria-pressed': String(AdvV.v === 'sims'), onclick: () => pick('v', 'sims') }, 'Live simulations', h('small', null, simsDone + ' of ' + sims.length + ' done')),
         h('button', { type: 'button', 'aria-pressed': String(AdvV.v === 'cases'), onclick: () => pick('v', 'cases') }, 'Real cases', h('small', null, done + ' of ' + ADV_CASES.length + ' · ' + pts + ' pts')),
-        h('button', { type: 'button', 'aria-pressed': String(AdvV.v === 'gov'), onclick: () => { AdvV.v = 'gov'; App.viewKey = null; location.hash = 'adv-gov'; rerender(); } }, 'Governance & responsible AI', h('small', null, govDone + ' of ' + GV_SIMS.length + ' done'))),
-      meter(AdvV.v === 'sims' ? simsDone / sims.length : AdvV.v === 'gov' ? govDone / GV_SIMS.length : done / ADV_CASES.length, 'accent', 'Progress')),
-    AdvV.v === 'gov' ? govHub() : AdvV.v === 'sims' ? [
+        h('button', { type: 'button', 'aria-pressed': String(AdvV.v === 'gov'), onclick: () => tab('gov') }, 'Governance & responsible AI', h('small', null, govDone + ' of ' + GV_SIMS.length + ' done')),
+        h('button', { type: 'button', 'aria-pressed': String(AdvV.v === 'ops'), onclick: () => tab('ops') }, 'AI security operations', h('small', null, opsDone + ' of ' + OP_SIMS.length + ' done'))),
+      meter(AdvV.v === 'sims' ? simsDone / sims.length : AdvV.v === 'gov' ? govDone / GV_SIMS.length : AdvV.v === 'ops' ? opsDone / OP_SIMS.length : done / ADV_CASES.length, 'accent', 'Progress')),
+    AdvV.v === 'ops' ? opsHub() : AdvV.v === 'gov' ? govHub() : AdvV.v === 'sims' ? [
       h('p', { class: 'advlead' }, 'Start here. Train a network and poison it, cut the direction that makes a model refuse, rewrite a fact in its weights, fire injections through the defences the market sells.'),
       h('div', { class: 'nnsims' }, sims.map(nnSimCard))
     ] : [
@@ -118,7 +122,7 @@ function advIndex() {
 }
 
 function advPage(route) {
-  if (route === 'adv-gov') AdvV.v = 'gov'; else if (route === 'adv' && AdvV.v === 'gov' && location.hash !== '#adv-gov') AdvV.v = 'sims';
+  if (route === 'adv-gov') AdvV.v = 'gov'; else if (route === 'adv-ops') AdvV.v = 'ops'; else if (route === 'adv' && (AdvV.v === 'gov' || AdvV.v === 'ops')) AdvV.v = 'sims';
   const c = ADV[route.slice(4)];
   return c ? advCase(c) : advIndex();
 }
