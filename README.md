@@ -18,6 +18,8 @@ The deck's source is in `deck/` (exported from the Slides artifact). After updat
 
 The Reading page (`#feeds`) is built from `app/ai-security-governance-mlops.opml`. After editing the OPML, run `npm run feeds` to regenerate `app/js/feeds-data.js`; the module tags and the one-line reason for each source live in `app/js/feeds.js` (`FEED_MAP`). The smoke test fails if the two drift apart.
 
+The Advanced path has a **Governance & responsible AI** tab (`#adv-gov`): six instruments covering 25 topics (NIST AI RMF, ISO/IEC 42001 and 23894, the EU AI Act, OECD principles, risk classification, fairness and bias, explainability, transparency, auditability, human oversight, accountability, approval boards and operating models). Engines and tables are in `app/js/gov-data.js`, the instruments in `gov1.js` and `gov2.js`. Clause and article references are for orientation; check the current text before quoting them.
+
 Headlines on the Reading page come from three layers, so the page always shows something:
 
 1. **Snapshot.** `npm run news` pulls all feeds server-side and writes `app/js/news-data.js` (a feed that fails keeps its previous items). Run it before a session or a deploy; it is what the page shows offline and from `file://`.

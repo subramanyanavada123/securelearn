@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, FEEDS, FEED_ALL, FeedV, FeedTab, Theme, NewsV, NEWS, newsParse, newsTopics, newsRank, newsHot, newsMerge, newsRefresh, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, GV_SIMS, GV_FW, GV_EV, GV_USES, GV_TOPICS, GV_PEOPLE, GV_PEOPLE_EQ, GV_CLAIMS, GV_LADDERS, GV_APPLICANT, GV_TWIN, gvCover, gvClassify, gvSearch, gvFair, gvProxy, gvSlices, gvContrib, gvCounterfactual, gvApproved, gvFidelity, gvChain, gvVerify, gvBoardSim, gvBoardOk, gvMismatch, gvRole, gvTriggered, FEEDS, FEED_ALL, FeedV, FeedTab, Theme, NewsV, NEWS, newsParse, newsTopics, newsRank, newsHot, newsMerge, newsRefresh, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -185,7 +185,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   const { ADV_CASES, ADV_TRACKS } = window.__T;
   const { AdvV, NN_SIMS } = window.__T;
   delete S.adv; AdvV.v = 'sims'; AdvV.t = 'all'; go('adv');
-  if (doc.querySelectorAll('#app .card').length || doc.querySelectorAll('#app .nnhero').length !== NN_SIMS.length) fail('advanced index should open on the simulations only');
+  if (doc.querySelectorAll('#app .card').length || doc.querySelectorAll('#app .nnhero').length !== NN_SIMS.filter(x => x.track !== 'gov').length) fail('advanced index should open on the simulations only');
   clk([...doc.querySelectorAll('#app .advswitch button')].find(b => /Real cases/.test(b.textContent)));
   if (AdvV.v !== 'cases' || doc.querySelectorAll('#app .card').length !== ADV_CASES.length) fail('advanced index should list every case');
   if (doc.querySelectorAll('#app .sylgroup').length !== ADV_TRACKS.length) fail('advanced index should show every track');
@@ -632,7 +632,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
     T.LAB.id = null; go('adv-nn-' + x.id); const n = T.LAB.L.sim.steps.length; if ((x.guide || []).length !== n) fail(x.id + ' guidance covers ' + (x.guide || []).length + ' of ' + n + ' steps');
     if (!(x.guide || []).every(g2 => g2.why)) fail(x.id + ' has a step with no why-line'); });
   go('adv'); if (doc.body.classList.contains('labmode')) fail('leaving the lab should leave lab mode');
-  if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.length) fail('advanced index lacks the simulation cards');
+  if (doc.querySelectorAll('#app .nnhero').length !== T.NN_SIMS.filter(x => x.track !== 'gov').length) fail('advanced index lacks the simulation cards');
   go('adv-p250'); if (!doc.querySelector('#app a.nnhero[href="#adv-nn-backdoor"]')) fail('p250 case lacks its simulation link');
   T.NN.sync = false;
   console.log('inside the model: backdoor ' + res.map(([c, m]) => c + '→' + Math.round(m.asr * 100) + '%').join(' ') + ' (' + ms + ' ms); all 15 tray pairs backdoor and get caught; sixteen instruments played start to finish; shell split, memory recall, tokens and agent MACs verified; scaling attack, 1% text and JSON parser split verified; injection stack, attention layer and gradient tug of war hold');
@@ -772,6 +772,79 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
   FeedTab.t = 'hot'; go('feeds'); if (!doc.querySelector('#app .newsstatus.live')) fail('status should show live');
   window.fetch = was;
   console.log('news: ' + T.NEWS.items.length + ' snapshot items; rss/atom parse, https-only links, text-only titles, hot/latest/sources views, live merge of ' + calls + ' feeds');
+}
+// Governance & responsible AI: the engines teach what they claim, and each instrument plays to its debrief
+{
+  const T = window.__T, clk = b => b && b.dispatchEvent(new window.MouseEvent('click', { bubbles: true })), chk = (c, m) => { if (!c) fail('gov: ' + m); };
+  // engines
+  const tiers = Object.fromEntries(T.GV_USES.map(u => [u.id, T.gvClassify(u.u).tier]));
+  chk(JSON.stringify(tiers) === JSON.stringify({ faq: 'limited', rank: 'high', cvcheck: 'minimal', mood: 'prohibited', summ: 'minimal', credit: 'high', fraud: 'minimal' }), 'one model should land in four tiers: ' + JSON.stringify(tiers));
+  chk(T.gvClassify({ annex: 'employment', narrow: true }).tier === 'minimal' && T.gvClassify({ annex: 'employment', narrow: true, profiling: true }).tier === 'high', 'profiling should void the Art 6(3) exemption');
+  chk(T.gvClassify({ safety: true, social: true }).tier === 'prohibited', 'a ban outranks everything');
+  const un = T.gvSearch(T.GV_PEOPLE), eq = T.gvSearch(T.GV_PEOPLE_EQ);
+  chk(un.all3 === 0 && un.best === 2, 'unequal base rates must make all three fairness definitions impossible (got ' + un.all3 + ', best ' + un.best + ')');
+  chk(eq.all3 > 20, 'equal base rates should allow all three definitions (got ' + eq.all3 + ')');
+  chk(T.gvProxy(T.GV_PEOPLE) > 0.8, 'postcode should predict the group');
+  const sl = T.gvSlices(T.GV_PEOPLE, 0.5), bad = sl.filter(x => x.ratio < 0.8); chk(bad.length === 1 && bad[0].id === 'B50', 'exactly the B over-50 slice should fail: ' + JSON.stringify(sl.map(x => [x.id, x.ratio.toFixed(2)])));
+  const c = T.gvContrib(T.GV_APPLICANT); chk(c.score < 0 && Math.abs(c.score - c.c.reduce((s2, k) => s2 + k.v, 0)) < 1e-9, 'contributions should sum to the score');
+  const cf = T.gvCounterfactual(T.GV_APPLICANT); chk(cf && T.gvApproved(Object.assign({}, T.GV_APPLICANT, Object.fromEntries(cf.ch))) && cf.ch.every(([k]) => k !== 'zip' && k !== 'miss'), 'counterfactual should flip using actionable features only');
+  const fd = T.gvFidelity(); chk(fd.agree < 0.95 && fd.agree > 0.6, 'the presented explanation should be wrong for a visible minority: ' + fd.agree);
+  const ch = T.gvChain([{ id: 'a', out: 'x' }, { id: 'b', out: 'y' }, { id: 'c', out: 'z' }]); chk(T.gvVerify(ch) === -1, 'fresh chain verifies'); ch[1].out = 'q'; chk(T.gvVerify(ch) === 1, 'tamper detected at the edited row');
+  chk(ch[0].hash === T.axSha256(T.axBytes('0'.repeat(64) + '|a|x')), 'chain uses SHA-256 of prev|id|out');
+  const base = T.gvBoardSim({ model: 'central', cadence: 4, evid: 'full', fast: false }); chk(base.shadow > 0.5 && !T.gvBoardOk(base), 'a monthly central board should create shadow AI');
+  chk(T.gvBoardOk(T.gvBoardSim({ model: 'hub', cadence: 2, evid: 'prop', fast: true })), 'hub and spoke with proportional evidence should meet the targets');
+  chk(!T.gvBoardOk(T.gvBoardSim({ model: 'fed', cadence: 2, evid: 'prop', fast: true })), 'federated should miss high-risk evidence');
+  chk(T.GV_TWIN.filter(T.gvMismatch).length === 3, 'three internal/legal tier mismatches');
+  chk(T.GV_TOPICS.length >= 25 && T.GV_TOPICS.every(([, id]) => T.GV_SIMS.some(x => x.id === id)), 'every topic maps to a governance instrument');
+  // the hub
+  T.AdvV.v = 'sims'; go('adv-gov'); chk(T.AdvV.v === 'gov' && doc.querySelectorAll('#app .govcard').length === 6 && doc.querySelectorAll('#app .govfwrow').length === 6, 'governance hub: 6 instruments and the framework grid');
+  chk(doc.querySelectorAll('#app .govtopics i').length === T.GV_TOPICS.length, 'hub lists every topic');
+  go('adv'); chk(T.AdvV.v === 'sims', '#adv should leave the governance tab');
+  go('m15'); chk(doc.querySelector('#app a.govlink[href="#adv-nn-gvx"]'), 'M15 links to its governance instrument');
+  // play every instrument (sync mode: no canvas, no timers, as the other instrument tests)
+  T.NN.sync = true;
+  const go2 = id => { T.LAB.id = null; go('adv-nn-' + id); return T.LAB.L; };
+  const side = re => [...doc.querySelectorAll('#app .labside button')].find(b => re.test(b.textContent));
+  const nx = m => { const b = doc.querySelector('#app .labbar .labbtn.go'); if (!b || b.disabled) { fail('gov: ' + m + ' (next disabled)'); return false; } clk(b); return true; };
+  const slide = (L3, P3, k, v) => { P3[k] = v; const el = [...doc.querySelectorAll('#app .labside input[type=range]')].find(r => r.getAttribute('aria-label') && true); el.value = v; el.dispatchEvent(new window.Event('input')); };
+  const finish = id => { doc.querySelectorAll('#app .labdef').forEach(clk); nx(id + ' defend'); chk(S.nn[id] && S.nn[id].done, id + ' debrief not reached'); chk(doc.querySelector('#app a.labx[href="#adv-gov"]'), id + ' close should return to governance'); };
+  { const L3 = go2('gvx'); [...doc.querySelectorAll('#app .labside .labchipset button')].slice(0, 6).forEach(clk); nx('gvx evidence');
+    [...doc.querySelectorAll('#app .labside .labstack button')].forEach(clk); nx('gvx lenses');
+    [...doc.querySelectorAll('#app .labside .labstack button')].forEach(clk); chk(L3.sim.P.tried.size === 6, 'gvx tried all assurance'); nx('gvx assurance'); finish('gvx'); }
+  { const L3 = go2('gvtier'); [...doc.querySelectorAll('#app .labside .labstack button')].forEach(clk); nx('gvtier uses');
+    const chip = re => [...doc.querySelectorAll('#app .labside .labchipset button')].find(b => re.test(b.textContent));
+    clk(chip(/^Employment/)); clk(chip(/narrow procedural/)); clk(chip(/^Profiles/)); clk(chip(/^Profiles/)); clk(chip(/Talks to people/)); clk(chip(/social behaviour/));
+    chk(L3.sim.P.hits.size === 4 && L3.sim.P.sawDerog && L3.sim.P.sawVoid, 'gvtier build: ' + [...L3.sim.P.hits]); nx('gvtier build');
+    clk(side(/supplier invoices/)); clk(side(/Small CV/)); clk(side(/Coding agent/)); nx('gvtier twin');
+    clk([...doc.querySelectorAll('#app .labside .labchipset button')][0]); chk(T.gvRole(L3.sim.P.role) === 'provider', 'gvtier role flip'); nx('gvtier role'); finish('gvtier'); }
+  { const L3 = go2('gvfair'), P3 = L3.sim.P; [40, 50, 60, 70].forEach(v => slide(L3, P3, 't', v)); nx('gvfair one');
+    clk(side(/Search every/)); clk(side(/Same base rate/)); chk(P3.search.all3 === 0 && P3.searchEq.all3 > 0, 'gvfair search'); nx('gvfair two');
+    clk(side(/Remove the group/)); clk(side(/Predict the group/)); nx('gvfair proxy');
+    clk(side(/Group B, over 50/)); nx('gvfair slices'); finish('gvfair'); }
+  { const L3 = go2('gvexplain'), P3 = L3.sim.P; clk(side(/Generate the reasons/)); nx('gvexplain why');
+    clk(side(/smallest change/)); chk(T.gvApproved(L3.sim.cur()), 'gvexplain counterfactual flips'); nx('gvexplain cf');
+    clk(side(/What the letter said/)); clk(side(/Test the letter/)); nx('gvexplain wash');
+    for (let round = 0; round < 3; round++) T.GV_SIMS && [...doc.querySelectorAll('#app .labside .labstack button')].forEach((b, i) => { if (!b.classList.contains('ok')) clk(doc.querySelectorAll('#app .labside .labstack button')[i]); });
+    chk(Object.keys(P3.tea).length === 9, 'gvexplain sort'); nx('gvexplain sort');
+    clk(side(/Change D-103/)); chk(L3.sim.P.chain && T.gvVerify(P3.chain) === 2, 'gvexplain tamper breaks at D-103');
+    const chip = re => [...doc.querySelectorAll('#app .labside .labchipset button')].find(b => re.test(b.textContent));
+    clk(side(/Replay/)); chk(P3.replay === false, 'replay should fail without version'); clk(chip(/^Inputs/)); clk(chip(/^Model version/)); clk(chip(/^Threshold/)); clk(side(/Restore/)); clk(side(/Replay/)); chk(P3.replay === true, 'replay should work with inputs, version, threshold');
+    nx('gvexplain log'); finish('gvexplain'); }
+  { const L3 = go2('gvhuman'), P3 = L3.sim.P, play = blind => { let n = 0; while (n++ < 20) { const c2 = T.GV_CLAIMS[P3.i]; if (!c2 || !side(blind ? /^Approve$|^Deny$/ : /Agree with the AI/)) break;
+      const truth = c2.wrong ? (c2.ai === 'approve' ? 'deny' : 'approve') : c2.ai; clk(blind ? side(truth === 'approve' ? /^Approve$/ : /^Deny$/) : side(c2.wrong ? /Override/ : /Agree with the AI/)); } };
+    play(false); chk(P3.dec.length === 12 && P3.dec.every(d => d.right), 'gvhuman round 1'); nx('gvhuman r1');
+    slide(L3, P3, 'perDay', 100); slide(L3, P3, 'perDay', 0); nx('gvhuman scale');
+    clk([...doc.querySelectorAll('#app .labside .labchipset button')].find(b => /Decide before/.test(b.textContent))); clk(side(/Start round two/)); play(true);
+    chk(P3.dec.filter(d => d.round === 2).length === 8, 'gvhuman round 2'); nx('gvhuman r2');
+    clk(side(/reviewer who clicked/)); chk(doc.querySelector('#app .labbar .labbtn.go').disabled, 'blaming the reviewer should not pass'); clk(side(/business owner/)); nx('gvhuman raci'); finish('gvhuman'); }
+  { const L3 = go2('gvboard'), P3 = L3.sim.P; T.GV_LADDERS.fair.fake.forEach(t => clk(side(new RegExp('^' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$')))); chk(P3.placed === 1, 'a poster should not be a rung');
+    T.GV_LADDERS.fair.rungs.slice(1).forEach(t => clk([...doc.querySelectorAll('#app .labside .labstack button')].find(b => b.textContent === t))); chk(P3.ladders.has('fair'), 'gvboard ladder'); nx('gvboard ladder');
+    clk(side(/Run the quarter/)); nx('gvboard base');
+    const chip = re => [...doc.querySelectorAll('#app .labside .labchipset button')].find(b => re.test(b.textContent));
+    clk(chip(/^Hub and spoke/)); clk(chip(/^Fortnightly/)); clk(chip(/proportional/)); clk(chip(/Fast lane/)); clk(side(/Run the quarter/)); chk(P3.met, 'gvboard redesign should meet targets'); nx('gvboard redesign');
+    ['Any retraining', 'Any upstream', 'Any new use', 'Any change to thresholds'].forEach(t => clk(chip(new RegExp('^' + t)))); nx('gvboard triggers'); finish('gvboard'); }
+  T.NN.sync = false;
+  console.log('governance: 6 instruments, ' + T.GV_TOPICS.length + ' topics; one model in four tiers; fairness impossible at unequal base rates (' + eq.all3 + ' pairs at equal); proxy ' + Math.round(T.gvProxy(T.GV_PEOPLE) * 100) + '%; fidelity ' + Math.round(fd.agree * 100) + '%; SHA-256 chain; board ' + Math.round(base.shadow * 100) + '% shadow → targets met; all played to the debrief');
 }
 // Theme: a toggle in the top bar and on the story home, persisted, dark by default
 {
