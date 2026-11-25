@@ -2006,3 +2006,90 @@ a.btn { text-decoration: none; }
 .ncard:not(.top) .ntitle { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .nfoot .feedmods { flex: none; margin-left: auto; }
 .nfoot .ntopics { flex: 1 1 auto; }
+
+/* ================= light theme =================
+   html[data-theme="light"], set by js/theme.js. Restores a light token set
+   over the dark "one visual world" layer, then fixes the places that use
+   fixed dark colours. Full-screen lab instruments (body.labmode) and the
+   slide canvases keep their own dark design on purpose. */
+html[data-theme="light"]:root:root:root { color-scheme: light;
+  --bg: #F3F5FA; --surface: #FFFFFF; --surface-2: #EBEFF7; --ink: #16234A; --muted: #55627A; --line: rgba(22,35,74,.13);
+  --accent: #F2B544; --accent-ink: #16234A; --accent-soft: #FCEFD0; --accent-text: #9A6200; --blue: #2B5DA6; --blue-soft: #E1EAF8;
+  --good: #1E7A4C; --good-soft: #DFF2E7; --bad: #B53636; --bad-soft: #FAE4E4;
+  --dark: #1E2F5C; --on-dark: #F5F6F9; --on-dark-muted: #C2CCE2; --dark-line: rgba(255,255,255,.22);
+  --paper: #FFFFFF; --paper-ink: #1E2433; --console: #0B1222; --console-ink: #D6DEEE;
+  --c1: #2E6BB8; --c2: #E0A22E; --c3: #8C98AE; --c4: #16234A; --c5: #23704A;
+  --h0: #E3EEE6; --h1: #EEF1D9; --h2: #FBEBC7; --h4: #F2C3C3; --h3: #F8D9BF;
+  --glass: rgba(255,255,255,.78); --glass-line: rgba(22,35,74,.10); }
+html[data-theme="light"] { background: radial-gradient(1200px 700px at 85% -10%, #D9E4F7 0%, #F3F5FA 55%) fixed, #F3F5FA; }
+html[data-theme="light"] body::before { background: #F3F5FA; }
+html[data-theme="light"] .ambient i { opacity: .16; filter: blur(110px); }
+html[data-theme="light"] .ambient i:nth-child(1) { opacity: .14; }
+
+/* top bar */
+html[data-theme="light"] .top { background: rgba(255,255,255,.72); color: var(--ink); border-bottom-color: var(--line); }
+html[data-theme="light"] .brand, html[data-theme="light"] .topnav a, html[data-theme="light"] .chip { color: var(--ink); }
+html[data-theme="light"] .topnav a:hover { background: rgba(22,35,74,.06); }
+html[data-theme="light"] .chip .dot { background: var(--muted); }
+
+/* amber is a fill colour; amber text needs a darker shade on white */
+html[data-theme="light"] :is(.eyebrow, .kicker, .nday, .deckhero .kicker, .feedlast span) { color: var(--accent-text); }
+html[data-theme="light"] .dark :is(.label, .kicker, .eyebrow) { color: #F2B544; }
+html[data-theme="light"] :is(.hero h1, .labhead h1, .seasonhead h1) { background-image: linear-gradient(90deg, #16234A 35%, #C27C12); }
+html[data-theme="light"] .leadq.big { color: var(--blue); }
+
+/* surfaces and controls that used white-on-dark tints */
+html[data-theme="light"] :is(.box, .card, .tablebox, .progbox, .fold, .feed, .ncard, .nnhero, .coretile, .ep) { box-shadow: 0 1px 2px rgba(22,35,74,.05), 0 8px 24px -14px rgba(22,35,74,.25); }
+html[data-theme="light"] .card:hover, html[data-theme="light"] .nnhero:hover { background: #FFFFFF; box-shadow: 0 18px 40px -16px rgba(22,35,74,.35); }
+html[data-theme="light"] .fold[open] { background: #FFFFFF; }
+html[data-theme="light"] .glow::after { background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), rgba(242,181,68,.16), transparent 60%); }
+html[data-theme="light"] :is(.seg button, .chipset button, .mv button, .defbtn, .rulebtn, .condbtn, .partbtn, .optbtn, .tablepick button) { background: #FFFFFF; }
+html[data-theme="light"] .btn { background: #FFFFFF; }
+html[data-theme="light"] .btn.primary, html[data-theme="light"] .seg button[aria-pressed="true"], html[data-theme="light"] .chipset button[aria-pressed="true"],
+html[data-theme="light"] .tablepick button[aria-pressed="true"], html[data-theme="light"] .tab[aria-selected="true"] { background: var(--accent); }
+html[data-theme="light"] .seg button[aria-pressed="true"] small { color: rgba(22,35,74,.75); }
+html[data-theme="light"] .tabs { background: rgba(255,255,255,.8); }
+html[data-theme="light"] .tab:hover:not([aria-selected="true"]) { background: rgba(22,35,74,.06); }
+html[data-theme="light"] :is(input[type=text], textarea, select) { background: #FFFFFF; }
+html[data-theme="light"] .trackchips { background: linear-gradient(var(--bg) 70%, transparent); }
+html[data-theme="light"] .pringbg, html[data-theme="light"] .nheat { stroke: rgba(22,35,74,.08); background: rgba(22,35,74,.07); }
+html[data-theme="light"] .pringfg { filter: none; }
+html[data-theme="light"] :is(.ntopics i, .feedlast) { background: rgba(22,35,74,.06); }
+html[data-theme="light"] .nrow { background: rgba(255,255,255,.7); }
+html[data-theme="light"] .nrow:hover, html[data-theme="light"] .feedlast:hover { background: #FFFFFF; }
+html[data-theme="light"] .feedgo:hover { background: rgba(22,35,74,.04); }
+html[data-theme="light"] .feedgo.rss { color: #B4600F; }
+html[data-theme="light"] .ncard.top { background: linear-gradient(150deg, color-mix(in srgb, var(--tone) 14%, #fff), #fff 60%); }
+html[data-theme="light"] :is(.feed, .ncard, .nrow, .coretile) { --tone-text: color-mix(in srgb, var(--tone) 60%, #16234A); }
+html[data-theme="light"] :is(.nsrc, .coretile .kicker, .corego) { color: var(--tone-text, var(--blue)); }
+html[data-theme="light"] .coretile { --tile-text: color-mix(in srgb, var(--tile) 55%, #16234A); }
+html[data-theme="light"] .coretile .kicker, html[data-theme="light"] .coretile .corego { color: var(--tile-text); }
+html[data-theme="light"] .stop circle { fill: #FFFFFF; }
+html[data-theme="light"] .route { stroke: rgba(22,35,74,.25); }
+
+/* story mode: same tokens, light values */
+html[data-theme="light"] body.story { --st-bg: #F3F5FA; --st-bg2: #E8EDF7; --st-card: #FFFFFF; --st-card2: #EEF2F9; --st-ink: #16234A; --st-mute: #55627A; --st-line: rgba(22,35,74,.13);
+  --st-amber: #C98A12; --st-good: #1E8752; --st-bad: #C23E3E; --st-blue: #2B5DA6; --st-violet: #6A4FD0; color-scheme: light; }
+html[data-theme="light"] body.story .btn.primary { background: #F2B544; border-color: #F2B544; color: #16234A; }
+html[data-theme="light"] .ep { background: rgba(255,255,255,.8); }
+html[data-theme="light"] .ep:hover { background: #FFFFFF; box-shadow: 0 16px 34px -14px rgba(22,35,74,.35); }
+html[data-theme="light"] .coretile { background: rgba(255,255,255,.8); }
+html[data-theme="light"] .seasonnav .navcard:hover { background: rgba(22,35,74,.06); }
+html[data-theme="light"] .repair { background: rgba(255,255,255,.7); }
+html[data-theme="light"] .dots .dot { background: rgba(22,35,74,.12); }
+html[data-theme="light"] .epstars i { color: rgba(22,35,74,.18); }
+
+/* the theme button */
+.themebtn { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--glass-line, rgba(255,255,255,.14)); background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; flex: none; transition: background .2s, transform .3s var(--ease); }
+.themebtn:hover { background: rgba(127,140,170,.14); transform: rotate(-12deg); }
+.themebtn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.themebtn .sun circle { fill: currentColor; stroke: none; }
+.themebtn .moon { fill: currentColor; stroke: none; }
+.themebtn .sun, .themebtn .moon { transform-origin: 12px 12px; transition: transform .5s var(--ease-spring), opacity .3s; }
+html:not([data-theme="light"]) .themebtn .moon { opacity: 0; transform: rotate(-90deg) scale(.4); }
+html[data-theme="light"] .themebtn .sun { opacity: 0; transform: rotate(90deg) scale(.4); }
+.seasonnav .themebtn { color: var(--st-mute); margin-left: 6px; }
+::view-transition-old(root), ::view-transition-new(root) { mix-blend-mode: normal; }
+html[data-theme="light"] .dark .btn:not(.primary) { background: transparent; color: var(--on-dark); }
+html[data-theme="light"] .dark { box-shadow: 0 10px 30px -14px rgba(22,35,74,.45); }
+.word { margin-right: .26em; }  /* inline-block words drop their trailing space */

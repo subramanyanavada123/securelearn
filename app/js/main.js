@@ -241,6 +241,7 @@ function paintChrome() {
   document.body.classList.toggle('present', !!S.present && !!currentLabId());
 }
 
+{ const slot = document.getElementById('themeslot'); if (slot) slot.replaceWith(Theme.button()); }
 document.getElementById('brand').addEventListener('click', () => { location.hash = 'labs'; });
 document.getElementById('tablechip').addEventListener('click', () => { location.hash = 'labs'; setTimeout(() => { const i = document.getElementById('tbl'); if (i) i.focus(); }, 60); });
 window.addEventListener('hashchange', () => { Motion.swap(() => App.render()); const id = currentLabId(); if (id && S.tab[id] === 'room') watchRoom(id); });

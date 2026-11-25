@@ -266,7 +266,7 @@ function renderSeason() {
     h('nav', { class: 'seasonnav', 'aria-label': 'Program' },
       h('span', { class: 'seasonbrand' }, h('span', { class: 'mark', 'aria-hidden': 'true' }, 'AI'), 'Agentic AI Labs'),
       h('span', { class: 'spacer' }),
-      [['#labs', 'Workbench'], ['#deck', 'Deck'], ['#adv', 'Advanced'], ['#kit', 'CIO kit'], ['#feeds', 'Reading']].map(([href, t]) => h('a', { class: 'navcard', href }, t))),
+      [['#labs', 'Workbench'], ['#deck', 'Deck'], ['#adv', 'Advanced'], ['#kit', 'CIO kit'], ['#feeds', 'Reading']].map(([href, t]) => h('a', { class: 'navcard', href }, t)), Theme.button()),
     h('div', { class: 'seasonhead' }, h('span', { class: 'kicker' }, 'Agentic AI Security & Governance · Season 1'), h('h1', null, 'Agents at Meridian'),
       h('p', { class: 'lead' }, opened ? 'NEXUS failed in 72 hours. Rebuild it one module at a time: every episode opens with a trap, and fixes part of NEXUS.' : 'It starts with a vote. Meridian Finance wants to launch Project NEXUS on Friday, and you are the AI Risk Committee.'),
       h('div', { class: 'btnrow' }, h('a', { class: 'btn primary big cta', href: '#' + next.id }, (next.id === 'e00' ? 'Start: approve Project NEXUS?' : (doneN ? 'Continue: ' : 'Next: ') + 'Episode ' + next.n) + ' →'),
