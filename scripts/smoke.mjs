@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, FEEDS, FEED_ALL, FeedV, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, FEEDS, FEED_ALL, FeedV, FeedTab, NewsV, NEWS, newsParse, newsTopics, newsRank, newsHot, newsMerge, newsRefresh, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -720,24 +720,58 @@ const nDrill = App.labs.reduce((n, l) => n + (l.drills || []).reduce((m, d) => m
 console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => n + (l.drills || []).length, 0) + ' drills · ' + nDrill + ' drill items');
 // Reading: the OPML feed pack as a page, every source mapped and filterable
 {
-  const { FEEDS, FEED_ALL, FeedV } = window.__T;
+  const { FEEDS, FEED_ALL, FeedV, FeedTab } = window.__T;
   const xml = readFileSync('app/' + FEEDS.file, 'utf8');
   const inOpml = (xml.match(/type="rss"/g) || []).length;
   if (FEED_ALL.length !== inOpml) fail('feeds-data.js is stale: ' + FEED_ALL.length + ' feeds vs ' + inOpml + ' in the OPML (run npm run feeds)');
   const unmapped = FEED_ALL.filter(f => !f.mods.length || !f.why); if (unmapped.length) fail('feeds without modules or a reason: ' + unmapped.map(f => f.title).join(', '));
   if (FEED_ALL.some(f => f.mods.some(m => !App.byId[m]))) fail('a feed maps to an unknown module');
-  FeedV.f = 'all'; go('feeds');
+  FeedTab.t = 'src'; FeedV.f = 'all'; go('feeds');
   if (doc.querySelectorAll('#app .feed').length !== FEED_ALL.length) fail('reading page should list every feed');
   if (!doc.querySelector('#app a[download][href="' + FEEDS.file + '"]')) fail('reading page lacks the OPML download');
   const click = b => b && b.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   click([...doc.querySelectorAll('#app .filterbar button')].find(b => b.textContent === 'Security'));
   if (doc.querySelectorAll('#app .feed').length !== FEED_ALL.filter(f => f.cat === 'sec').length) fail('reading filter did not narrow');
   FeedV.f = 'pick'; go('feeds'); if (!doc.querySelectorAll('#app .feed').length) fail('no start-here picks');
+  FeedTab.t = 'hot'; FeedV.f = 'all';
   S.revealed.m11 = true; S.tab.m11 = 'ans'; go('m11'); if (!doc.querySelector('#app .feedstrip a[href="#feeds"]')) fail('m11 answers lack the keep-reading strip');
   S.tab.m11 = 'do';
   go('kit'); if (!doc.querySelector('#app a[href="#feeds"]')) fail('kit lacks the reading link');
   go(''); if (!doc.querySelector('#app .seasonnav a[href="#feeds"]')) fail('story home lacks the reading link');
   console.log('reading: ' + FEED_ALL.length + ' feeds in ' + FEEDS.groups.length + ' groups, each mapped to modules; ' + FEED_ALL.filter(f => f.pick).length + ' start-here picks');
+}
+// Live news: parser, safety, ranking, the three views and the live merge
+{
+  const T = window.__T, { newsParse, newsTopics, newsRank, NewsV, FeedTab, FeedV } = T;
+  const rss = '<rss><channel><item><title><![CDATA[New <b>prompt injection</b> in an MCP server]]></title><link>https://ex.test/a</link><pubDate>' + new Date(Date.now() - 36e5).toUTCString() + '</pubDate><description>&lt;p&gt;Agents read a poisoned tool &amp;amp; leak data&lt;/p&gt;</description></item>'
+    + '<item><title>&lt;img src=x onerror=alert(1)&gt;</title><link>javascript:alert(1)</link></item><item><title>Plain http</title><link>http://ex.test/b</link></item></channel></rss>';
+  const a = newsParse(rss, 'Embrace The Red');
+  if (a.length !== 2 || a[0].title !== 'New prompt injection in an MCP server' || a[1].url !== 'https://ex.test/b') fail('rss parse/sanitise: ' + JSON.stringify(a));
+  if (/</.test(a[0].sum) || !/poisoned tool & leak/.test(a[0].sum)) fail('rss summary not cleaned: ' + a[0].sum);
+  const atom = '<feed><entry><title>EU AI Act code of practice</title><link rel="alternate" href="https://ex.test/c"/><updated>2026-01-01T00:00:00Z</updated><summary>GPAI rules</summary></entry></feed>';
+  const b = newsParse(atom, 'The EU AI Act Newsletter');
+  if (b.length !== 1 || b[0].url !== 'https://ex.test/c' || !b[0].date) fail('atom parse: ' + JSON.stringify(b));
+  const tp = newsTopics(a[0]); if (!['pi', 'mcp', 'poison', 'leak'].every(x => tp.includes(x))) fail('topics: ' + tp);
+  if (!T.NEWS.items.length || !T.NEWS.at) fail('news snapshot empty: run npm run news');
+  if (T.NEWS.items.some(it => !/^https:\/\//.test(it.url))) fail('snapshot has a non-https link');
+  // views
+  NewsV.items.unshift(Object.assign({ src: 'Embrace The Red', title: '<img src=x onerror=alert(1)> hot test', url: 'https://ex.test/hot', date: Date.now() - 6e5, sum: 'prompt injection via MCP tool poisoning' }, {}));
+  NewsV.items[0].topics = newsTopics(NewsV.items[0]); NewsV.tried = true;
+  FeedTab.t = 'hot'; FeedV.f = 'all'; go('feeds');
+  const top = doc.querySelector('#app .ncard.top .ntitle');
+  if (!top || top.textContent !== '<img src=x onerror=alert(1)> hot test' || doc.querySelector('#app img')) fail('hot view: top story wrong or markup rendered');
+  if (doc.querySelectorAll('#app .ncard').length < 3) fail('hot view too thin');
+  FeedTab.t = 'new'; go('feeds'); if (!doc.querySelector('#app .nlist .nday') || doc.querySelectorAll('#app .nrow').length < 10) fail('latest view empty');
+  S.revealed.m12 = true; S.tab.m12 = 'ans'; go('m12'); if (!/hot test/.test((doc.querySelector('#app .feedstrip') || {}).textContent || '')) fail('m12 answers lack the in-the-news strip'); S.tab.m12 = 'do';
+  // live merge with a stubbed fetch (jsdom has none)
+  const was = window.fetch; let calls = 0;
+  window.fetch = async u => { calls++; return { ok: true, text: async () => rss.replace('https://ex.test/a', 'https://ex.test/live-' + calls) }; };
+  const before = NewsV.items.length; NewsV.busy = false;
+  await T.newsRefresh();
+  if (!calls || NewsV.items.length <= before || !Object.values(NewsV.live).every(v => v === 'ok')) fail('live refresh did not merge: calls ' + calls + ', items ' + before + '→' + NewsV.items.length);
+  FeedTab.t = 'hot'; go('feeds'); if (!doc.querySelector('#app .newsstatus.live')) fail('status should show live');
+  window.fetch = was;
+  console.log('news: ' + T.NEWS.items.length + ' snapshot items; rss/atom parse, https-only links, text-only titles, hot/latest/sources views, live merge of ' + calls + ' feeds');
 }
 const bad = errors.filter(Boolean);
 if (bad.length) { bad.slice(0, 10).forEach(e => console.error('ERROR ' + e)); process.exitCode = 1; }

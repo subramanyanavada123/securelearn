@@ -2,13 +2,14 @@
   "name": "securelearn-agentic-ai-labs",
   "version": "2.0.0",
   "private": true,
-  "description": "Hands-on labs for Modules 07–16 of the Agentic AI Security & Governance program.",
+  "description": "Hands-on labs for Modules 07\u201316 of the Agentic AI Security & Governance program.",
   "scripts": {
     "check": "node scripts/check-syntax.mjs",
     "deck": "node scripts/import-deck.mjs",
     "build": "node scripts/build-standalone.mjs",
     "test": "node scripts/check-syntax.mjs && node scripts/smoke.mjs",
-    "feeds": "node scripts/import-opml.mjs"
+    "feeds": "node scripts/import-opml.mjs",
+    "news": "node scripts/pull-news.mjs"
   },
   "devDependencies": {
     "jsdom": "24.1.3"
