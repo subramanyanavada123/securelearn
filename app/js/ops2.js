@@ -20,13 +20,16 @@ function ophMount(L) {
   const P = { chan: null, seen: new Set(), done: new Set(), last: null, picked: {}, wrong: null, on: {}, flash: {}, at: -9 };
   const used = () => opHuntUsed(P.done), found = () => opHuntFound(P.done), avail = () => OP_PIV.filter(p => !P.done.has(p.id) && p.need.every(n => P.done.has(n)));
   const goodN = OP_PROMOTE.filter(p => p.good).length, picked = () => OP_PROMOTE.filter(p => p.good && P.picked[p.id]).length;
-  return { P,
+  P.see = (L2, c) => { P.chan = c.id; P.seen.add(c.id); P.at = L2.t; L2.repaint(); };
+  P.pivot = (L2, p) => { P.done.add(p.id); P.last = p.id; P.at = L2.t; L2.repaint(); };
+  P.pick = (L2, p) => { if (p.good) { P.picked[p.id] = true; P.wrong = null; } else P.wrong = p.id; P.at = L2.t; L2.repaint(); };
+  return { P, ...opPointer(P),
     hud: () => [
       [['CHANNELS', () => P.seen.size + '/' + OP_CHAN.length], ['CLASSIC SENSORS SEE', () => OP_CHAN.filter(c => ['dlp', 'proxy', 'casb'].some(s => c.seen[s] === 1)).length + '/' + OP_CHAN.length, 'bad']],
       [['HOURS', () => used() + ' / ' + OP_HUNT_H, used() > OP_HUNT_H ? 'bad' : 'good'], ['FINDINGS', () => found().length + '/' + OP_FINDS.length, found().length === OP_FINDS.length ? 'good' : '']],
       [['CHANNELS COVERED', () => opCoverage(P.picked).length + '/' + OP_CHAN.length, opCoverage(P.picked).length === OP_CHAN.length ? 'good' : '']],
       axDefHud(P, OPH_VEC, OPH_DEF), axDefHud(P, OPH_VEC, OPH_DEF)][L.step],
-    draw: (L2, g) => L2.step >= 3 ? axDrawDefend(L2, g, P, OPH_GROUPS, OPH_VEC, OPH_DEF) : [ophDrawChan, ophDrawHunt, ophDrawPromote][L2.step](L2, g, P, used, found),
+    draw: (L2, g) => opFrame(L2, g, P, () => L2.step >= 3 ? axDrawDefend(L2, g, P, OPH_GROUPS, OPH_VEC, OPH_DEF) : [ophDrawChan, ophDrawHunt, ophDrawPromote][L2.step](L2, g, P, used, found)),
     steps: [
       { say: () => P.seen.size < OP_CHAN.length ? 'A customer saw a broken image. DLP and proxy: silent. Check each way out.' : 'Classic sensors fully see one way out. Agent logs see all six.',
         side: L2 => [h('div', { class: 'labstack' }, OP_CHAN.map(c => labBtn((P.seen.has(c.id) ? '✓ ' : '▶ ') + c.s, () => { P.chan = c.id; P.seen.add(c.id); P.at = L2.t; L2.repaint(); })))],
@@ -59,11 +62,13 @@ function ophDrawChan(L, g, P) {
   opCap(g, 'CLASSIC SENSORS', (cx(0) + cx(2)) / 2, 30, lc(LC.mute, 1), 'center'); opCap(g, 'AGENT LOGS', (cx(3) + cx(4)) / 2, 30, lc(LC.good, 1), 'center');
   g.strokeStyle = 'rgba(141,182,242,.2)'; g.beginPath(); g.moveTo(cx(2) + cw / 2 + 12, 20); g.lineTo(cx(2) + cw / 2 + 12, top + OP_CHAN.length * rh - 10); g.stroke();
   OP_SENS.forEach(([k, t], j) => opLbl(g, t, cx(j), 62, lc(j >= 3 ? LC.good : LC.text, 0.95), 13, 700));
-  OP_CHAN.forEach((c, i) => { const y = top + i * rh + rh / 2, seen = P.seen.has(c.id), cur = P.chan === c.id;
+  OP_CHAN.forEach((c, i) => { const y = top + i * rh + rh / 2, seen = P.seen.has(c.id), cur = P.chan === c.id || opHov(P, 'ch:' + c.id);
+    opHot(P, { id: 'ch:' + c.id, x: pad - 10, y: y - rh / 2 + 4, w: lw, h: rh - 8, act: L2 => P.see(L2, c), tip: [c.t, seen ? c.note : 'Click to see who would notice.'] });
     if (cur) { opRR(g, pad - 10, y - rh / 2 + 4, L.w - pad * 2 + 20, rh - 8, 12); g.fillStyle = lc(LC.ink, 0.07); g.fill(); }
     labText(g, c.s, pad, y + 5, { size: 14, w: 700, mono: false, col: lc(seen ? LC.text : LC.mute, 1) });
     OP_SENS.forEach(([k], j) => { const v = seen ? c.seen[k] || 0 : null, x = cx(j);
       if (v == null) { g.fillStyle = 'rgba(141,182,242,.15)'; g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); return; }
+      opHot(P, { id: 'cell:' + c.id + k, x, y, r: 14, tip: [OP_SENS[j][1] + ' · ' + c.s, (v === 1 ? 'Sees it.' : v ? 'Sees part of it.' : 'Blind to it.') + ' ' + c.note] });
       if (v === 1) opNode(g, x, y, 13, LC.good, true, '✓');
       else if (v) { opNode(g, x, y, 13, LC.ink, false, ''); g.fillStyle = lc(LC.ink, 0.9); g.beginPath(); g.arc(x, y, 13, Math.PI / 2, Math.PI * 1.5); g.fill(); }
       else opNode(g, x, y, 13, LC.bad, false, '✕'); }); });
@@ -80,7 +85,9 @@ function ophDrawHunt(L, g, P, used, found) {
     if (dn) opFlow(L, g, [a, b], LC.good, 2, 40, 2.2); }));
   OP_PIV.forEach(p => { const [x, y] = pos[p.id], dn = P.done.has(p.id), open = !dn && p.need.every(n => P.done.has(n)), col = dn ? (p.dead ? LC.mute : p.finds ? LC.good : LC.blue) : open ? LC.ink : LC.mute;
     if (P.last === p.id && !NN.sync) labGlow(g, x, y, 40 + 6 * Math.sin(L.t * 4), col, 0.3);
-    opNode(g, x, y, p.finds ? 15 : 11, col, dn, dn ? (p.dead ? '–' : p.finds ? '★' : '✓') : open ? '?' : '');
+    const hv = opHov(P, 'pv:' + p.id); if (hv && open) labGlow(g, x, y, 34, LC.ink, 0.4);
+    opNode(g, x, y, (p.finds ? 15 : 11) + (hv ? 3 : 0), col, dn, dn ? (p.dead ? '–' : p.finds ? '★' : '✓') : open ? '?' : '');
+    opHot(P, { id: 'pv:' + p.id, x, y, r: 18, act: open ? L2 => P.pivot(L2, p) : null, tip: [p.t, dn ? p.rows.join('. ') + '.' : open ? p.h + ' analyst hour' + (p.h === 1 ? '' : 's') + '. Click to run it.' : 'Locked: needs ' + p.need.map(n => OP_PIV.find(z => z.id === n).s).join(' and ') + ' first.'] });
     opLbl(g, p.s, x, y + 30, lc(dn || open ? LC.text : LC.mute, dn || open ? 0.95 : 0.5), 12, 700);
     opLbl(g, dn && p.dead ? 'dead end' : dn && p.finds ? OP_FINDS.find(z => z[0] === p.finds)[1] : open ? p.h + ' h' : '', x, y + 45, lc(dn ? (p.dead ? LC.mute : LC.good) : LC.ink, 0.9), 10); });
   // hours dial and result
@@ -99,9 +106,10 @@ function ophDrawPromote(L, g, P) {
   OP_PROMOTE.forEach((p, i) => { const on = !!P.picked[p.id], bad = P.wrong === p.id; g.font = "600 13px 'IBM Plex Sans', sans-serif"; pw[p.id] = g.measureText(p.s).width + 21;
     if (on) p.covers.forEach(c => { const j = OP_CHAN.findIndex(x => x.id === c), a = [lx + pw[p.id], dY(i)], b = [rx - 20, cY(j)];
       g.strokeStyle = lc(LC.good, 0.45); g.lineWidth = 2; g.beginPath(); g.moveTo(a[0], a[1]); g.bezierCurveTo((a[0] + b[0]) / 2, a[1], (a[0] + b[0]) / 2, b[1], b[0], b[1]); g.stroke(); g.lineWidth = 1; opFlow(L, g, [a, b], LC.good, 2, 70, 2.4); });
-    opPill(g, p.s, lx, dY(i), bad ? LC.bad : on ? LC.good : p.good ? LC.blue : LC.mute, on || bad, 13);
+    opBtn(P, g, 'pr:' + p.id, p.s, lx, dY(i), bad ? LC.bad : on ? LC.good : LC.blue, on || bad, L2 => P.pick(L2, p), [p.t, p.why || (on ? 'Covers: ' + p.covers.map(c => OP_CHAN.find(z => z.id === c).s).join(', ') + '.' : 'Click to make it a standing detection.')], 13);
+    if (opHov(P, 'pr:' + p.id) && p.covers && !on) p.covers.forEach(c => { const j = OP_CHAN.findIndex(x => x.id === c); g.strokeStyle = lc(LC.ink, 0.5); g.setLineDash([4, 4]); g.beginPath(); g.moveTo(lx + pw[p.id], dY(i)); g.lineTo(rx - 20, cY(j)); g.stroke(); g.setLineDash([]); });
     if (bad) labText(g, '✕ not a detection', lx + pw[p.id] + 12, dY(i) + 4, { size: 11, w: 700, col: lc(LC.bad, 1) }); });
-  OP_CHAN.forEach((c, j) => { const ok = cov.includes(c.id); opNode(g, rx, cY(j), 14, ok ? LC.good : LC.bad, ok, ok ? '✓' : ''); labText(g, c.s, rx + 26, cY(j) + 5, { size: 14, w: 700, mono: false, col: lc(ok ? LC.text : LC.mute, 1) }); });
+  OP_CHAN.forEach((c, j) => { const ok = cov.includes(c.id); opHot(P, { id: 'cv:' + c.id, x: rx, y: cY(j), r: 16, tip: [c.t, ok ? 'Covered by ' + OP_PROMOTE.filter(p => P.picked[p.id] && p.covers.includes(c.id)).map(p => p.s).join(', ') + '.' : 'No standing detection yet.'] }); opNode(g, rx, cY(j), 14, ok ? LC.good : LC.bad, ok, ok ? '✓' : ''); labText(g, c.s, rx + 26, cY(j) + 5, { size: 14, w: 700, mono: false, col: lc(ok ? LC.text : LC.mute, 1) }); });
   opCap(g, 'DETECTIONS', lx, 30); opCap(g, 'WAYS OUT', rx - 14, 30);
 }
 
@@ -123,14 +131,16 @@ function opsMount(L) {
   const P = { mode: Object.assign({}, OP_MODE0), guard: {}, run: null, runAt: -9, ran1: false, ok2: false, deck: nnShuffle(OP_IR.map(x => x.id), nnRng(61)), placed: [], wrong: null, on: {}, flash: {}, at: -9 };
   const go = L2 => { P.run = opShift(P.mode, P.guard); P.runAt = L2.t; if (L2.step === 0) P.ran1 = true; else P.ok2 = opShiftOk(P.mode, P.guard); L2.repaint(); };
   const dirty = L2 => { P.run = null; P.ok2 = false; L2.repaint(); };
+  P.go = go; P.setMode = (L2, a, m) => { if (P.mode[a] === m) return; P.mode[a] = m; dirty(L2); };
+  P.place = (L2, id) => { const why = opIrTry(P.placed, id); if (why) P.wrong = why; else { P.placed.push(id); P.wrong = null; } P.at = L2.t; L2.repaint(); };
   const res = () => P.run;
-  return { P,
+  return { P, ...opPointer(P),
     hud: () => [
       [['MINUTES SAVED', () => res() ? String(res().saved) : '—', 'good'], ['MISSED ATTACKS', () => res() ? String(res().missed) : '—', 'bad'], ['OUTAGES', () => res() ? String(res().outages.length) : '—', 'bad']],
       [['ANALYST MIN', () => res() ? res().min + '/' + OP_SOC_MIN : '—', res() && res().min > OP_SOC_MIN ? 'bad' : ''], ['SAVED', () => res() ? String(res().saved) : '—'], ['MISSED · OUTAGES', () => res() ? res().missed + ' · ' + res().outages.length : '—', res() && (res().missed || res().outages.length) ? 'bad' : 'good']],
       [['PLACED', () => P.placed.length + '/' + OP_IR.length]],
       axDefHud(P, OPS_VEC, OPS_DEF), axDefHud(P, OPS_VEC, OPS_DEF)][L.step],
-    draw: (L2, g) => L2.step >= 3 ? axDrawDefend(L2, g, P, OPS_GROUPS, OPS_VEC, OPS_DEF) : L2.step === 2 ? opsDrawIr(L2, g, P) : opsDrawShift(L2, g, P),
+    draw: (L2, g) => opFrame(L2, g, P, () => L2.step >= 3 ? axDrawDefend(L2, g, P, OPS_GROUPS, OPS_VEC, OPS_DEF) : L2.step === 2 ? opsDrawIr(L2, g, P) : opsDrawShift(L2, g, P)),
     steps: [
       { say: () => !P.ran1 ? 'An AI triage assistant drives your SOAR. Vendor settings. Run the shift.' : 'Saved ' + res().saved + ' minutes. ' + res().missed + ' real attacks closed, ' + res().outages.length + ' outages.',
         side: L2 => [h('div', { class: 'fiout' }, h('span', { class: 'labk' }, 'Vendor settings'), OP_ACTS.map(a => h('div', null, h('i', null, OP_MODES.find(m => m[0] === P.mode[a.id])[1]), a.s))),
@@ -162,27 +172,41 @@ function opsMount(L) {
 }
 // The shift: alerts fly in and settle in the lane that decided them.
 function opsDrawShift(L, g, P) {
-  const pad = 26, r = P.run, lw = L.w - 290 - pad * 2, lh = Math.min(150, (L.h - 60) / 3 - 14), per = 14, sp = Math.min(30, (lw - 120) / per);
-  OP_MODES.forEach(([k, t], i) => { const y = 30 + i * (lh + 14); opRR(g, pad, y, lw, lh, 14); g.fillStyle = lc(i === 0 ? LC.ink : i === 1 ? LC.blue : LC.good, 0.06); g.fill();
+  const pad = 26, r = P.run, lw = L.w - 290 - pad * 2, lh = Math.min(160, (L.h - 60) / 3 - 14), per = Math.max(10, Math.floor((lw - 150) / 26)), sp = (lw - 150) / per;
+  const laneY = i => 30 + i * (lh + 14), edit = L.step === 1, dragA = P.drag && P.drag.id.startsWith('act:') && P.drag.id.slice(4);
+  const laneAt = y => Math.max(0, Math.min(2, Math.floor((y - 30) / (lh + 14))));
+  OP_MODES.forEach(([k, t], i) => { const y = laneY(i), tgt = dragA && laneAt(P.my) === i;
+    opRR(g, pad, y, lw, lh, 14); g.fillStyle = lc(i === 0 ? LC.ink : i === 1 ? LC.blue : LC.good, tgt ? 0.16 : 0.06); g.fill(); if (tgt) { g.strokeStyle = lc(LC.ink, 0.8); g.setLineDash([6, 4]); g.stroke(); g.setLineDash([]); }
     labText(g, t, pad + 18, y + 30, { size: 18, w: 700, mono: false, col: lc(LC.text, 0.95) });
-    opCap(g, OP_ACTS.filter(a => P.mode[a.id] === k).map(a => a.s).join(' · ').toUpperCase(), pad + 18, y + 48); });
-  if (!r) { opLbl(g, '▶ Run the shift', pad + lw / 2, L.h / 2, lc(LC.mute, 1), 18); }
+    opHot(P, { id: 'lane:' + k, x: pad, y, w: 110, h: 40, tip: [t, ['The AI acts alone. Fast, and does whatever the alert talks it into.', 'The AI suggests; an analyst approves in about 1.5 minutes.', 'An analyst does it: 4 to 6 minutes an alert.'][i]] });
+    // the actions in this lane, as chips you can drag to another lane
+    let cx = pad + 18; OP_ACTS.filter(a => P.mode[a.id] === k).forEach(a => { if (dragA === a.id) return; g.font = "600 12px 'IBM Plex Sans', sans-serif"; const w = g.measureText(a.s).width + 19.2;
+      opPill(g, a.s, cx, y + 54, [LC.good, LC.ink, LC.bad][a.blast], opHov(P, 'act:' + a.id), 12);
+      if (edit) opHot(P, { id: 'act:' + a.id, x: cx, y: y + 42, w, h: 24, drag: () => {}, drop: L2 => P.setMode(L2, a.id, OP_MODES[laneAt(P.my)][0]), tip: [a.s, 'Blast radius: ' + ['none', 'low', 'high'][a.blast] + '. Drag to another lane.'] });
+      else opHot(P, { id: 'act:' + a.id, x: cx, y: y + 42, w, h: 24, tip: [a.t, 'Vendor setting. You redesign it next.'] });
+      cx += w + 8; }); });
+  if (dragA) { const a = OP_ACTS.find(z => z.id === dragA); opPill(g, a.s, P.mx - 30, P.my, LC.ink, true, 13); }
+  if (!r && !dragA) opBtn(P, g, 'run', '▶ Run the shift', pad + lw / 2 - 70, laneY(1) + lh / 2 + 10, LC.ink, true, L2 => P.go(L2), ['Run the shift', '40 alerts, each enriched and then decided.'], 15);
   const shown = !r ? 0 : NN.sync ? 40 : Math.min(40, (L.t - P.runAt) * 12), seat = [0, 0, 0];
   for (let i = 0; i < Math.ceil(shown); i++) { const x = OP_SHIFT[i], e = r.events[i], lane = OP_MODES.findIndex(m => m[0] === e.lanes[1]), k = seat[lane]++;
-    const tx = pad + 120 + (k % per) * sp, ty = 30 + lane * (lh + 14) + 76 + Math.floor(k / per) * 28, f = Math.min(1, shown - i), ease = 1 - Math.pow(1 - f, 3);
+    const tx = pad + 140 + (k % per) * sp, ty = laneY(lane) + 92 + Math.floor(k / per) * 24, f = Math.min(1, shown - i), ease = 1 - Math.pow(1 - f, 3);
     const cx = pad + lw * 0.5 + (tx - pad - lw * 0.5) * ease, cy = -10 + (ty + 10) * ease;
     const col = e.bad ? LC.bad : e.saved ? LC.violet : x.real ? LC.ink : x.poison ? LC.violet : LC.good;
-    opNode(g, cx, cy, e.bad ? 10 : 8, col, true, e.bad ? (e.bad === 'outage' ? '!' : '✕') : ''); }
+    opNode(g, cx, cy, (e.bad ? 10 : 8) + (opHov(P, 'al:' + i) ? 3 : 0), col, true, e.bad ? (e.bad === 'outage' ? '!' : '✕') : '');
+    if (f >= 1) opHot(P, { id: 'al:' + i, x: cx, y: cy, r: 10, tip: [x.s || x.t, (x.real ? 'A real attack. ' : x.poison ? 'Not an attack: the alert text was written to steer the AI. ' : 'A benign alert. ') + 'Decided in the ' + OP_MODES[lane][1] + ' lane. ' +
+      (e.bad === 'missed' ? 'The AI closed it: missed.' : e.bad === 'outage' ? 'Outage: ' + x.harm + '.' : e.bad === 'backlog' ? 'Still in the queue when the shift ended: missed.' : e.saved ? 'A guard stopped it.' : 'Handled correctly.')] }); }
   // the scoreboard
-  const bx = pad + lw + 30, bw = L.w - bx - pad;
+  const bx = pad + lw + 30;
   if (!r) return; const done = shown >= 40;
   opRing(g, bx + 56, 80, 46, r.min / OP_SOC_MIN, r.min > OP_SOC_MIN ? LC.bad : LC.good, 9, null);
   labText(g, String(r.min), bx + 56, 86, { size: 22, w: 700, align: 'center', col: lc(LC.text, 1) }); opCap(g, 'OF 240 MIN', bx + 56, 142, null, 'center');
+  opHot(P, { id: 'min', x: bx + 56, y: 80, r: 50, tip: ['Analyst minutes', r.min + ' used of ' + OP_SOC_MIN + '. All-human would need ' + r.allHuman + '.'] });
   opBig(g, String(r.saved), 'SAVED', bx + 130, 92, LC.good, 26);
   if (!done) return;
   opBig(g, String(r.missed), 'MISSED', bx, 210, r.missed ? LC.bad : LC.good, 34); opBig(g, String(r.outages.length), 'OUTAGES', bx + 120, 210, r.outages.length ? LC.bad : LC.good, 34);
   OP_SHIFT.filter(x => x.poison).forEach((x, i) => { const e = r.events[x.i], y = 250 + i * 40; if (y > L.h - 20) return;
-    opNode(g, bx + 10, y, 9, e.bad ? LC.bad : LC.good, true, e.bad ? '✕' : '✓'); labText(g, x.s, bx + 28, y + 5, { size: 13, w: 600, mono: false, col: lc(e.bad ? LC.text : LC.mute, 1) }); });
+    opNode(g, bx + 10, y, 9, e.bad ? LC.bad : LC.good, true, e.bad ? '✕' : '✓'); labText(g, x.s, bx + 28, y + 5, { size: 13, w: 600, mono: false, col: lc(e.bad ? LC.text : LC.mute, 1) });
+    opHot(P, { id: 'po:' + x.i, x: bx, y: y - 14, w: 240, h: 28, tip: [x.t, e.bad ? (x.harm || 'Closed as a false positive. A real attack, missed.') : 'Stopped: ' + (x.poison === 'close' ? 'an analyst saw it.' : 'a person or a guard caught it.')] }); });
 }
 // The response: eight stops on a track.
 function opsDrawIr(L, g, P) {
@@ -195,6 +219,11 @@ function opsDrawIr(L, g, P) {
     opLbl(g, st.s, x, y + 44, lc(LC.text, 1), 15, 700); if (ai) opLbl(g, 'AI-specific', x, y + 62, lc(LC.violet, 1), 10); });
   const last = P.placed.length && OP_IR.find(q => q.id === P.placed[P.placed.length - 1]);
   if (last) gvWrap(g, last.t, L.w / 2, y + 120, Math.min(640, L.w - 80), { size: 15, align: 'center', col: lc(LC.ink, 0.95), max: 2 });
+  const left = P.deck.filter(id => !P.placed.includes(id)); let dx = pad, dy2 = Math.min(L.h - 40, y + 190);
+  if (left.length) opCap(g, 'CLICK THE NEXT STEP', pad, dy2 - 26);
+  left.forEach(id => { const st = OP_IR.find(q => q.id === id); g.font = "600 14px 'IBM Plex Sans', sans-serif"; const w = g.measureText(st.s).width + 22.4; if (dx + w > L.w - pad) { dx = pad; dy2 += 38; }
+    opBtn(P, g, 'ir:' + id, st.s, dx, dy2, LC.blue, false, L2 => P.place(L2, id), [st.s, st.t], 14); dx += w + 10; });
+  OP_IR.forEach((_, i) => { const id = P.placed[i]; if (id) { const st = OP_IR.find(q => q.id === id); opHot(P, { id: 'irp:' + id, x: X(i), y, r: 20, tip: [(i + 1) + '. ' + st.s, st.t] }); } });
   if (P.wrong) axStamp(g, L.w / 2, y - 80, 'OUT OF ORDER', LC.bad, L.t - P.at, L.w > 720 ? 18 : 12);
 }
 
@@ -216,14 +245,17 @@ function opkMount(L) {
   const res = () => opContain(P.pulls, Math.min(P.now, OP_WINDOW)), fin = () => opContain(P.pulls);
   const end = L2 => { P.now = OP_WINDOW; P.running = false; P.ended = true; L2.repaint(); };
   const reset = L2 => { P.pulls = []; P.now = 0; P.running = false; P.ended = false; L2.repaint(); };
+  P.start = L2 => { P.running = true; P.tries++; P.at = L2.t; L2.repaint(); };
+  P.scrub = (L2, m) => { P.now = Math.max(0, Math.min(OP_WINDOW, m)); labSoft(L2, null); };
+  P.drill = (L2, s2) => { P.drilled.add(s2.id); P.dsel = s2.id; P.at = L2.t; L2.repaint(); };
   const open = () => OP_PATHS.filter(p => !(res().stopAt[p.id] != null && res().stopAt[p.id] <= P.now)).map(p => p.s);
-  return { P,
+  return { P, ...opPointer(P),
     hud: () => [
       [['MINUTE', () => Math.floor(P.now) + ' / ' + OP_WINDOW], ['RECORDS LEAKED', () => String(res().leaked), 'bad'], ['BUSINESS IMPACT', () => String(res().impact) + ' / ' + OP_IMPACT_MAX, res().impact > OP_IMPACT_MAX ? 'bad' : '']],
       [['DRILLED', () => P.drilled.size + '/' + OP_SW.length], ['NIGHTS SURVIVED', () => opStack(P.stack).length + '/' + OP_COND.length, opStack(P.stack).length === OP_COND.length ? 'good' : '']],
       axDefHud(P, OPK_VEC, OPK_DEF), axDefHud(P, OPK_VEC, OPK_DEF)][L.step],
     tick: (L2, dt) => { if (L2.step || !P.running) return; const m0 = Math.floor(P.now); P.now += dt / OP_SEC_PER_MIN; if (P.now >= OP_WINDOW) end(L2); else if (Math.floor(P.now) !== m0) labSoft(L2, null); },
-    draw: (L2, g) => L2.step >= 2 ? axDrawDefend(L2, g, P, OPK_GROUPS, OPK_VEC, OPK_DEF) : L2.step ? opkDrawDrill(L2, g, P) : opkDrawLive(L2, g, P, res),
+    draw: (L2, g) => opFrame(L2, g, P, () => L2.step >= 2 ? axDrawDefend(L2, g, P, OPK_GROUPS, OPK_VEC, OPK_DEF) : L2.step ? opkDrawDrill(L2, g, P) : opkDrawLive(L2, g, P, res)),
     steps: [
       { say: () => { const r = fin();
           if (!P.running && !P.ended) return 'Three leaks, one clock. Start it, then pull levers.';
@@ -268,7 +300,8 @@ function opkDrawLive(L, g, P, res) {
     g.strokeStyle = lc(stopped ? LC.good : LC.bad, stopped ? 0.35 : 0.5); g.lineWidth = 10; g.lineCap = 'round'; g.beginPath(); g.moveTo(...pts[0]); g.lineTo(...pts[1]); g.lineTo(...pts[2]); g.lineTo(...pts[3]); g.stroke(); g.lineWidth = 1; g.lineCap = 'butt';
     if (!stopped && (P.running || NN.sync)) opFlow(L, g, pts, LC.bad, Math.round(p.rate / 3), 40 + p.rate * 3, 3.2, 1);
     else if (stopped) opFlow(L, g, [pts[0], pts[1], [vx - 12, y]], LC.bad, 2, 40, 3, 0.6);
-    opLbl(g, p.n, vx, y - 18, lc(LC.text, 1), 14, 700); opLbl(g, p.rate + ' records/min', vx, y + 26, lc(LC.mute, 1), 11);
+    opLbl(g, p.n, vx, y - 18, lc(LC.text, 1), 14, 700);
+    opHot(P, { id: 'path:' + p.id, x: ax + 60, y: y - 30, w: bx - ax - 120, h: 60, tip: [p.t, p.rate + ' records a minute. Reached by: ' + OP_LEVERS.filter(l => l.stops.includes(p.id)).map(l => l.s + ' (' + l.m + ' min)').join(', ') + '.'] }); opLbl(g, p.rate + ' records/min', vx, y + 26, lc(LC.mute, 1), 11);
     if (stopped || pend) { g.fillStyle = lc(stopped ? LC.good : LC.ink, 1); opRR(g, vx - 6, y - 14, 12, 28, 4); g.fill(); labGlow(g, vx, y, 26, stopped ? LC.good : LC.ink, 0.4);
       opLbl(g, stopped ? 'stopped at minute ' + Math.round(st * 10) / 10 : 'closing in ' + Math.max(0, st - P.now).toFixed(1) + ' min', vx, y + 44, lc(stopped ? LC.good : LC.ink, 1), 12, 700); } });
   // the score
@@ -276,7 +309,15 @@ function opkDrawLive(L, g, P, res) {
   opRing(g, rx + 80, 190, 56, r.impact / (OP_IMPACT_MAX * 2), r.impact > OP_IMPACT_MAX ? LC.bad : LC.ink, 10, 0.5);
   labText(g, String(r.impact), rx + 80, 196, { size: 22, w: 700, align: 'center', col: lc(r.impact > OP_IMPACT_MAX ? LC.bad : LC.text, 1) }); opCap(g, 'BUSINESS IMPACT · LIMIT ' + OP_IMPACT_MAX, rx + 80, 262, null, 'center');
   const last = P.pulls.length && OP_LEVERS.find(x => x.id === P.pulls[P.pulls.length - 1].id);
-  if (last) opLbl(g, last.s + ': ' + last.note, (ax + bx) / 2, L.h - 24, lc(LC.ink, 1), 14);
+  if (last) opLbl(g, last.s + ': ' + last.note, (ax + bx) / 2, P.ended ? L.h - 22 : L.h - 24, lc(LC.ink, 1), 14);
+  if (!P.running && !P.ended) opBtn(P, g, 'start', '▶ Start the clock', (ax + bx) / 2 - 80, my, LC.ink, true, L2 => P.start(L2), ['Start the clock', 'One minute every ' + OP_SEC_PER_MIN + ' seconds. Then pull levers on the right.'], 16);
+  opHot(P, { id: 'imp', x: rx + 80, y: 190, r: 60, tip: ['Business impact', 'Each lever costs the business every minute it stays pulled. Limit ' + OP_IMPACT_MAX + '.' + (P.pulls.length ? ' Pulled: ' + P.pulls.map(q => OP_LEVERS.find(l => l.id === q.id).s).join(', ') + '.' : '')] });
+  // after the run: scrub back through it
+  if (P.ended) { const sy = L.h - 64, X = m => ax + (bx - ax) * m / OP_WINDOW;
+    g.strokeStyle = 'rgba(141,182,242,.3)'; g.lineWidth = 4; g.lineCap = 'round'; g.beginPath(); g.moveTo(X(0), sy); g.lineTo(X(OP_WINDOW), sy); g.stroke(); g.lineWidth = 1; g.lineCap = 'butt';
+    P.pulls.forEach(q => { const l = OP_LEVERS.find(z => z.id === q.id); g.fillStyle = lc(LC.ink, 0.9); g.fillRect(X(q.at) - 1, sy - 10, 2, 20); g.fillStyle = lc(l.stops.length ? LC.good : LC.mute, 0.9); g.fillRect(X(q.at + l.m) - 1, sy - 6, 2, 12); });
+    opNode(g, X(P.now), sy, opHov(P, 'scrub') ? 11 : 9, LC.ink, true, ''); opCap(g, 'DRAG TO REPLAY', X(0), sy - 16);
+    opHot(P, { id: 'scrub', x: X(0) - 10, y: sy - 16, w: X(OP_WINDOW) - X(0) + 20, h: 32, drag: (L2, x) => P.scrub(L2, (x - X(0)) / (X(OP_WINDOW) - X(0)) * OP_WINDOW), tip: ['Minute ' + Math.floor(P.now), 'Amber ticks: levers pulled. Green: when they took effect.'] }); }
   if (P.ended) { const f = opContain(P.pulls); axStamp(g, (ax + bx) / 2, 50, opContainOk(f) ? 'CONTAINED' : !f.all ? 'STILL LEAKING' : 'CONTAINED · AT A COST', opContainOk(f) ? LC.good : LC.bad, L.t - P.at - 0.2, L.w > 720 ? 20 : 13); }
 }
 // Four switches against four bad nights.
@@ -285,11 +326,13 @@ function opkDrawDrill(L, g, P) {
   OP_COND.forEach((c, j) => { const x = pad + lw + cw * (j + 0.5), ok = cov.includes(c.id); opLbl(g, c.s, x, 40, lc(ok ? LC.good : LC.text, 1), 14, 700); if (ok) opLbl(g, 'covered', x, 58, lc(LC.good, 0.9), 10); });
   OP_SW.forEach((s2, i) => { const y = top + i * rh, dr = P.drilled.has(s2.id), inS = !!P.stack[s2.id];
     if (inS) { opRR(g, pad - 10, y + 4, L.w - pad * 2 + 20, rh - 8, 14); g.fillStyle = lc(LC.good, 0.07); g.fill(); g.strokeStyle = lc(LC.good, 0.4); g.stroke(); }
-    labText(g, s2.s, pad, y + rh / 2, { size: 15, w: 700, mono: false, col: lc(dr ? LC.text : LC.mute, 1) }); gvWrap(g, s2.d, pad, y + rh / 2 + 18, lw - 16, { size: 11, col: lc(LC.mute, 1), max: 2 });
+    labText(g, (dr ? '' : '▶ ') + s2.s, pad, y + rh / 2, { size: 15, w: 700, mono: false, col: lc(dr || opHov(P, 'sw:' + s2.id) ? LC.text : LC.mute, 1) });
+    opHot(P, { id: 'sw:' + s2.id, x: pad - 6, y: y + 8, w: lw, h: rh - 16, act: L2 => dr && P.drilled.size === OP_SW.length ? (P.stack[s2.id] = !P.stack[s2.id], L2.repaint()) : P.drill(L2, s2), tip: [s2.t, s2.d + '. ' + (!dr ? 'Click to drill it.' : P.drilled.size === OP_SW.length ? 'Click to ' + (inS ? 'remove it from' : 'add it to') + ' your set.' : 'Drilled.')] }); gvWrap(g, s2.d, pad, y + rh / 2 + 18, lw - 16, { size: 11, col: lc(LC.mute, 1), max: 2 });
     OP_COND.forEach((c, j) => { const x = pad + lw + cw * (j + 0.5), v = OP_SURVIVE[s2.id][c.id], ok = v === true, cy = y + rh / 2 - 8;
       if (!dr) { g.fillStyle = 'rgba(141,182,242,.15)'; g.beginPath(); g.arc(x, cy, 4, 0, 7); g.fill(); return; }
       const k = P.dsel === s2.id ? Math.max(0, Math.min(1, opIn(L, P, 3) * 1.6 - j * 0.25)) : 1; g.globalAlpha = k;
       opNode(g, x, cy, 14, ok ? LC.good : LC.bad, ok, ok ? '✓' : '✕');
+      opHot(P, { id: 'dc:' + s2.id + c.id, x, y: cy, r: 16, tip: [s2.s + ' · ' + c.s, ok ? 'Works that night.' : 'Fails: ' + v + '.'] });
       if (!ok) gvWrap(g, v, x, cy + 30, cw - 20, { size: 10.5, align: 'center', col: lc(LC.text, 0.75), max: 2 }); g.globalAlpha = 1; }); });
 }
 

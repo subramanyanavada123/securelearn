@@ -21,6 +21,32 @@ const OPT_DEF = [
 const OPT_GROUPS = [{ name: 'Collection', col: 'ink', ids: ['applog', 'sample', 'svc'], act: 'A green dashboard during a 19-day leak' },
   { name: 'Pipeline', col: 'bad', ids: ['redact', 'retain', 'blob'], act: 'Collected, then lost before anyone asked' }];
 
+/* ---------- touch the picture: hotspots, hover tips, click and drag ---------- */
+// Draw functions register regions every frame: { id, x, y, r } or { id, x, y, w, h }, with tip ([title, body] or a function), act(L), drag(L, x, y).
+function opHot(P, o) { P.hot.push(o); return o; }
+const opHit = (P, x, y) => (P.hot || []).slice().reverse().find(o => o.r != null ? Math.hypot(o.x - x, o.y - y) <= o.r + 5 : x >= o.x && x <= o.x + o.w && y >= o.y && y <= o.y + o.h);
+const opHov = (P, id) => P.hov === id || (P.drag && P.drag.id === id);
+function opPointer(P) {
+  return {
+    move: (L, x, y, down) => {
+      if (!P.bound) { P.bound = true; L.cv.addEventListener('pointerleave', () => { P.mx = -999; }); window.addEventListener('pointerup', () => { const d = P.drag; P.drag = null; if (d && d.drop && LAB.L === L) d.drop(L, P.mx, P.my); }); }
+      P.mx = x; P.my = y; if (down && P.drag && P.drag.drag) { P.drag.drag(L, x, y); return; }
+      const o = opHit(P, x, y); L.cv.style.cursor = !o ? 'default' : o.drag ? 'grab' : o.act ? 'pointer' : 'help'; },
+    down: (L, x, y) => { P.mx = x; P.my = y; const o = opHit(P, x, y); if (!o) return; if (o.drag) { P.drag = o; o.drag(L, x, y); } else if (o.act) o.act(L); } };
+}
+// One frame: clear the hotspots, draw, then the tip for whatever is under the pointer.
+function opFrame(L, g, P, fn) {
+  P.hot = []; fn(); const o = P.mx > -900 ? opHit(P, P.mx, P.my) : null; P.hov = o ? o.id : null; if (o) P.felt = true;
+  if (!P.felt && P.hot.length && L.step < 3) { const a = NN.sync ? 1 : 0.55 + 0.25 * Math.sin(L.t * 2.4); labText(g, '◉ hover anything · click to change it', L.w - 16, L.h - 12, { size: 11, w: 600, mono: false, align: 'right', col: lc(LC.ink, a) }); }
+  if (!o || !o.tip || (P.drag && P.drag.drag)) return; const tp = typeof o.tip === 'function' ? o.tip() : o.tip; if (!tp) return;
+  const [t, b] = Array.isArray(tp) ? tp : [tp, ''], w = 290; g.font = "600 12px 'IBM Plex Sans', sans-serif"; const ls = b ? piWrap(g, b, w - 24).slice(0, 6) : [];
+  const hh = 34 + ls.length * 17, x = Math.min(L.w - w - 8, P.mx + 16), y = Math.min(L.h - hh - 8, P.my + 18);
+  opRR(g, x, y, w, hh, 10); g.fillStyle = 'rgba(8,13,28,.96)'; g.fill(); g.strokeStyle = lc(LC.ink, 0.6); g.stroke();
+  labText(g, t, x + 12, y + 21, { size: 13, w: 700, mono: false, col: lc(LC.ink, 1) }); ls.forEach((s2, i) => labText(g, s2, x + 12, y + 40 + i * 17, { size: 12, mono: false, col: lc(LC.text, 0.92) }));
+}
+// A clickable pill on the canvas.
+function opBtn(P, g, id, t, x, y, col, on, act, tip, fs) { const w = opPill(g, t, x, y, col, on || opHov(P, id), fs || 12), hh = (fs || 12) * 2; opHot(P, { id, x, y: y - hh / 2, w, h: hh, act, tip }); return w; }
+
 /* ---------- a small visual kit: nodes, lamps, flows, gauges ---------- */
 function opRR(g, x, y, w, hh, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + hh, r); g.arcTo(x + w, y + hh, x, y + hh, r); g.arcTo(x, y + hh, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 // A node: lit (filled and glowing) or dark (a dashed ring). mark is drawn inside.
@@ -61,13 +87,13 @@ const opIn = (L, P, k) => NN.sync ? 1 : Math.max(0, Math.min(1, (L.t - P.at) * (
 function optMount(L) {
   const P = { sel: { gw: true, egress: true }, pipe: Object.assign({}, OP_PIPE0), touched: new Set(), asked: new Set(), q: null, on: {}, flash: {}, at: -9 };
   const nAns = () => OP_Q.filter(q => opAnswered(P.sel, q)).length, gb = () => opGb(P.sel), pipe = () => opPipe(P.pipe);
-  return { P,
+  return { P, ...opPointer(P),
     hud: () => [
       [['INGEST', () => gb().toFixed(1) + ' / ' + OP_BUDGET + ' GB', gb() > OP_BUDGET ? 'bad' : 'good'], ['ANSWERS', () => nAns() + '/6', nAns() === 6 ? 'good' : 'bad']],
       [['ANSWERS SURVIVE', () => pipe().ok.length + '/6', pipe().ok.length === 6 ? 'good' : 'bad'], ['PRIVACY', () => pipe().privacy ? 'protected' : 'raw PII', pipe().privacy ? 'good' : 'bad']],
       [['ASKED', () => P.asked.size + '/6']],
       axDefHud(P, OPT_VEC, OPT_DEF), axDefHud(P, OPT_VEC, OPT_DEF)][L.step],
-    draw: (L2, g) => L2.step >= 3 ? axDrawDefend(L2, g, P, OPT_GROUPS, OPT_VEC, OPT_DEF) : [optDrawSources, optDrawPipe, optDrawSiem][L2.step](L2, g, P),
+    draw: (L2, g) => opFrame(L2, g, P, () => L2.step >= 3 ? axDrawDefend(L2, g, P, OPT_GROUPS, OPT_VEC, OPT_DEF) : [optDrawSources, optDrawPipe, optDrawSiem][L2.step](L2, g, P)),
     steps: [
       { say: () => gb() > OP_BUDGET ? 'Over budget. Full prompts alone are 38 GB.' : nAns() < 6 ? 'Light up the leak. You have 25 GB a day.' : 'Six of six answers, for ' + (gb() - 15).toFixed(1) + ' GB more.',
         side: L2 => [h('div', { class: 'labchipset' }, OP_SRC.map(s => gvChip(s.s + ' · ' + s.gb, P.sel[s.id], () => { P.sel[s.id] = !P.sel[s.id]; P.at = L2.t; L2.repaint(); }, s.pii ? 'bad' : '')))],
@@ -94,58 +120,85 @@ function optMount(L) {
     ] };
 }
 // The six questions as lamps in a row.
-function optLamps(g, x, w, y, lit, r) {
-  OP_Q.forEach((q, i) => { const cx = x + w * (i + 0.5) / 6, on = lit(q); opNode(g, cx, y, r, on ? LC.good : LC.bad, on, on ? '✓' : '?'); opLbl(g, q.s, cx, y + r + 16, lc(on ? LC.text : LC.mute, 1), 12); });
+// The six questions as lamps; hovering one lights what it needs.
+function optLamps(L, g, P, x, w, y, lit, r, act, tip) {
+  OP_Q.forEach((q, i) => { const cx = x + w * (i + 0.5) / 6, on = lit(q), hv = opHov(P, 'q:' + q.id);
+    if (hv) labGlow(g, cx, y, r * 3, LC.ink, 0.35); opNode(g, cx, y, r + (hv ? 2 : 0), on ? LC.good : LC.bad, on, on ? '✓' : '?'); opLbl(g, q.s, cx, y + r + 16, lc(on || hv ? LC.text : LC.mute, 1), 12);
+    opHot(P, { id: 'q:' + q.id, x: cx, y, r: r + 8, act: act && (L2 => act(L2, q)), tip: tip(q) }); });
 }
+const optSel = (L, P, id, on) => { P.sel[id] = on == null ? !P.sel[id] : on; P.at = L.t; L.repaint(); };
 function optDrawSources(L, g, P) {
   const pad = 26, w = L.w - pad * 2, gb = opGb(P.sel), max = Math.max(OP_BUDGET * 1.5, gb + 2), X = v => pad + w * v / max;
+  const hq = P.hov && P.hov.startsWith('q:') && OP_Q.find(q => 'q:' + q.id === P.hov), hs = P.hov && P.hov.startsWith('src:') && P.hov.slice(4), hn = P.hov && P.hov.startsWith('step:') && OP_CHAIN.find(c => 'step:' + c.id === P.hov);
+  const lit = id => (hq && hq.need.includes(id)) || (hn && hn.by.includes(id)) || hs === id;
   // the ingest bar
   opCap(g, 'INGEST PER DAY', pad, 22); labText(g, gb.toFixed(1) + ' GB', L.w - pad, 24, { size: 16, w: 700, align: 'right', col: lc(gb > OP_BUDGET ? LC.bad : LC.good, 1) });
   opRR(g, pad, 32, w, 22, 6); g.fillStyle = 'rgba(141,182,242,.07)'; g.fill();
-  let v = 0; OP_SRC.filter(s => P.sel[s.id]).forEach(s => { const x0 = X(v), x1 = X(v + s.gb); v += s.gb; g.fillStyle = lc(s.pii ? LC.bad : s.def ? LC.mute : LC.good, s.def ? 0.45 : 0.8); g.fillRect(x0, 33, Math.max(1, x1 - x0 - 2), 20);
-    if (x1 - x0 > 70) labText(g, s.s, x0 + 6, 47, { size: 10, w: 700, mono: false, col: '#0B1226' }); });
+  let v = 0; OP_SRC.filter(s => P.sel[s.id]).forEach(s => { const x0 = X(v), x1 = X(v + s.gb); v += s.gb; g.fillStyle = lc(lit(s.id) ? LC.ink : s.pii ? LC.bad : s.def ? LC.mute : LC.good, s.def && !lit(s.id) ? 0.45 : 0.85); g.fillRect(x0, 33, Math.max(1, x1 - x0 - 2), 20);
+    if (x1 - x0 > 70) labText(g, s.s, x0 + 6, 47, { size: 10, w: 700, mono: false, col: '#0B1226' });
+    opHot(P, { id: 'src:' + s.id, x: x0, y: 30, w: Math.max(6, x1 - x0), h: 26, act: L2 => optSel(L2, P, s.id, false), tip: [s.t + ' · ' + s.gb + ' GB', s.d + '. Click to drop it.'] }); });
   g.strokeStyle = lc(LC.ink, 1); g.lineWidth = 2; g.beginPath(); g.moveTo(X(OP_BUDGET), 26); g.lineTo(X(OP_BUDGET), 60); g.stroke(); g.lineWidth = 1; opCap(g, 'BUDGET 25', X(OP_BUDGET), 72, lc(LC.ink, 1), 'center');
+  // the shelf: every source, click to collect
+  let sx0 = pad, sy = 100; opCap(g, 'COLLECT', pad, sy - 14);
+  OP_SRC.forEach(s => { g.font = "600 12px 'IBM Plex Sans', sans-serif"; const pw = g.measureText(s.s + ' ' + s.gb).width + 19.2; if (sx0 + pw > L.w - pad) { sx0 = pad; sy += 30; }
+    const on = !!P.sel[s.id], col = lit(s.id) ? LC.ink : s.pii ? LC.bad : on ? LC.good : LC.blue;
+    opBtn(P, g, 'src:' + s.id, s.s + ' ' + s.gb, sx0, sy + 4, col, on || lit(s.id), L2 => optSel(L2, P, s.id), [s.t + ' · ' + s.gb + ' GB a day', s.d + (s.pii ? '. Holds personal data in full.' : '.') + ' Sees: ' + (OP_CHAIN.filter(c => c.by.includes(s.id)).map(c => c.s).join(', ') || 'nothing in this incident')]); sx0 += pw + 8; });
   // what the dashboard said: a flat green heartbeat
-  const ty = Math.max(190, L.h * 0.48), steps = OP_CHAIN.filter(c => !c.noise), n = steps.length, sx = i => pad + 30 + (w - 60) * i / (n - 1), dy = ty - 90;
+  const ty = Math.max(sy + 150, L.h * 0.5), steps = OP_CHAIN.filter(c => !c.noise), n = steps.length, sx = i => pad + 30 + (w - 60) * i / (n - 1), dy = ty - 82;
   opCap(g, 'DASHBOARD', pad, dy - 12, lc(LC.good, 0.8)); g.strokeStyle = lc(LC.good, 0.45); g.beginPath();
   for (let x = pad; x <= L.w - pad; x += 4) { const k = ((x - pad) / 46 + L.t * (NN.sync ? 0 : 1.2)) % 1; g.lineTo(x, dy + (k < 0.08 ? -6 * Math.sin(k / 0.08 * Math.PI) : 0)); } g.stroke();
   labText(g, '200 OK · all 19 days', L.w - pad, dy - 12, { size: 11, w: 600, mono: false, align: 'right', col: lc(LC.good, 0.8) });
+  opHot(P, { id: 'dash', x: pad, y: dy - 26, w, h: 34, tip: ['Gateway and proxy', 'Status 200, normal latency, normal volume, every day of the leak. Seen, and useless.'] });
   // the incident, a lit or dark node per step
   g.strokeStyle = 'rgba(141,182,242,.25)'; g.lineWidth = 3; g.beginPath(); g.moveTo(sx(0), ty); g.lineTo(sx(n - 1), ty); g.stroke(); g.lineWidth = 1;
   opFlow(L, g, [[sx(0), ty], [sx(n - 1), ty]], LC.bad, 3, 110, 3.4);
-  steps.forEach((c, i) => { const seen = opSeen(P.sel, c), x = sx(i), col = c.dark ? LC.violet : seen ? LC.good : LC.bad;
+  steps.forEach((c, i) => { const seen = opSeen(P.sel, c), x = sx(i), col = c.dark ? LC.violet : seen ? LC.good : LC.bad, hv = opHov(P, 'step:' + c.id) || (hs && c.by.includes(hs)) || (hq && c.by.some(id => hq.need.includes(id)));
+    if (hv) { g.strokeStyle = lc(LC.ink, 0.9); g.lineWidth = 2; g.beginPath(); g.arc(x, ty, 27, 0, 7); g.stroke(); g.lineWidth = 1; }
     opCap(g, c.when.replace(' →', ''), x, ty - 34, lc(LC.mute, 0.9), 'center'); opNode(g, x, ty, 19, col, seen, seen ? '✓' : String(i + 1));
-    opLbl(g, c.s, x, ty + 44, lc(seen ? LC.text : LC.mute, 1), 13, 700);
+    opLbl(g, c.s, x, ty + 44, lc(seen || hv ? LC.text : LC.mute, 1), 13, 700);
     const who = c.dark ? 'nobody' : c.by.filter(id => P.sel[id]).map(id => OP_SRC_BY[id].s).join(' · ') || 'dark';
-    opLbl(g, who, x, ty + 61, lc(c.dark ? LC.violet : seen ? LC.good : LC.bad, 0.85), 10, 600); });
+    opLbl(g, who, x, ty + 61, lc(c.dark ? LC.violet : seen ? LC.good : LC.bad, 0.85), 10, 600);
+    const pick = c.by.filter(id => !P.sel[id]).sort((a2, b2) => OP_SRC_BY[a2].gb - OP_SRC_BY[b2].gb)[0];
+    opHot(P, { id: 'step:' + c.id, x, y: ty, r: 24, act: !seen && pick ? L2 => optSel(L2, P, pick, true) : null,
+      tip: [c.when.replace(' →', '') + ' · ' + c.s, c.t + '. ' + (c.dark ? c.dark : seen ? 'Seen by ' + who + '.' : 'Seen by: ' + c.by.map(id => OP_SRC_BY[id].s).join(' or ') + '. Click to collect ' + OP_SRC_BY[pick].s + '.')] }); });
   // the six questions
-  const qy = Math.max(ty + 150, L.h - 70); opCap(g, 'THE SIX QUESTIONS', pad, qy - 38); optLamps(g, pad, w, qy, q => opAnswered(P.sel, q), 16);
+  const qy = Math.max(ty + 140, L.h - 64); opCap(g, 'THE SIX QUESTIONS', pad, qy - 38);
+  optLamps(L, g, P, pad, w, qy, q => opAnswered(P.sel, q), 16, (L2, q) => { q.need.forEach(id => { P.sel[id] = true; }); P.at = L2.t; L2.repaint(); },
+    q => [q.t, 'Needs ' + q.need.map(id => OP_SRC_BY[id].s).join(' + ') + (opAnswered(P.sel, q) ? '. Answerable.' : '. Click to collect them.')]);
 }
+const OPT_STAGE = [['sample', 'SAMPLING'], ['redact', 'PERSONAL DATA'], ['parse', 'PARSING'], ['retain', 'RETENTION']];
 function optDrawPipe(L, g, P) {
-  const r = opPipe(P.pipe), pad = 26, x0 = pad + 96, x1 = L.w - pad - 120, lane = Math.min(30, (L.h - 170) / 6), top = Math.max(80, (L.h - lane * 6) / 2), bot = top + lane * 6;
-  const st = [['sample', 'SAMPLING'], ['redact', 'PERSONAL DATA'], ['parse', 'PARSING'], ['retain', 'RETENTION']], vx = i => x0 + (x1 - x0) * (i + 0.6) / 4.2;
-  // the pipe
+  const r = opPipe(P.pipe), pad = 26, x0 = pad + 96, x1 = L.w - pad - 120, lane = Math.min(34, (L.h - 190) / 6), top = Math.max(90, (L.h - lane * 6) / 2), bot = top + lane * 6;
+  const st = OPT_STAGE, vx = i => x0 + (x1 - x0) * (i + 0.6) / 4.2, hv = P.hov || '';
   opRR(g, x0 - 6, top - 10, x1 - x0 + 12, bot - top + 20, 16); g.fillStyle = 'rgba(141,182,242,.06)'; g.fill(); g.strokeStyle = 'rgba(141,182,242,.3)'; g.lineWidth = 1.5; g.stroke(); g.lineWidth = 1;
   opCap(g, 'SOURCES', pad, top - 22); opCap(g, 'SIEM', x1 + 30, top - 22);
-  st.forEach(([k, t], i) => { const x = vx(i), kills = OP_Q.some(q => r.at[q.id] && r.at[q.id][0] === k), priv = k === 'redact' && !r.privacy, col = kills || priv ? LC.bad : LC.good;
-    g.fillStyle = lc(col, 0.8); opRR(g, x - 5, top - 18, 10, bot - top + 36, 5); g.fill(); labGlow(g, x, top - 18, 18, col, 0.35);
-    opCap(g, t, x, top - 34, lc(col, 1), 'center'); opLbl(g, OP_PIPE[k].find(o => o[0] === P.pipe[k])[1], x, bot + 42, lc(LC.text, 0.95), 12); });
-  OP_Q.forEach((q, i) => { const y = top + lane * (i + 0.5), cut = r.at[q.id], end = cut ? vx(st.findIndex(s => s[0] === cut[0])) - 8 : x1 + 18;
-    labText(g, q.s, x0 - 14, y + 4, { size: 12, w: 600, mono: false, align: 'right', col: lc(LC.text, 0.9) });
-    g.strokeStyle = lc(cut ? LC.bad : LC.blue, 0.22); g.beginPath(); g.moveTo(x0, y); g.lineTo(end, y); g.stroke();
+  st.forEach(([k, t], i) => { const x = vx(i), kills = OP_Q.filter(q => r.at[q.id] && r.at[q.id][0] === k), priv = k === 'redact' && !r.privacy, col = kills.length || priv ? LC.bad : LC.good, on = hv === 'v:' + k;
+    const opts = OP_PIPE[k], cur = opts.findIndex(o => o[0] === P.pipe[k]);
+    g.fillStyle = lc(col, on ? 1 : 0.8); opRR(g, x - (on ? 8 : 5), top - 18, on ? 16 : 10, bot - top + 36, 5); g.fill(); labGlow(g, x, top - 18, on ? 30 : 18, col, 0.4);
+    opCap(g, t, x, top - 34, lc(col, 1), 'center');
+    // the setting, as a dial of its options
+    opts.forEach((o, j) => { const oy = bot + 40 + j * 22, sel = j === cur; opLbl(g, (sel ? '● ' : '○ ') + o[1], x, oy, lc(sel ? LC.text : LC.mute, sel ? 1 : 0.7), sel ? 12 : 11, sel ? 700 : 500);
+      opHot(P, { id: 'o:' + k + j, x: x - 70, y: oy - 14, w: 140, h: 20, act: L2 => { P.pipe[k] = o[0]; P.touched.add(k); P.at = L2.t; L2.repaint(); }, tip: null }); });
+    opHot(P, { id: 'v:' + k, x: x - 16, y: top - 44, w: 32, h: bot - top + 66, act: L2 => { P.pipe[k] = opts[(cur + 1) % opts.length][0]; P.touched.add(k); P.at = L2.t; L2.repaint(); },
+      tip: [t.charAt(0) + t.slice(1).toLowerCase() + ': ' + opts[cur][1], (kills.length ? 'Kills ' + kills.map(q => q.s).join(', ') + '. ' : priv ? 'Raw personal data reaches the SIEM. ' : 'Nothing lost here. ') + 'Click to turn the valve.'] }); });
+  OP_Q.forEach((q, i) => { const y = top + lane * (i + 0.5), cut = r.at[q.id], end = cut ? vx(st.findIndex(s2 => s2[0] === cut[0])) - 8 : x1 + 18, on = hv === 'lane:' + q.id || (cut && hv === 'v:' + cut[0]);
+    labText(g, q.s, x0 - 14, y + 4, { size: 12, w: on ? 700 : 600, mono: false, align: 'right', col: lc(on ? LC.ink : LC.text, 0.95) });
+    g.strokeStyle = lc(cut ? LC.bad : LC.blue, on ? 0.7 : 0.22); g.lineWidth = on ? 2 : 1; g.beginPath(); g.moveTo(x0, y); g.lineTo(end, y); g.stroke(); g.lineWidth = 1;
     opFlow(L, g, [[x0, y], [end, y]], cut ? LC.bad : LC.blue, 4, 70 + i * 6, 3);
     if (cut) { labText(g, '✕', end + 8, y + 5, { size: 14, w: 700, align: 'center', col: lc(LC.bad, 1) }); labText(g, cut[1], end + 20, y + 4, { size: 10, w: 600, col: lc(LC.bad, 0.9) }); }
-    opNode(g, x1 + 46, y, Math.min(10, lane / 2 - 3), cut ? LC.bad : LC.good, !cut, cut ? '' : '✓'); });
-  if (!r.privacy) axStamp(g, (x0 + x1) / 2, bot + 80, 'RAW PII IN THE SIEM', LC.bad, L.t - P.at - 0.2, L.w > 720 ? 16 : 11);
+    opNode(g, x1 + 46, y, Math.min(10, lane / 2 - 3), cut ? LC.bad : LC.good, !cut, cut ? '' : '✓');
+    opHot(P, { id: 'lane:' + q.id, x: pad, y: y - lane / 2, w: x0 - pad, h: lane, tip: [q.t, cut ? r.lost[q.id] + '.' : 'Survives to the SIEM.'] }); });
+  if (!r.privacy) axStamp(g, (x0 + x1) / 2, top - 70, 'RAW PII IN THE SIEM', LC.bad, L.t - P.at - 0.2, L.w > 720 ? 16 : 11);
 }
 function optDrawSiem(L, g, P) {
   const pad = 26, w = L.w - pad * 2, q = P.q && OP_Q.find(x => x.id === P.q);
-  optLamps(g, pad, w, 36, x => P.asked.has(x.id), 12);
-  if (!q) { opLbl(g, 'Pick a question →', L.w / 2, L.h / 2, lc(LC.mute, 1), 18); return; }
-  const k = opIn(L, P, 2.5), cy = L.h * 0.56, fx = pad + 40, ax = pad + w * 0.42, aw = w * 0.58 - 20;
-  labText(g, q.t, L.w / 2, 120, { size: 24, w: 700, mono: false, align: 'center', col: lc(LC.ink, 1) });
+  optLamps(L, g, P, pad, w, 40, x => P.asked.has(x.id), 14, (L2, x) => { P.q = x.id; P.asked.add(x.id); P.at = L2.t; L2.repaint(); }, x => [x.t, 'Click to ask the SIEM.']);
+  if (!q) { opLbl(g, 'Click a question', L.w / 2, L.h / 2, lc(LC.mute, 1), 18); return; }
+  const k = opIn(L, P, 2.5), cy = L.h * 0.58, fx = pad + 40, ax = pad + w * 0.42, aw = w * 0.58 - 20;
+  labText(g, q.t, L.w / 2, 130, { size: 24, w: 700, mono: false, align: 'center', col: lc(LC.ink, 1) });
   q.f.forEach((f, i) => { const y = cy + (i - (q.f.length - 1) / 2) * 46; g.globalAlpha = Math.min(1, k * 2);
-    const pw = opPill(g, f, fx, y, LC.blue, true, 12);
+    const pw = opPill(g, f, fx, y, LC.blue, true, 12), src = OP_SRC.find(s2 => q.need.includes(s2.id) && f.startsWith(s2.id === 'kb' ? 'kb' : s2.id === 'retr' ? 'retrieval' : s2.id === 'tool' ? 'tool' : s2.id === 'meta' ? 'answer' : s2.id === 'obo' ? 'user' : s2.id === 'ver' ? 'model' : '§'));
+    opHot(P, { id: 'f:' + f, x: fx, y: y - 12, w: pw, h: 24, tip: [f, 'A parsed, named field' + (src ? ' from the ' + src.t.toLowerCase() : '') + '. The SIEM joins on it.'] });
     g.strokeStyle = lc(LC.blue, 0.6); g.lineWidth = 1.5; g.beginPath(); g.moveTo(fx + pw + 4, y); g.bezierCurveTo((fx + pw + ax) / 2, y, (fx + pw + ax) / 2, cy, ax, cy); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
     opFlow(L, g, [[fx + pw + 4, y], [(fx + pw + ax) / 2, (y + cy) / 2], [ax, cy]], LC.blue, 2, 60, 2.4); });
   if (k < 0.6) return; g.globalAlpha = Math.min(1, (k - 0.6) * 3);
@@ -173,13 +226,18 @@ function opdMount(L) {
   const note = () => { const r = opDetect(pk()); if (!r.over) P.sawUnder = true; };
   const ruleChip = (L2, k, t) => gvChip(t, P.pack[k], () => { P.pack[k] = !P.pack[k]; note(); P.at = L2.t; L2.repaint(); });
   const slider = L2 => axRange(L2, P, 'tv', 'Classifier threshold', () => { note(); P.at = L2.t - 1; return L2.step === 0 ? P.sawUnder : opPackOk(pk()); }, () => opT(P).toFixed(2), 100);
-  return { P,
+  // the same controls, from the canvas
+  P.toggle = (L2, k) => { P.pack[k] = !P.pack[k]; note(); P.at = L2.t; L2.repaint(); };
+  P.setTv = (L2, v) => { P.tv = Math.round(Math.max(0, Math.min(100, v))); note(); P.at = L2.t - 1; const inp = L2.side.querySelector('input[type=range]'); if (inp) { inp.value = P.tv; const o = inp.parentElement.querySelector('b'); if (o) o.textContent = opT(P).toFixed(2); }
+    labSoft(L2, L2.step === 0 ? P.sawUnder : opPackOk(pk())); };
+  P.week = (L2, w2) => { P.w2 = w2; if (w2) P.sawW2 = true; P.at = L2.t; L2.repaint(); };
+  return { P, ...opPointer(P),
     hud: () => [
       [['ALERTS', () => run().alerts + ' / ' + OP_CAP, run().over ? 'bad' : 'good'], ['READ', () => run().triaged + '/14']],
       [['ALERTS', () => run().alerts + ' / ' + OP_CAP, run().over ? 'bad' : 'good'], ['READ', () => run().triaged + '/14', run().triaged >= OP_PACK_TARGET ? 'good' : ''], ['⚑ CAUGHT', () => run().harm + '/6', run().harm === 6 ? 'good' : 'bad']],
       [['WEEK', () => P.w2 ? '2' : '1'], ['CAUGHT', () => run().tp + '/14']],
       axDefHud(P, OPD_VEC, OPD_DEF), axDefHud(P, OPD_VEC, OPD_DEF)][L.step],
-    draw: (L2, g) => L2.step >= 3 ? axDrawDefend(L2, g, P, OPD_GROUPS, OPD_VEC, OPD_DEF) : L2.step === 2 ? opdDrawWeeks(L2, g, P, pk) : opdDrawQueue(L2, g, P, run()),
+    draw: (L2, g) => opFrame(L2, g, P, () => L2.step >= 3 ? axDrawDefend(L2, g, P, OPD_GROUPS, OPD_VEC, OPD_DEF) : L2.step === 2 ? opdDrawWeeks(L2, g, P, pk) : opdDrawQueue(L2, g, P, run())),
     steps: [
       { say: () => { const r = run(); return r.over ? r.alerts + ' alerts. Two analysts read ' + OP_CAP + '. Tune it down.' : 'Inside capacity, but ' + r.harm + ' of 6 ⚑ attacks caught.'; },
         side: L2 => [h('div', { class: 'labchipset' }, ruleChip(L2, 'kw', 'Keywords'), ruleChip(L2, 'clf', 'Classifier')), slider(L2)],
@@ -208,18 +266,29 @@ function opdMount(L) {
 }
 // The day's queue as a waffle, one square per alert; the attacks shine inside it.
 function opdDrawQueue(L, g, P, r) {
-  const pad = 26, lw = L.w * 0.6 - pad - 100, n = Math.max(r.alerts, OP_CAP), cols = 30, rows = Math.ceil(n / cols), top = 92, avail = L.h - top - 100;
+  const pad = 26, lw = L.w * 0.6 - pad - 100, n = Math.max(r.alerts, OP_CAP), cols = 30, rows = Math.ceil(n / cols), top = 104, avail = L.h - top - 100;
   const c = Math.max(4, Math.min(lw / cols, avail / rows, 22)), gap = c > 8 ? 2 : 1, shown = NN.sync ? n : Math.min(n, Math.floor((L.t - P.at) * 900) + 60);
   labText(g, String(r.alerts), pad, 58, { size: 44, w: 700, col: lc(r.over ? LC.bad : LC.good, 1) });
   g.font = "700 44px 'IBM Plex Mono', monospace"; const nw = g.measureText(String(r.alerts)).width;
   labText(g, 'alerts today', pad + nw + 12, 38, { size: 14, w: 600, mono: false, col: lc(LC.text, 0.9) });
   labText(g, 'the team reads ' + OP_CAP, pad + nw + 12, 58, { size: 14, w: 600, mono: false, col: lc(LC.ink, 1) });
+  // the classifier threshold, dragged on the canvas
+  const s0 = pad + nw + 190, s1 = Math.max(s0 + 120, pad + cols * c), sy = 52, clf = P.pack.clf, kx = s0 + (s1 - s0) * P.tv / 100, hv = opHov(P, 'thr');
+  opCap(g, 'CLASSIFIER THRESHOLD ' + opT(P).toFixed(2) + (clf ? '' : ' · OFF'), s0, 32, lc(clf ? LC.ink : LC.mute, 1));
+  g.strokeStyle = lc(clf ? LC.ink : LC.mute, 0.35); g.lineWidth = 4; g.lineCap = 'round'; g.beginPath(); g.moveTo(s0, sy); g.lineTo(s1, sy); g.stroke(); g.strokeStyle = lc(clf ? LC.ink : LC.mute, 0.9); g.beginPath(); g.moveTo(s0, sy); g.lineTo(kx, sy); g.stroke(); g.lineWidth = 1; g.lineCap = 'butt';
+  if (hv) labGlow(g, kx, sy, 24, LC.ink, 0.4); opNode(g, kx, sy, hv ? 10 : 8, clf ? LC.ink : LC.mute, true, '');
+  labText(g, 'flags more', s0, sy + 18, { size: 10, w: 600, mono: false, col: lc(LC.mute, 1) }); labText(g, 'flags less', s1, sy + 18, { size: 10, w: 600, mono: false, align: 'right', col: lc(LC.mute, 1) });
+  if (clf) opHot(P, { id: 'thr', x: s0 - 10, y: sy - 14, w: s1 - s0 + 20, h: 28, drag: (L2, x) => P.setTv(L2, (x - s0) / (s1 - s0) * 100), tip: ['Drag the threshold', 'Higher: fewer alerts, and only the most attack-like text is flagged.'] });
   // where the caught attacks sit: read ones inside capacity, the rest further down the queue
   const caught = r.atk.filter(a => a.hit.length), spot = {}; let ri = 0, ui = 0; const unread = caught.length - r.triaged;
   caught.forEach((a, i) => { const rd = i < r.triaged; spot[rd ? Math.floor((ri++ + 0.5) * Math.min(r.alerts, OP_CAP) / Math.max(1, r.triaged)) : OP_CAP + Math.floor((ui++ + 0.5) * Math.max(1, r.alerts - OP_CAP) / Math.max(1, unread))] = rd ? 'read' : 'lost'; });
   for (let k = 0; k < shown; k++) { const x = pad + (k % cols) * c, y = top + Math.floor(k / cols) * c, real = k < r.alerts, sp = spot[k];
     g.fillStyle = !real ? 'rgba(141,182,242,.08)' : sp === 'read' ? lc(LC.good, 1) : sp === 'lost' ? lc(LC.ink, 1) : k < OP_CAP ? lc(LC.good, 0.35) : lc(LC.bad, 0.3);
     g.fillRect(x, y, c - gap, c - gap); if (sp) labGlow(g, x + c / 2, y + c / 2, c * 1.8, sp === 'read' ? LC.good : LC.ink, 0.5); }
+  const hk = P.hov === 'waffle' ? Math.floor((P.my - top) / c) * cols + Math.floor((P.mx - pad) / c) : -1;
+  if (hk >= 0 && hk < n) { g.strokeStyle = lc(LC.text, 1); g.lineWidth = 2; g.strokeRect(pad + (hk % cols) * c - 1, top + Math.floor(hk / cols) * c - 1, c + 1, c + 1); g.lineWidth = 1; }
+  opHot(P, { id: 'waffle', x: pad, y: top, w: cols * c, h: rows * c, tip: () => { const k = Math.floor((P.my - top) / c) * cols + Math.floor((P.mx - pad) / c); if (k < 0 || k >= n) return null;
+    return k >= r.alerts ? ['Spare capacity', 'The team could read ' + (OP_CAP - r.alerts) + ' more.'] : ['Alert ' + (k + 1) + ' of ' + r.alerts, (spot[k] ? 'A real attack. ' : 'A false alarm, from ' + Math.round(100 * (r.alerts - r.tp) / r.alerts) + '% of the queue. ') + (k < OP_CAP ? 'Read today.' : 'Never read.')]; } });
   const cy = top + Math.ceil(OP_CAP / cols) * c; if (r.alerts > OP_CAP) { g.strokeStyle = lc(LC.ink, 1); g.lineWidth = 2; g.setLineDash([6, 4]); g.beginPath(); g.moveTo(pad - 6, cy - 1); g.lineTo(pad + cols * c + 6, cy - 1); g.stroke(); g.setLineDash([]); g.lineWidth = 1;
     labText(g, 'never read ↓', pad + cols * c + 10, cy + 12, { size: 11, w: 700, col: lc(LC.bad, 1) }); labText(g, 'read ↑', pad + cols * c + 10, cy - 6, { size: 11, w: 700, col: lc(LC.good, 1) }); }
   // the fourteen attacks, by kind
@@ -228,11 +297,14 @@ function opdDrawQueue(L, g, P, r) {
   const st = {}; r.atk.forEach(a => { st[a.e.id] = !a.hit.length ? 'miss' : read-- > 0 ? 'read' : 'lost'; });
   kinds.forEach((k, i) => { const y = 64 + i * rh, list = r.atk.filter(a => a.e.k === k), harm = OP_ATK_HARM[k];
     labText(g, OP_ATK_SHORT[k] + (harm ? '  ⚑' : ''), rx, y + 5, { size: 13, w: 700, mono: false, col: lc(harm ? LC.ink : LC.text, 0.95) });
-    list.forEach((a, j) => { const x = rx + Math.min(150, rw * 0.5) + j * 30, v = st[a.e.id]; opNode(g, x, y, 10, v === 'read' ? LC.good : v === 'lost' ? LC.ink : LC.bad, v !== 'miss', v === 'read' ? '✓' : v === 'lost' ? '•' : '✕'); }); });
+    list.forEach((a, j) => { const x = rx + Math.min(150, rw * 0.5) + j * 30, v = st[a.e.id]; opNode(g, x, y, opHov(P, 'atk:' + a.e.id) ? 13 : 10, v === 'read' ? LC.good : v === 'lost' ? LC.ink : LC.bad, v !== 'miss', v === 'read' ? '✓' : v === 'lost' ? '•' : '✕');
+      opHot(P, { id: 'atk:' + a.e.id, x, y, r: 12, tip: [a.e.t, OP_ATK_KIND[k] + (harm ? ', touched data or tools' : '') + '. ' + (v === 'read' ? 'Caught and read.' : v === 'lost' ? 'Caught by ' + a.hit.map(h2 => OP_RULES.find(z => z[0] === h2)[3]).join(', ') + ', but never read.' : 'No rule fired.')] }); }); });
   const ly = 64 + kinds.length * rh; [['read', LC.good, '✓ caught, read'], ['lost', LC.ink, '• caught, unread'], ['miss', LC.bad, '✕ missed']].forEach(([, col, t], i) => labText(g, t, rx + i * Math.max(110, rw / 3), ly, { size: 11, w: 600, mono: false, col: lc(col, 1) }));
   // the rules
   const by = L.h - 62, bw = (L.w - pad * 2 - 5 * 10) / 6;
-  OP_RULES.forEach((ru, i) => { const b = r.by[ru[0]], on = P.pack[ru[0]] && (ru[0] !== 'doc' || P.pack.clf), x = pad + i * (bw + 10);
+  OP_RULES.forEach((ru, i) => { const b = r.by[ru[0]], on = P.pack[ru[0]] && (ru[0] !== 'doc' || P.pack.clf), x = pad + i * (bw + 10), can = L.step > 0 || ['kw', 'clf'].includes(ru[0]);
+    if (opHov(P, 'rule:' + ru[0])) labGlow(g, x + bw / 2, by + 23, bw * 0.6, LC.blue, 0.25);
+    opHot(P, { id: 'rule:' + ru[0], x, y: by, w: bw, h: 46, act: can ? L2 => P.toggle(L2, ru[0]) : null, tip: [ru[1], ru[2] + '. ' + (can ? 'Click to switch ' + (P.pack[ru[0]] ? 'off.' : 'on.') : 'Available in the next step.')] });
     opRR(g, x, by, bw, 46, 10); g.fillStyle = lc(on ? LC.blue : LC.mute, on ? 0.12 : 0.04); g.fill(); g.strokeStyle = lc(on ? LC.blue : LC.mute, on ? 0.6 : 0.2); g.stroke();
     labText(g, ru[3], x + 10, by + 18, { size: 11, w: 700, mono: false, col: lc(on ? LC.text : LC.mute, 1) });
     labText(g, on ? (b.fp + b.tp) + ' alerts · ' + b.tp + ' real' : 'off', x + 10, by + 36, { size: 11, w: 600, col: lc(on ? (b.fp + b.tp > OP_CAP ? LC.bad : LC.good) : LC.mute, 1) }); });
@@ -240,13 +312,15 @@ function opdDrawQueue(L, g, P, r) {
 // Week 1 against week 2, per rule: a dumbbell.
 function opdDrawWeeks(L, g, P, pk) {
   const a = opDetect(pk(), false), b = opDetect(pk(), true), pad = 30, rows = OP_RULES.filter(([k]) => a.by[k].tp || b.by[k].tp || pk()[k]);
-  const lx = pad + 190, rw = L.w - lx - pad - 40, top = 90, rh = Math.min(70, (L.h - top - 60) / Math.max(1, rows.length)), X = v => lx + rw * v / 14, k = P.sawW2 ? opIn(L, P, 1.5) : 0;
+  const lx = pad + 190, rw = L.w - lx - pad - 40, top = 90, rh = Math.min(70, (L.h - top - 60) / Math.max(1, rows.length)), X = v => lx + rw * v / 14, k = P.w2 ? opIn(L, P, 1.5) : 0;
   opCap(g, 'REAL ATTACKS CAUGHT', lx, 40); [0, 7, 14].forEach(v => { labText(g, String(v), X(v), 60, { size: 10, align: 'center', col: lc(LC.mute, 1) }); g.strokeStyle = 'rgba(141,182,242,.12)'; g.beginPath(); g.moveTo(X(v), 68); g.lineTo(X(v), top + rows.length * rh - 10); g.stroke(); });
   rows.forEach((ru, i) => { const y = top + i * rh + rh / 2 - 10, v1 = a.by[ru[0]].tp, v2 = b.by[ru[0]].tp, fell = v2 < v1, vx = v1 + (v2 - v1) * k, col = fell ? LC.bad : LC.good;
     labText(g, ru[3], lx - 20, y + 5, { size: 14, w: 700, mono: false, align: 'right', col: lc(LC.text, 0.95) });
+    opHot(P, { id: 'wk:' + ru[0], x: pad, y: y - rh / 2, w: L.w - pad * 2, h: rh, tip: [ru[1], ru[2] + '. Week 1: ' + v1 + ' caught; week 2: ' + v2 + '.'] });
     g.strokeStyle = lc(col, 0.5); g.lineWidth = 4; g.beginPath(); g.moveTo(X(v1), y); g.lineTo(X(vx), y); g.stroke(); g.lineWidth = 1;
-    opNode(g, X(v1), y, 9, LC.blue, true, ''); if (P.sawW2) opNode(g, X(vx), y, 11, col, true, '');
+    opNode(g, X(v1), y, 9, LC.blue, true, ''); if (P.w2) opNode(g, X(vx), y, 11, col, true, '');
     labText(g, P.sawW2 ? v1 + ' → ' + v2 : String(v1), L.w - pad, y + 5, { size: 14, w: 700, align: 'right', col: lc(P.sawW2 ? col : LC.blue, 1) }); });
+  const bw1 = opBtn(P, g, 'w1', 'Week 1', L.w - pad - 220, 36, LC.blue, !P.w2, L2 => P.week(L2, false)); opBtn(P, g, 'w2', '▶ Week 2: rewritten', L.w - pad - 210 + bw1, 36, LC.ink, P.w2, L2 => P.week(L2, true));
   labText(g, '● week 1', lx, L.h - 22, { size: 11, w: 600, mono: false, col: lc(LC.blue, 1) }); labText(g, '● week 2', lx + 90, L.h - 22, { size: 11, w: 600, mono: false, col: lc(LC.good, 1) });
   if (P.sawW2 && P.w2) axStamp(g, L.w * 0.6, L.h - 70, 'WORDING CHANGED · BEHAVIOUR DID NOT', LC.good, L.t - P.at - 0.8, L.w > 720 ? 15 : 10);
 }
@@ -271,14 +345,14 @@ function opbMount(L) {
   const baseSide = L2 => [opSeg('Baseline', OP_WIN, P.o.win, v => setO(L2, 'win', v)), opSeg('Alert above', [[2, '2σ'], [3, '3σ'], [4, '4σ']], P.o.k, v => setO(L2, 'k', v))];
   const tr = () => OP_TRACES[P.ti];
   const mark = (L2, bad) => { const t = tr(); if (!t) return; if (t.bad === bad) { P.marks[t.id] = true; P.wrong = null; P.ti++; } else P.wrong = t.id; P.at = L2.t; L2.repaint(); };
-  note();
-  return { P,
+  note(); P.mark = mark;
+  return { P, ...opPointer(P),
     hud: () => [
       [['RAMP CAUGHT', () => res().delay == null ? 'never' : 'day ' + res().caught.support, res().delay != null && res().delay <= 3 ? 'good' : 'bad'], ['DAYS LATE', () => res().delay == null ? '—' : String(res().delay)]],
       [['ATTACKS', () => res().n + '/3', res().n === 3 ? 'good' : 'bad'], ['FALSE ALARMS', () => String(res().fa), res().fa <= 1 ? 'good' : 'bad'], ['RAMP', () => res().delay == null ? 'missed' : res().delay + ' days late']],
       [['TRACES', () => Object.keys(P.marks).length + '/' + OP_TRACES.length], ['EVERY STEP', () => 'allowed']],
       axDefHud(P, OPB_VEC, OPB_DEF), axDefHud(P, OPB_VEC, OPB_DEF)][L.step],
-    draw: (L2, g) => L2.step >= 3 ? axDrawDefend(L2, g, P, OPB_GROUPS, OPB_VEC, OPB_DEF) : [opbDrawOne, opbDrawFleet, opbDrawTrace][L2.step](L2, g, P),
+    draw: (L2, g) => opFrame(L2, g, P, () => L2.step >= 3 ? axDrawDefend(L2, g, P, OPB_GROUPS, OPB_VEC, OPB_DEF) : [opbDrawOne, opbDrawFleet, opbDrawTrace][L2.step](L2, g, P)),
     steps: [
       { say: () => !(P.sawLate && P.sawFast) ? 'Theft creeps up from day 25. Make the baseline miss it, then catch it in 3 days.' : 'A rolling baseline learns a slow attack.',
         side: L2 => baseSide(L2),
@@ -322,6 +396,14 @@ function opbChart(L, g, P, a, x, y, w, hh, big) {
   OP_FIRST.filter(f => f.a === a.id).forEach(f => { labText(g, '◆', X(f.d), y + 14, { size: big ? 13 : 10, align: 'center', col: lc(P.o.first ? LC.violet : LC.mute, 1) }); });
   if (OP_CHG[a.id]) { const [c0, c1] = OP_CHG[a.id]; g.fillStyle = lc(LC.violet, P.o.chg ? 0.18 : 0.07); g.fillRect(X(c0), y, X(c1) - X(c0), hh); }
   labText(g, a.t, x + 6, y + 14, { size: big ? 13 : 11, w: 700, mono: false, col: lc(LC.text, 1) });
+  // scrub: hover any day
+  const id = 'chart:' + a.id, d = Math.max(0, Math.min(OP_DAYS - 1, Math.round((P.mx - x) / w * (OP_DAYS - 1))));
+  if (P.hov === id) { const lim = d >= OP_REF ? opBaseline(s, d, P.o.win, P.o.season, P.o.chg && OP_CHG[a.id]) : null, line = lim && lim.m + P.o.k * lim.sd;
+    g.strokeStyle = lc(LC.text, 0.5); g.setLineDash([2, 3]); g.beginPath(); g.moveTo(X(d), y); g.lineTo(X(d), y + hh); g.stroke(); g.setLineDash([]);
+    opNode(g, X(d), Y(s[d]), big ? 6 : 4, LC.blue, true, ''); if (line) opNode(g, X(d), Y(line), big ? 5 : 3.5, LC.ink, true, ''); }
+  opHot(P, { id, x, y: y + 18, w, h: hh - 18, tip: () => { const lim = d >= OP_REF ? opBaseline(s, d, P.o.win, P.o.season, P.o.chg && OP_CHG[a.id]) : null, line = lim && lim.m + P.o.k * lim.sd, f = OP_FIRST.find(z => z.a === a.id && z.d === d);
+    return ['Day ' + d + ' · ' + Math.round(s[d]).toLocaleString('en') + ' records', (line ? 'Alert line ' + Math.round(line).toLocaleString('en') + (s[d] > line ? ': alarm.' : ': quiet.') : 'Reference period: learning normal.') + (tr && tr(d) ? ' Attack running.' : '') + (f ? ' ' + f.t + '.' : '')]; } });
+  opHot(P, { id: 'name:' + a.id, x: x + 2, y: y + 2, w: 140, h: 16, tip: [a.t, a.story || 'No attack on this agent. Every alert here is a false alarm.'] });
 }
 function opbDrawOne(L, g, P) {
   const pad = 30, a = OP_AGENTS[0], y = 40, hh = L.h - 100, w = L.w - pad * 2, r = opAnomaly(P.o);
@@ -362,7 +444,9 @@ function opbDrawTrace(L, g, P) {
       g.fillStyle = lc(LC.blue, 0.9); g.beginPath(); g.moveTo(ax + gap - 24, ay - 6); g.lineTo(ax + gap - 16, ay); g.lineTo(ax + gap - 24, ay + 6); g.fill(); }
     g.globalAlpha = 1; });
   opLbl(g, 'every step: allowed', L.w / 2, y + 96, lc(LC.good, 0.8), 12);
-  if (P.wrong === t.id) axStamp(g, L.w / 2, y + 150, 'LOOK AGAIN', LC.bad, L.t - P.at, 16);
+  g.font = "600 15px 'IBM Plex Sans', sans-serif"; const nw = g.measureText('✓ Normal').width + 24, sw = g.measureText('⚠ Suspicious').width + 24, bx = L.w / 2 - (nw + sw + 20) / 2;
+  opBtn(P, g, 'tn', '✓ Normal', bx, y + 150, LC.good, false, L2 => P.mark(L2, false), null, 15); opBtn(P, g, 'ts', '⚠ Suspicious', bx + nw + 20, y + 150, LC.bad, false, L2 => P.mark(L2, true), null, 15);
+  if (P.wrong === t.id) axStamp(g, L.w / 2, y + 210, 'LOOK AGAIN', LC.bad, L.t - P.at, 16);
 }
 
 /* ---------- registration ---------- */
