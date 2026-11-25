@@ -252,32 +252,35 @@ function repairStrip(compact) {
     h('div', { class: 'repairpills' }, NEXUS_FAILS.map(f => { const ok = f.fix.every(e => epDone(e));
       return h('a', { class: 'rpill' + (ok ? ' ok' : ''), href: '#' + (f.fix.find(e => !epDone(e)) || f.fix[0]), title: f.t }, h('b', null, 'H' + f.hour), h('span', null, ok ? 'fixed' : 'Mod ' + f.mod)); })));
 }
+function coreTile(cls, href, kicker, title, line) {
+  return h('a', { class: 'coretile glow ' + cls, href }, h('span', { class: 'kicker' }, kicker), h('b', null, title), h('span', { class: 'coreline' }, line), h('i', { class: 'corego', 'aria-hidden': 'true' }, '→'));
+}
 function renderSeason() {
   const mods = EPISODES.filter(e => e.id !== 'e00');
   const opened = epDone('e00');
   const next = !opened ? EPISODES[0] : (mods.find(e => !epDone(e.id)) || mods[0]);
   const doneN = mods.filter(e => epDone(e.id)).length;
+  const atN = ATLAS.filter(st => atDone(st.id)).length, hdN = HARDEN_LAYERS.filter(l => hdOn(l.id)).length, runs = (S.rag && S.rag.runs) || [];
   Story.last = '';
   return h('div', { class: 'stage season' },
+    h('nav', { class: 'seasonnav', 'aria-label': 'Program' },
+      h('span', { class: 'seasonbrand' }, h('span', { class: 'mark', 'aria-hidden': 'true' }, 'AI'), 'Agentic AI Labs'),
+      h('span', { class: 'spacer' }),
+      [['#labs', 'Workbench'], ['#deck', 'Deck'], ['#adv', 'Advanced'], ['#kit', 'CIO kit'], ['#feeds', 'Reading']].map(([href, t]) => h('a', { class: 'navcard', href }, t))),
     h('div', { class: 'seasonhead' }, h('span', { class: 'kicker' }, 'Agentic AI Security & Governance · Season 1'), h('h1', null, 'Agents at Meridian'),
       h('p', { class: 'lead' }, opened ? 'NEXUS failed in 72 hours. Rebuild it one module at a time: every episode opens with a trap, and fixes part of NEXUS.' : 'It starts with a vote. Meridian Finance wants to launch Project NEXUS on Friday, and you are the AI Risk Committee.'),
-      h('div', { class: 'btnrow' }, h('a', { class: 'btn primary big', href: '#' + next.id }, (next.id === 'e00' ? 'Start: the opening challenge' : (doneN ? 'Continue: ' : 'Next: ') + 'Episode ' + next.n) + ' →'),
-        h('span', { class: 'small' }, opened ? doneN + ' of 10 episodes complete' : '30 minutes · then ten episodes')),
-      h('div', { class: 'seasonnav' },
-        h('a', { class: 'navcard', href: '#labs' }, h('b', null, 'Workbench'), h('span', null, 'Full labs, quizzes, case studies and room results')),
-        h('a', { class: 'navcard', href: '#deck' }, h('b', null, 'Program deck'), h('span', null, DECK.order.length + ' slides, every module, with speaker notes')),
-        h('a', { class: 'navcard', href: '#adv' }, h('b', null, 'Advanced path'), h('span', null, ADV_CASES.length + ' real attacks: inference, jailbreaks, poisoning, agents')),
-        h('a', { class: 'navcard', href: '#kit' }, h('b', null, 'Take it to your CIO'), h('span', null, 'The take-home kit: 15 questions, a maturity check, the framework map')))),
-    atHero('raghero'),
-    h('a', { class: 'raghero', href: '#rag' }, h('span', { class: 'kicker' }, 'Core lab · Modules 09 and 12'), h('b', null, 'Build Ask Meridian: a RAG pipeline under attack'), h('span', null, (S.rag && S.rag.runs && S.rag.runs.length ? 'Runs so far: ' + S.rag.runs.length + '. Last: ' + S.rag.runs[S.rag.runs.length - 1].bad + ' incidents.' : 'Design it, run a day in production, see what breaks, rebuild.'))),
-    h('a', { class: 'raghero hdhero', href: '#harden' }, h('span', { class: 'kicker' }, 'Core lab · Modules 08 to 15'), h('b', null, 'Harden NEXUS: seven defence layers'), h('span', null, (() => { const n = HARDEN_LAYERS.filter(l => hdOn(l.id)).length;
-      return n ? n + ' of 7 layers online. Fire NEXUS’s failures at your pipeline and see what still gets through.' : 'Fire NEXUS’s own failures at the pipeline, then clear a layer at a time until they stop.'; })())),
-    opened ? repairStrip(false) : h('a', { class: 'nexushero', href: '#e00' }, h('span', { class: 'kicker alarm' }, 'Opening challenge'), h('b', null, 'Approve Project NEXUS'), h('span', null, 'Vote first. Then watch what happens in the first 72 hours.')),
-    h('div', { class: 'eps' }, mods.map((e, k) => { const st = (S.story || {})[e.id]; const n = st && st.finished ? stars(e, st) : -1;
-      return h('a', { class: 'ep' + (n >= 0 ? ' done' : '') + (e === next ? ' next' : ''), href: '#' + e.id, style: 'animation-delay:' + (0.04 * k) + 's' },
+      h('div', { class: 'btnrow' }, h('a', { class: 'btn primary big cta', href: '#' + next.id }, (next.id === 'e00' ? 'Start: approve Project NEXUS?' : (doneN ? 'Continue: ' : 'Next: ') + 'Episode ' + next.n) + ' →'),
+        h('span', { class: 'small' }, opened ? doneN + ' of 10 episodes complete' : 'Vote first, then watch the first 72 hours · 30 min'))),
+    opened ? repairStrip(false) : null,
+    h('div', { class: 'eps' }, mods.map(e => { const st = (S.story || {})[e.id]; const n = st && st.finished ? stars(e, st) : -1;
+      return h('a', { class: 'ep glow' + (n >= 0 ? ' done' : '') + (e === next ? ' next' : ''), href: '#' + e.id },
         h('span', { class: 'epn' }, e.n), h('b', null, e.title), h('span', { class: 'ept' }, e.topic + ' · ' + e.scenes.length + ' scenes'),
         h('span', { class: 'epstars' }, n >= 0 ? [0, 1, 2].map(j => h('i', { class: j < n ? 'on' : '' }, '★')) : '')); })),
-    h('div', { class: 'seasonfoot' }, opened ? h('a', { href: '#e00' }, 'Replay the opening challenge') : null, h('a', { class: 'facil-link', href: '#labs' }, 'Facilitator workbench: full labs, quizzes, case studies and room results →')));
+    h('div', { class: 'coretiles' },
+      coreTile('athero', '#atlas', 'Modules 12–14 · 10 hours', 'The 10-hour map', atN ? atN + ' of ' + ATLAS.length + ' stops seen' : ATLAS.length + ' animated stops: RAG, MCP, shipping, SOC'),
+      coreTile('raghero', '#rag', 'Core lab · 09 and 12', 'Build Ask Meridian', runs.length ? runs.length + ' runs · last: ' + runs[runs.length - 1].bad + ' incidents' : 'Design a RAG pipeline, then attack it'),
+      coreTile('raghero hdhero', '#harden', 'Core lab · 08 to 15', 'Harden NEXUS', hdN ? hdN + ' of 7 layers online' : 'Seven defence layers against its own failures')),
+    opened ? h('div', { class: 'seasonfoot' }, h('a', { href: '#e00' }, 'Replay the opening challenge')) : null);
 }
 
 /* Called by App.render for story routes. */

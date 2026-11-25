@@ -66,7 +66,8 @@ function kitPage() {
     sec('plan', '7', 'Propose 90 days, ask for 2 weeks', 'Ask for step 1 only; steps 2 and 3 show where it leads.',
       h('ol', { class: 'kitplan' }, KIT.plan.map(([when, what, how, out], i) => h('li', { class: i ? '' : 'ask' }, h('span', { class: 'kitwhen' }, when + (i ? '' : ' · the ask')), h('b', null, what), h('p', null, how), out ? h('p', { class: 'small' }, h('b', null, 'Output: '), out) : null)))),
     sec('after', '8', 'After the meeting', null,
-      h('ul', { class: 'kitafter' }, KIT.after.map((t, i) => h('li', null, h('label', null, h('input', { type: 'checkbox', checked: st.after[i] ? true : null, onchange: e => { st.after[i] = e.target.checked; persist(); } }), h('span', null, t)))))),
+      h('ul', { class: 'kitafter' }, KIT.after.map((t, i) => h('li', null, h('label', null, h('input', { type: 'checkbox', checked: st.after[i] ? true : null, onchange: e => { st.after[i] = e.target.checked; persist(); } }), h('span', null, t))))),
+      h('a', { class: 'kitread', href: '#feeds' }, 'Stay current: ' + FEED_ALL.length + ' feeds on AI security, governance and MLOps, as one OPML file →')),
     box('kitsrc', label('Sources'), h('ul', { class: 'kitsources' }, KIT.sources.map(([t, u]) => h('li', null, kitA(t, u)))),
       h('p', { class: 'small' }, 'Compiled ' + KIT.asOf + '. Standards and deadlines move: check the dates before you quote them.'))
   ];

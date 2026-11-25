@@ -79,26 +79,36 @@ function advTake(c) {
       h('div', { class: 'takeitem' }, h('i', null, 'Ask'), h('p', null, ask))));
 }
 
+const AdvV = { v: 'sims', t: 'all' };
 function advIndex() {
   const done = ADV_CASES.filter(advDone).length, pts = sum(ADV_CASES.map(advScore));
+  const simsDone = NN_SIMS.filter(x => S.nn && S.nn[x.id] && S.nn[x.id].done).length;
+  const pick = (k, v) => { AdvV[k] = v; App.viewKey = null; rerender(); };
+  const tracks = ADV_TRACKS.filter(t => AdvV.t === 'all' || AdvV.t === t.id);
+  const caseCard = c => { const d = advDone(c), started = advSeen(c.id) > 0 || Object.keys(((advState().pk || {})[c.id]) || {}).length;
+    return h('a', { class: 'card glow casecard', href: '#adv-' + c.id },
+      h('div', { class: 'row' }, h('span', { class: 'meta' }, c.date), h('span', { class: 'status ' + (d ? 'done' : started ? 'started' : '') }, d ? advScore(c) + ' / 20' : started ? 'In progress' : 'Not started')),
+      h('h3', null, c.title), h('p', { class: 'leadq clamp' }, c.hook), h('span', { class: 'meta' }, sigPlayed(c.id) ? '▶ played' : '▶ hands-on')); };
   return [
     h('section', { class: 'hero' },
       h('a', { class: 'back', href: '#labs' }, '← Workbench'),
-      h('span', { class: 'eyebrow' }, 'Advanced path · ' + NN_SIMS.length + ' live simulations · ' + ADV_CASES.length + ' cases'),
+      h('span', { class: 'eyebrow' }, 'Advanced path · for people who already run the controls'),
       h('h1', null, 'How AI systems actually get broken'),
-      h('p', null, 'For people who already know the controls. Every case is a documented attack from 2023–2025: walk the chain stage by stage, see which defence was in place and why it lost, what detection would have seen, then make two calls. Mechanisms, not payloads.')),
-    h('div', { class: 'homegrid' },
-      box('dark', label('Your progress'), stats(stat(done + ' / ' + ADV_CASES.length, 'Cases done'), stat(pts + ' / ' + ADV_CASES.length * 20, 'Points')), meter(done / ADV_CASES.length, 'accent', 'Cases done')),
-      box('', label('How each case works'), h('ol', { class: 'plain numbered' },
-        h('li', null, 'Walk the attack chain: tap a stage or Next stage.'), h('li', null, 'Read why the controls lost and what detection would see.'), h('li', null, 'Make two calls: each locks in and scores 10, 5 or 0.')))),
-    h('h2', { class: 'sylgroup' }, 'Inside the model · live simulations'),
-    h('p', { class: 'advlead' }, 'Start here. These run on this device: train a network and poison it, cut the direction that makes a model refuse, rewrite a fact in its weights, and fire prompt injections through the defence layers the market sells. Then the cases below show the same attacks in the wild.'),
-    h('div', { class: 'nnsims' }, NN_SIMS.map(nnSimCard)),
-    ADV_TRACKS.map(t => [h('h2', { class: 'sylgroup', id: 'track-' + t.id }, t.name), h('p', { class: 'advlead' }, t.lead),
-      h('div', { class: 'grid' }, ADV_CASES.filter(c => c.track === t.id).map(c => { const d = advDone(c), started = advSeen(c.id) > 0 || Object.keys(((advState().pk || {})[c.id]) || {}).length;
-        return h('a', { class: 'card', href: '#adv-' + c.id },
-          h('div', { class: 'row' }, h('span', { class: 'meta' }, c.date), h('span', { class: 'status ' + (d ? 'done' : started ? 'started' : '') }, d ? advScore(c) + ' / 20' : started ? 'In progress' : 'Not started')),
-          h('h3', null, c.title), h('p', { class: 'leadq' }, c.hook), h('span', { class: 'meta' }, sigPlayed(c.id) ? '▶ played' : '▶ hands-on')); }))]),
+      h('p', null, 'Live simulations of the mechanism on this device, then documented attacks from 2023–2025: the chain stage by stage, why the defence lost, what detection would have seen. Mechanisms, not payloads.')),
+    h('div', { class: 'advswitch' },
+      h('div', { class: 'seg bigseg', role: 'group', 'aria-label': 'Show' },
+        h('button', { type: 'button', 'aria-pressed': String(AdvV.v === 'sims'), onclick: () => pick('v', 'sims') }, 'Live simulations', h('small', null, simsDone + ' of ' + NN_SIMS.length + ' done')),
+        h('button', { type: 'button', 'aria-pressed': String(AdvV.v === 'cases'), onclick: () => pick('v', 'cases') }, 'Real cases', h('small', null, done + ' of ' + ADV_CASES.length + ' · ' + pts + ' pts'))),
+      meter(AdvV.v === 'sims' ? simsDone / NN_SIMS.length : done / ADV_CASES.length, 'accent', 'Progress')),
+    AdvV.v === 'sims' ? [
+      h('p', { class: 'advlead' }, 'Start here. Train a network and poison it, cut the direction that makes a model refuse, rewrite a fact in its weights, fire injections through the defences the market sells.'),
+      h('div', { class: 'nnsims' }, NN_SIMS.map(nnSimCard))
+    ] : [
+      h('div', { class: 'chipset trackchips', role: 'group', 'aria-label': 'Track' },
+        [['all', 'All tracks'], ...ADV_TRACKS.map(t => [t.id, t.name])].map(([k, t]) => h('button', { type: 'button', 'aria-pressed': String(AdvV.t === k), onclick: () => pick('t', k) }, t))),
+      tracks.map(t => [h('h2', { class: 'sylgroup', id: 'track-' + t.id }, t.name), h('p', { class: 'advlead' }, t.lead),
+        h('div', { class: 'grid cases' }, ADV_CASES.filter(c => c.track === t.id).map(caseCard))])
+    ],
     h('div', { class: 'btnrow end' }, confirmTwice('adv-clear', 'Clear Advanced path answers', () => { delete S.adv; }, 'warn'))
   ];
 }

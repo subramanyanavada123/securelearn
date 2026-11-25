@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>AI Security, AI Governance &amp; MLOps — Curated Feeds</title>
+    <dateCreated>Wed, 25 Nov 2026 00:00:00 GMT</dateCreated>
+    <ownerName>Curated with Claude</ownerName>
+  </head>
+  <body>
+
+    <outline text="AI Security" title="AI Security">
+      <outline type="rss" text="Embrace The Red (Johann Rehberger) — LLM/agent exploit research"
+               title="Embrace The Red" xmlUrl="https://embracethered.com/blog/index.xml" htmlUrl="https://embracethered.com/blog/"/>
+      <outline type="rss" text="Simon Willison — Prompt Injection tag"
+               title="Simon Willison: prompt-injection" xmlUrl="https://simonwillison.net/tags/prompt-injection.atom" htmlUrl="https://simonwillison.net/tags/prompt-injection/"/>
+      <outline type="rss" text="OWASP Gen AI Security Project (LLM Top 10, agentic threats)"
+               title="OWASP Gen AI Security Project" xmlUrl="https://genai.owasp.org/feed/" htmlUrl="https://genai.owasp.org/"/>
+      <outline type="rss" text="Trail of Bits Blog — ML/AI security audits &amp; tooling"
+               title="Trail of Bits Blog" xmlUrl="https://blog.trailofbits.com/feed/" htmlUrl="https://blog.trailofbits.com/"/>
+      <outline type="rss" text="Google Online Security Blog — incl. AI threat reports"
+               title="Google Online Security Blog" xmlUrl="http://feeds.feedburner.com/GoogleOnlineSecurityBlog" htmlUrl="https://security.googleblog.com/"/>
+      <outline type="rss" text="Schneier on Security — security + AI policy commentary"
+               title="Schneier on Security" xmlUrl="https://www.schneier.com/feed/atom/" htmlUrl="https://www.schneier.com/"/>
+    </outline>
+
+    <outline text="AI Governance &amp; Policy" title="AI Governance &amp; Policy">
+      <outline type="rss" text="The EU AI Act Newsletter &amp; Podcast"
+               title="The EU AI Act Newsletter" xmlUrl="https://artificialintelligenceact.substack.com/feed" htmlUrl="https://artificialintelligenceact.substack.com/"/>
+      <outline type="rss" text="CSET Georgetown — AI policy research"
+               title="Center for Security and Emerging Technology" xmlUrl="https://cset.georgetown.edu/feed/" htmlUrl="https://cset.georgetown.edu/"/>
+      <outline type="rss" text="Transformer (Shakeel Hashim) — AI policy news"
+               title="Transformer" xmlUrl="https://www.transformernews.ai/feed" htmlUrl="https://www.transformernews.ai/"/>
+      <outline type="rss" text="Import AI (Jack Clark) — weekly research + policy"
+               title="Import AI" xmlUrl="https://importai.substack.com/feed" htmlUrl="https://importai.substack.com/"/>
+      <outline type="rss" text="AI as Normal Technology (Narayanan &amp; Kapoor) — hype-checking"
+               title="AI as Normal Technology" xmlUrl="https://www.normaltech.ai/feed" htmlUrl="https://www.normaltech.ai/"/>
+      <outline type="rss" text="US Federal Register — documents mentioning &quot;artificial intelligence&quot;"
+               title="Federal Register: AI" xmlUrl="https://www.federalregister.gov/api/v1/documents.rss?conditions%5Bterm%5D=%22artificial+intelligence%22" htmlUrl="https://www.federalregister.gov/"/>
+      <outline type="rss" text="AI Alignment Forum — technical safety research"
+               title="AI Alignment Forum" xmlUrl="https://www.alignmentforum.org/feed.xml" htmlUrl="https://www.alignmentforum.org/"/>
+    </outline>
+
+    <outline text="MLOps &amp; ML Engineering" title="MLOps &amp; ML Engineering">
+      <outline type="rss" text="Eugene Yan — applied ML/LLM systems in production"
+               title="Eugene Yan" xmlUrl="https://eugeneyan.com/rss/" htmlUrl="https://eugeneyan.com/"/>
+      <outline type="rss" text="Hamel Husain — LLM evals &amp; ops"
+               title="Hamel's Blog" xmlUrl="https://hamel.dev/index.xml" htmlUrl="https://hamel.dev/"/>
+      <outline type="rss" text="Chip Huyen — ML systems design (low volume, high signal)"
+               title="Chip Huyen" xmlUrl="https://huyenchip.com/feed.xml" htmlUrl="https://huyenchip.com/"/>
+      <outline type="rss" text="Marvelous MLOps"
+               title="Marvelous MLOps" xmlUrl="https://marvelousmlops.substack.com/feed" htmlUrl="https://marvelousmlops.substack.com/"/>
+      <outline type="rss" text="Ahead of AI (Sebastian Raschka)"
+               title="Ahead of AI" xmlUrl="https://magazine.sebastianraschka.com/feed" htmlUrl="https://magazine.sebastianraschka.com/"/>
+      <outline type="rss" text="Latent Space — AI engineering"
+               title="Latent Space" xmlUrl="https://www.latent.space/feed" htmlUrl="https://www.latent.space/"/>
+      <outline type="rss" text="Interconnects (Nathan Lambert) — training &amp; open models"
+               title="Interconnects" xmlUrl="https://www.interconnects.ai/feed" htmlUrl="https://www.interconnects.ai/"/>
+      <outline type="rss" text="Hugging Face Blog"
+               title="Hugging Face Blog" xmlUrl="https://huggingface.co/blog/feed.xml" htmlUrl="https://huggingface.co/blog"/>
+      <outline type="rss" text="PyTorch Blog"
+               title="PyTorch" xmlUrl="https://pytorch.org/feed/" htmlUrl="https://pytorch.org/blog/"/>
+      <outline type="rss" text="Netflix TechBlog — ML platform at scale"
+               title="Netflix TechBlog" xmlUrl="https://netflixtechblog.com/feed" htmlUrl="https://netflixtechblog.com/"/>
+      <outline type="rss" text="AWS Machine Learning Blog (high volume — vendor)"
+               title="AWS Machine Learning Blog" xmlUrl="https://aws.amazon.com/blogs/machine-learning/feed/" htmlUrl="https://aws.amazon.com/blogs/machine-learning/"/>
+      <outline type="rss" text="Databricks Blog (MLflow, data/ML platform — vendor)"
+               title="Databricks Blog" xmlUrl="https://www.databricks.com/feed" htmlUrl="https://www.databricks.com/blog"/>
+    </outline>
+
+    <outline text="Primary Sources — AI Labs" title="Primary Sources — AI Labs">
+      <outline type="rss" text="OpenAI News"
+               title="OpenAI News" xmlUrl="https://openai.com/news/rss.xml" htmlUrl="https://openai.com/news/"/>
+      <outline type="rss" text="Google DeepMind News"
+               title="Google DeepMind News" xmlUrl="https://deepmind.google/blog/rss.xml" htmlUrl="https://deepmind.google/discover/blog/"/>
+    </outline>
+
+  </body>
+</opml>

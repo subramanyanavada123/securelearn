@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, FEEDS, FEED_ALL, FeedV, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -183,9 +183,15 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
 {
   const clk = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   const { ADV_CASES, ADV_TRACKS } = window.__T;
-  delete S.adv; go('adv');
-  if (doc.querySelectorAll('#app .card').length !== ADV_CASES.length) fail('advanced index should list every case');
-  if (doc.querySelectorAll('#app .sylgroup').length !== ADV_TRACKS.length + 1) fail('advanced index should show every track and the simulations');
+  const { AdvV, NN_SIMS } = window.__T;
+  delete S.adv; AdvV.v = 'sims'; AdvV.t = 'all'; go('adv');
+  if (doc.querySelectorAll('#app .card').length || doc.querySelectorAll('#app .nnhero').length !== NN_SIMS.length) fail('advanced index should open on the simulations only');
+  clk([...doc.querySelectorAll('#app .advswitch button')].find(b => /Real cases/.test(b.textContent)));
+  if (AdvV.v !== 'cases' || doc.querySelectorAll('#app .card').length !== ADV_CASES.length) fail('advanced index should list every case');
+  if (doc.querySelectorAll('#app .sylgroup').length !== ADV_TRACKS.length) fail('advanced index should show every track');
+  { const t = ADV_TRACKS[1]; clk([...doc.querySelectorAll('#app .trackchips button')].find(b => b.textContent === t.name));
+    if (doc.querySelectorAll('#app .card').length !== ADV_CASES.filter(c => c.track === t.id).length || doc.querySelectorAll('#app .sylgroup').length !== 1) fail('track filter did not narrow the cases');
+    clk([...doc.querySelectorAll('#app .trackchips button')].find(b => b.textContent === 'All tracks')); }
   for (const c of ADV_CASES) {
     if (!ADV_TRACKS.some(t => t.id === c.track)) fail('adv ' + c.id + ' has unknown track ' + c.track);
     if (c.steps.length < 3 || c.steps.some(([w, sh, tx]) => !['atk', 'sys', 'def'].includes(w) || !sh || !tx)) fail('adv ' + c.id + ' has an incomplete stage');
@@ -202,7 +208,8 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
     if (Object.values(S.adv.pk[c.id]).length !== 2 || c.qs.some((q, qi) => q.o[S.adv.pk[c.id][qi]][1] !== 10)) fail('adv ' + c.id + ' could not score full marks');
   }
   go('adv'); if (doc.querySelectorAll('#app .status.done').length !== ADV_CASES.length) fail('advanced index should mark every case done');
-  go('labs'); if (!doc.querySelector('#app .advhero')) fail('workbench home lacks the Advanced path card');
+  AdvV.v = 'sims';
+  if (!doc.querySelector('.topnav a[href="#adv"]')) fail('top bar lacks the Advanced path link');
   go(''); if (!doc.querySelector('#app .seasonnav a[href="#adv"]')) fail('story home lacks the Advanced path link');
   console.log('advanced path: ' + ADV_CASES.length + ' cases in ' + ADV_TRACKS.length + ' tracks, each walked and answered for full marks');
 }
@@ -222,7 +229,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
     if (!(S.adv.sig || {})[c.id]) stuck.push(c.id);
   }
   if (stuck.length) fail('signatures that never reach their payoff: ' + stuck.join(', '));
-  go('adv'); if (doc.querySelectorAll('#app .card .meta').length < ADV_CASES.length) fail('index cards lack the hands-on marker');
+  window.__T.AdvV.v = 'cases'; go('adv'); if (doc.querySelectorAll('#app .card .meta').length < ADV_CASES.length) fail('index cards lack the hands-on marker'); window.__T.AdvV.v = 'sims';
   NN.sync = false;
   console.log('signatures: ' + ADV_CASES.length + ' unique interactions, each played to its payoff; ' + Object.keys(TAKE).length + ' Monday-morning cards');
 }
@@ -321,7 +328,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   AtV.filter = 'all'; delete S.atlas; go('atlas');
   if (!doc.querySelector('#app .atstop.next') || !doc.querySelector('#app a.btn.primary[href="#atlas-' + ATLAS[0].id + '"]')) fail('atlas map lacks a start button');
   go(''); if (!doc.querySelector('#app a.athero[href="#atlas"]')) fail('story home lacks the 10-hour map');
-  go('labs'); if (!doc.querySelector('#app a.athero[href="#atlas"]')) fail('workbench home lacks the 10-hour map');
+  if (!doc.querySelector('.topnav a[href="#atlas"]')) fail('top bar lacks the 10-hour map');
   for (const m of ['m12', 'm13', 'm14']) { S.tab[m] = 'topics'; go(m);
     if (!doc.querySelector('#app a.atlablink')) fail(m + ' lacks the map link');
     if (doc.querySelectorAll('#app .topic a[href^="#atlas-"]').length !== syllabusTopics(m).length) fail(m + ' syllabus cards lack their animated stop'); }
@@ -344,7 +351,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (rows() !== K.laws.length) fail('kit: all regions should list every row');
   clk([...doc.querySelectorAll('#app .kitchip')].find(b => b.textContent === 'Asia')); if (rows() !== K.laws.filter(r => r[0] === 'Asia').length) fail('kit: region filter');
   go(''); if (!doc.querySelector('#app a.navcard[href="#kit"]')) fail('kit: story landing lacks the kit card');
-  go('labs'); if (!doc.querySelector('#app a.kithero[href="#kit"]')) fail('kit: workbench lacks the kit card');
+  if (!doc.querySelector('.topnav a[href="#kit"]')) fail('kit: top bar lacks the kit link');
   console.log('cio kit: 8 sections, 15 questions with live links, maturity verdicts and region filter work');
 }
 // Inside the model: the math does what the instruments claim, and each instrument plays through
@@ -662,7 +669,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   console.log('harden nexus: ' + HARDEN_LAYERS.length + ' layers played at 3 stars; all ' + (HD_ATTACKS.length - 1) + ' attacks stopped');
 }
 // story mode: play every episode start to finish
-go(''); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 module episodes'); if (!doc.querySelector('#app .nexushero')) fail('NEXUS opening missing on home');
+go(''); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 module episodes'); if (!doc.querySelector('#app .seasonhead a.cta[href="#e00"]')) fail('NEXUS opening missing on home');
 const click = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
 for (const ep of window.__T.EPISODES) {
   go(ep.id); let guard = 0;
@@ -711,6 +718,27 @@ for (const [mod, list] of Object.entries(scen)) { if (!App.byId[mod]) fail('scen
 const disc = window.__T.DISCUSSIONS; if (Object.keys(disc).length !== 9) fail('expected 9 leadership discussions');
 const nDrill = App.labs.reduce((n, l) => n + (l.drills || []).reduce((m, d) => m + d.items.length, 0), 0);
 console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => n + (l.drills || []).length, 0) + ' drills · ' + nDrill + ' drill items');
+// Reading: the OPML feed pack as a page, every source mapped and filterable
+{
+  const { FEEDS, FEED_ALL, FeedV } = window.__T;
+  const xml = readFileSync('app/' + FEEDS.file, 'utf8');
+  const inOpml = (xml.match(/type="rss"/g) || []).length;
+  if (FEED_ALL.length !== inOpml) fail('feeds-data.js is stale: ' + FEED_ALL.length + ' feeds vs ' + inOpml + ' in the OPML (run npm run feeds)');
+  const unmapped = FEED_ALL.filter(f => !f.mods.length || !f.why); if (unmapped.length) fail('feeds without modules or a reason: ' + unmapped.map(f => f.title).join(', '));
+  if (FEED_ALL.some(f => f.mods.some(m => !App.byId[m]))) fail('a feed maps to an unknown module');
+  FeedV.f = 'all'; go('feeds');
+  if (doc.querySelectorAll('#app .feed').length !== FEED_ALL.length) fail('reading page should list every feed');
+  if (!doc.querySelector('#app a[download][href="' + FEEDS.file + '"]')) fail('reading page lacks the OPML download');
+  const click = b => b && b.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  click([...doc.querySelectorAll('#app .filterbar button')].find(b => b.textContent === 'Security'));
+  if (doc.querySelectorAll('#app .feed').length !== FEED_ALL.filter(f => f.cat === 'sec').length) fail('reading filter did not narrow');
+  FeedV.f = 'pick'; go('feeds'); if (!doc.querySelectorAll('#app .feed').length) fail('no start-here picks');
+  S.revealed.m11 = true; S.tab.m11 = 'ans'; go('m11'); if (!doc.querySelector('#app .feedstrip a[href="#feeds"]')) fail('m11 answers lack the keep-reading strip');
+  S.tab.m11 = 'do';
+  go('kit'); if (!doc.querySelector('#app a[href="#feeds"]')) fail('kit lacks the reading link');
+  go(''); if (!doc.querySelector('#app .seasonnav a[href="#feeds"]')) fail('story home lacks the reading link');
+  console.log('reading: ' + FEED_ALL.length + ' feeds in ' + FEEDS.groups.length + ' groups, each mapped to modules; ' + FEED_ALL.filter(f => f.pick).length + ' start-here picks');
+}
 const bad = errors.filter(Boolean);
 if (bad.length) { bad.slice(0, 10).forEach(e => console.error('ERROR ' + e)); process.exitCode = 1; }
 console.log(process.exitCode ? 'smoke FAILED' : 'smoke ok');

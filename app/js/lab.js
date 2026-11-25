@@ -602,4 +602,4 @@ const NN_BY = Object.fromEntries(NN_SIMS.map(x => [x.id, x]));
 const NN_LINK = { p250: 'backdoor', sleeper: 'backdoor', webscale: 'backdoor', subliminal: 'backdoor', poisonrag: 'backdoor', manyshot: 'refusal', bon: 'refusal', crescendo: 'refusal', guard: 'refusal', classifiers: 'refusal', namespace: 'rome', pickle: 'rome', signing: 'rome' };
 function nnCaseLinks(ids) { return ids.map(id => h('a', { href: '#adv-' + id }, ADV[id].title)); }
 function nnSimCard(x) { const done = S.nn && S.nn[x.id] && S.nn[x.id].done;
-  return h('a', { class: 'raghero nnhero', href: '#adv-nn-' + x.id }, h('span', { class: 'kicker' }, x.kicker + (done ? ' · done' : '')), h('b', null, x.title), h('span', null, x.blurb)); }
+  return h('a', { class: 'raghero nnhero glow' + (done ? ' done' : ''), href: '#adv-nn-' + x.id }, h('span', { class: 'kicker' }, x.kicker + (done ? ' · done' : '')), h('b', null, x.title), h('span', { class: 'clamp' }, x.blurb)); }

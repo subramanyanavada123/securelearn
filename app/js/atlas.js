@@ -380,12 +380,7 @@ function atPlaybook() {
           h('div', { class: 'atchecklist' }, D.checks.map((_, k) => atTick(st.id, k, rerender)))); }))));
 }
 
-/* Entry cards for the landing pages and the lab pages. */
-function atHero(cls) {
-  const n = ATLAS.filter(st => atDone(st.id)).length;
-  return h('a', { class: cls + ' athero', href: '#atlas' }, h('span', { class: 'kicker' }, 'Modules 12 to 14 · 10 hours · ' + ATLAS.length + ' animated stops'), h('b', null, 'The 10-hour map: RAG, MCP, shipping and the SOC'),
-    h('span', null, n ? n + ' of ' + ATLAS.length + ' stops seen. Each one: the baseline control, three ways it still fails, and the checks to run.' : 'Every topic as a scene: watch it break, place the control, then three ways the secure design still fails, and a playbook to take home.'));
-}
+/* Entry link from a lab page to its stops on the map. */
 function atLabLink(labId) {
   const lines = atLabLines(labId); if (!lines.length) return null;
   const first = atOf(lines[0].id)[0], n = sum(lines.map(l => atOf(l.id).length));

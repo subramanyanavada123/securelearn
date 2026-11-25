@@ -54,7 +54,7 @@ function programMap() {
 }
 
 function howItWorks() {
-  return box('how', label('How these labs work'),
+  return h('div', { class: 'how' },
     h('p', { class: 'howlead' }, 'Each lab is a piece of real leadership work, not a test. You make the calls your job would ask of you, see the consequences, then compare with an expert answer.'),
     h('ol', { class: 'howsteps' },
       h('li', null, h('b', null, 'Syllabus. '), 'Modules 10–15 open on their syllabus: every topic in teaching order, with a Meridian example and one quick check.'),
@@ -64,6 +64,15 @@ function howItWorks() {
       h('li', null, h('b', null, 'Case studies. '), 'Real incidents: make three calls per case, see what happens, then compare with the expert’s answer.')),
     h('div', { class: 'kindgrid' }, Object.entries(KINDS).map(([k, v]) => h('div', { class: 'kindrow' }, kindBadge(k), h('span', null, v.hint)))));
 }
+function fold(cls, title, sub, ...body) {
+  return h('details', { class: 'fold ' + cls }, h('summary', null, h('b', null, title), sub ? h('span', null, sub) : null), h('div', { class: 'foldbody' }, body));
+}
+function progressRing(frac, big, small) {
+  const r = 34, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac || 0));
+  return h('div', { class: 'pring' }, s('svg', { viewBox: '0 0 80 80', 'aria-hidden': 'true' },
+    s('circle', { cx: 40, cy: 40, r, class: 'pringbg' }), s('circle', { cx: 40, cy: 40, r, class: 'pringfg', style: '--c:' + c.toFixed(1) + ';--off:' + (c * (1 - f)).toFixed(1) })),
+  h('div', { class: 'pringtxt' }, h('b', null, big), h('span', null, small)));
+}
 function home() {
   const done = App.labs.filter(l => statusOf(l.id)[1] === 'done').length;
   const minutes = sum(App.labs.map(l => l.min));
@@ -72,41 +81,34 @@ function home() {
       return h('button', { type: 'button', 'aria-pressed': String(S.table === t), onclick: () => { S.table = t; commit(); paintChrome(); } }, String(i + 1)); }));
   return [
     h('section', { class: 'hero' },
-      h('a', { class: 'back', href: '#' }, '← Back to the story mode'),
+      h('a', { class: 'back', href: '#' }, '← Story mode'),
       h('span', { class: 'eyebrow' }, 'Facilitator workbench · Modules 07–16'),
       h('h1', null, 'Ten labs where leaders make the calls'),
-      h('p', null, 'Each lab puts your table in role, against the clock, on realistic material: architecture diagrams, permission maps, agent logs, tool manifests and a live incident. No technical background needed.')),
-    h('a', { class: 'deckhero', href: '#deck' }, h('span', { class: 'kicker' }, 'Program deck · ' + DECK.order.length + ' slides'), h('b', null, DECK.title),
-      h('span', null, 'Present any section from here. Each lab also has a Deck tab with its module’s slides and speaker notes.')),
-    h('a', { class: 'deckhero advhero', href: '#adv' }, h('span', { class: 'kicker' }, 'Advanced path · ' + ADV_CASES.length + ' real attacks'), h('b', null, 'How AI systems actually get broken'),
-      h('span', null, ADV_TRACKS.map(t => t.name).join(' · '))),
-    atHero('deckhero'),
-    h('a', { class: 'deckhero kithero', href: '#kit' }, h('span', { class: 'kicker' }, 'Take-home kit · for participants'), h('b', null, 'Take it to your CIO'),
-      h('span', null, 'Why now, 15 questions, a maturity check to score, the global framework map and a 90-day plan. Share the link at the end of the session.')),
-    howItWorks(),
-    h('div', { class: 'homegrid' },
-      h('div', { class: 'tablebox' }, h('span', { class: 'label' }, 'Your table'), tbl,
-        h('p', { class: 'small' }, 'Tap your table number on every phone at your table. Answers stay on this device until you share a result code.')),
-      h('div', { class: 'box dark' }, label('Your progress'), stats(stat(done + ' / 10', 'Labs done'), stat(Math.round(minutes / 60 * 10) / 10 + ' h', 'Hands-on time')), meter(done / 10, 'accent', 'Labs done'))),
+      h('p', null, 'Each lab puts your table in role, against the clock, on real material: architecture diagrams, permission maps, agent logs, tool manifests and a live incident.')),
+    h('div', { class: 'sessionbar' },
+      h('div', { class: 'tablebox' }, h('span', { class: 'label' }, S.table ? 'Your table · ' + S.table : 'Pick your table'), tbl),
+      h('div', { class: 'progbox' }, progressRing(done / 10, h('span', { 'data-count': done }, done + '/10'), 'labs done'),
+        h('div', { class: 'progtxt' }, h('b', null, Math.round(minutes / 60 * 10) / 10 + ' hours hands-on'), h('span', null, 'Answers stay on this device until you share a result code.')))),
     programMap(),
-    h('div', { class: 'grid' }, App.labs.map(l => { const [t, k] = statusOf(l.id);
-      return h('a', { class: 'card', href: '#' + l.id },
+    h('div', { class: 'grid labgrid' }, App.labs.map(l => { const [t, k] = statusOf(l.id), sy = syllabusFor(l.id);
+      return h('a', { class: 'card glow', href: '#' + l.id },
         h('div', { class: 'row' }, h('span', { class: 'modnum' }, 'M' + l.n), h('span', { class: 'meta' }, l.mod), h('span', { class: 'status ' + k }, t)),
-        h('h3', null, syllabusFor(l.id) ? syllabusFor(l.id).name : l.title), h('p', { class: 'leadq' }, LEAD_Q[l.id]),
-        syllabusFor(l.id) ? h('span', { class: 'meta' }, (p => p.done + ' of ' + p.total + ' syllabus topics checked · work task: ' + l.title)(topicProgress(l.id))) : h('span', { class: 'meta' }, l.format + ' · ' + l.min + ' min'),
-        h('span', { class: 'meta' }, scenariosFor(l).length + ' scenarios · ' + sum((l.drills || []).map(d => d.items.length)) + ' drill items'));
+        h('h3', null, sy ? sy.name : l.title), h('p', { class: 'leadq' }, LEAD_Q[l.id]),
+        h('span', { class: 'meta cardfoot' }, l.min + ' min · ' + scenariosFor(l).length + ' cases · ' + sum((l.drills || []).map(d => d.items.length)) + ' quiz items' + (sy ? ' · ' + (p => p.done + '/' + p.total + ' topics')(topicProgress(l.id)) : '')));
     })),
-    h('div', { class: 'tips' }, [['Take a role', 'People argue harder from a role than as themselves.'], ['Watch the clock', 'Time pressure shows how people really decide.'], ['Compare tables', 'Where tables disagree, there is a lesson.'], ['Use your own systems', 'Share only what you are allowed to; anonymise freely.']]
-      .map(([b, t]) => h('div', { class: 'tip' }, h('b', null, b), h('span', null, t)))),
-    h('div', { class: 'outcomes' }, OUTCOMES.map(([v, t, m]) => h('div', { class: 'tip' }, h('b', null, v), h('span', null, t), h('span', { class: 'small' }, m)))),
-    wrapUp(),
-    box('facil', label('For facilitators'),
-      h('ol', { class: 'plain numbered' },
-        h('li', null, 'Project this app on the main screen. Use ', h('b', null, 'Present'), ' inside a lab for larger text.'),
-        h('li', null, 'Each table works on a phone and taps ', h('b', null, 'Share with the room'), ' at the end of the lab. That gives a result code to paste into the room chat.'),
-        h('li', null, 'On the projected screen, open the lab’s ', h('b', null, 'Room'), ' tab and paste all the codes at once. The room view compares every table.'),
-        h('li', null, 'Every lab has three parts: 1 · Work task (numbered steps, each labelled Decide, Simulate, Quiz or Read), 2 · Quick quiz (instant feedback) and 3 · Case studies (the module’s live scenarios and leadership discussion, each with an expert answer).'),
-        h('li', null, 'Ask tables to tap Check my work only after the room has compared. Facilitator notes are at the bottom of each Expert answers tab.')))
+    h('div', { class: 'folds reveal-up' },
+      fold('f-how', 'How these labs work', 'Syllabus, work task, check, quiz, cases', howItWorks()),
+      fold('f-close', 'Close the day', 'Six takeaways and your 90-day plan', wrapUp()),
+      fold('f-facil', 'For facilitators', 'Running the room, result codes, tips', 
+        h('ol', { class: 'plain numbered' },
+          h('li', null, 'Project this app on the main screen. Use ', h('b', null, 'Present'), ' inside a lab for larger text.'),
+          h('li', null, 'Each table works on a phone and taps ', h('b', null, 'Share with the room'), ' at the end of the lab. That gives a result code to paste into the room chat.'),
+          h('li', null, 'On the projected screen, open the lab’s ', h('b', null, 'Room'), ' tab and paste all the codes at once. The room view compares every table.'),
+          h('li', null, 'Every lab has three parts: 1 · Work task (numbered steps, each labelled Decide, Simulate, Quiz or Read), 2 · Quick quiz (instant feedback) and 3 · Case studies (the module’s live scenarios and leadership discussion, each with an expert answer).'),
+          h('li', null, 'Ask tables to tap Check my work only after the room has compared. Facilitator notes are at the bottom of each Expert answers tab.')),
+        h('div', { class: 'tips' }, [['Take a role', 'People argue harder from a role than as themselves.'], ['Watch the clock', 'Time pressure shows how people really decide.'], ['Compare tables', 'Where tables disagree, there is a lesson.'], ['Use your own systems', 'Share only what you are allowed to; anonymise freely.']]
+          .map(([b, t]) => h('div', { class: 'tip' }, h('b', null, b), h('span', null, t)))),
+        h('div', { class: 'outcomes' }, OUTCOMES.map(([v, t, m]) => h('div', { class: 'tip' }, h('b', null, v), h('span', null, t), h('span', { class: 'small' }, m))))))
   ];
 }
 
@@ -182,7 +184,7 @@ function labView(lab) {
     h('div', { class: 'btnrow end' }, confirmTwice('reset-' + lab.id, 'Clear this lab’s answers', () => { delete S.labs[lab.id]; delete S.revealed[lab.id]; }, 'warn'))];
   else if (tab === 'ans') body = rev
     ? [lab.answers(st), details('Facilitator notes', false, h('ul', { class: 'plain' }, lab.guide.map(g => h('li', null, g)))),
-      h('div', { class: 'btnrow' }, confirmTwice('hide-' + lab.id, 'Hide answers again', () => { delete S.revealed[lab.id]; }))]
+      h('div', { class: 'btnrow' }, confirmTwice('hide-' + lab.id, 'Hide answers again', () => { delete S.revealed[lab.id]; })), feedStrip(lab.id)]
     : [box('locked', h('h3', null, 'Finish the work task first'), h('p', { class: 'sub' }, 'Expert answers open when your table taps Check my work. In a facilitated session, wait until tables have compared in the Room: seeing answers first spoils the debate.'),
       h('button', { type: 'button', class: 'btn primary', onclick: () => checkWork(lab) }, 'Check my work'))];
   else if (tab === 'deck') body = deckPane(lab);
@@ -210,23 +212,26 @@ App.render = function () {
   const route = location.hash.slice(1), lab = /^adv-nn-/.test(route) && NN_BY[route.slice(7)];
   document.body.classList.toggle('labmode', !!lab);
   if (lab) { document.body.classList.remove('story', 'present'); document.getElementById('app').replaceChildren(labMount(lab.id)); return; }
-  if (route === '' || route === 'rag' || /^harden(-\w+)?$/.test(route) || /^e\d\d$/.test(route)) { document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route); return; }
+  if (route === '' || route === 'rag' || /^harden(-\w+)?$/.test(route) || /^e\d\d$/.test(route)) { document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route);
+    const fresh = App.viewKey !== 'story:' + route; App.viewKey = 'story:' + route; Motion.after(document.getElementById('app'), fresh); return; }
   document.body.classList.remove('story');
   const app = document.getElementById('app'); const id = currentLabId(); const y = window.scrollY;
   const deckRoute = route === 'deck' || route.startsWith('deck-'); if (!deckRoute) App.deckJump = null;
-  const advRoute = route === 'adv' || route.startsWith('adv-'), kitRoute = route === 'kit', atlasRoute = route === 'atlas' || route.startsWith('atlas-');
+  const advRoute = route === 'adv' || route.startsWith('adv-'), kitRoute = route === 'kit' || route === 'feeds', feedsRoute = route === 'feeds', atlasRoute = route === 'atlas' || route.startsWith('atlas-');
   if (!atlasRoute) atStop();
   App.deckNav = null;
   const active = document.activeElement && document.activeElement.id;
   let view;
-  try { view = deckRoute ? deckPage(route) : advRoute ? advPage(route) : atlasRoute ? atlasPage(route) : kitRoute ? kitPage() : id ? labView(App.byId[id]) : home(); }
+  try { view = deckRoute ? deckPage(route) : advRoute ? advPage(route) : atlasRoute ? atlasPage(route) : feedsRoute ? feedsPage() : kitRoute ? kitPage() : id ? labView(App.byId[id]) : home(); }
   catch (e) { console.error(e); view = [box('', h('h3', null, 'This lab could not load'), h('p', { class: 'sub' }, 'Clear its answers to start again.'), id ? h('button', { type: 'button', class: 'btn warn', onclick: () => { delete S.labs[id]; commit(); } }, 'Clear this lab') : null)]; }
   app.replaceChildren(...[view].flat(Infinity).filter(Boolean));
   const here = deckRoute ? 'deck' : advRoute || kitRoute || atlasRoute ? route : id || '';
   if (lastView === here) window.scrollTo(0, y); else window.scrollTo(0, 0);
   lastView = here;
   const viewKey = (deckRoute ? 'deck' : advRoute || kitRoute || atlasRoute ? route : id || 'labs') + ':' + (id ? (S.tab[id] || 'do') : '');
-  if (viewKey !== App.viewKey) { App.viewKey = viewKey; app.classList.remove('fresh'); void app.offsetWidth; app.classList.add('fresh'); clearTimeout(App.freshT); App.freshT = setTimeout(() => app.classList.remove('fresh'), 1200); }
+  const fresh = viewKey !== App.viewKey;
+  if (fresh) { App.viewKey = viewKey; app.classList.remove('fresh'); void app.offsetWidth; app.classList.add('fresh'); clearTimeout(App.freshT); App.freshT = setTimeout(() => app.classList.remove('fresh'), 1600); }
+  Motion.after(app, fresh);
   if (active) { const el = document.getElementById(active); if (el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA')) el.focus(); }
   paintChrome(); tick();
 };
@@ -238,7 +243,7 @@ function paintChrome() {
 
 document.getElementById('brand').addEventListener('click', () => { location.hash = 'labs'; });
 document.getElementById('tablechip').addEventListener('click', () => { location.hash = 'labs'; setTimeout(() => { const i = document.getElementById('tbl'); if (i) i.focus(); }, 60); });
-window.addEventListener('hashchange', () => { App.render(); const id = currentLabId(); if (id && S.tab[id] === 'room') watchRoom(id); });
+window.addEventListener('hashchange', () => { Motion.swap(() => App.render()); const id = currentLabId(); if (id && S.tab[id] === 'room') watchRoom(id); });
 setInterval(tick, 500);
 App.render();
 
