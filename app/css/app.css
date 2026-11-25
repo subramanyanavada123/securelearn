@@ -2131,3 +2131,20 @@ html[data-theme="light"] .govfwrow .hot { background: #FDECEC; } html[data-theme
 .govfwrow.opsrow > span { line-height: 1.45; }
 .opscard::before { background: linear-gradient(90deg, #5CE1E6, #8DB6F2, #F2B544); }
 .raglink.opslink { border-color: rgba(92,225,230,.4); }
+/* AI SecOps hub: a moving picture per card, one-line hooks, the playbook folded away */
+.opscard .opsviz { display: block; width: 100%; height: 64px; margin: 4px 0 6px; overflow: visible; }
+.opsviz .tr, .opsviz .flat { stroke: var(--line); stroke-width: 2; }
+.opsviz .flat { stroke: var(--good); stroke-opacity: .5; stroke-width: 1.5; }
+.opsviz .ok { fill: var(--good); } .opsviz .bad { fill: var(--bad); } .opsviz .ink { fill: var(--accent); } .opsviz .b { fill: var(--blue); }
+.opsviz .v { fill: #A98BF5; } .opsviz .dim { opacity: .35; } .opsviz .hi { filter: drop-shadow(0 0 3px var(--good)); }
+.opsviz .off { fill: var(--surface); stroke: var(--bad); stroke-width: 1.5; stroke-dasharray: 3 2; } .opsviz .off.v { stroke: #A98BF5; fill: var(--surface); }
+.opsviz .line { fill: none; stroke: var(--blue); stroke-width: 2.5; } .opsviz .band { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.opsviz .lane { fill: var(--blue-soft); opacity: .6; }
+.opsviz .pipe { fill: none; stroke: var(--good); stroke-opacity: .35; stroke-width: 6; stroke-linecap: round; } .opsviz .pipe.leak { stroke: var(--bad); stroke-opacity: .5; } .opsviz .okf { fill: var(--good); }
+.opscard .opshook { font-size: 15px; color: var(--ink); opacity: .82; }
+.opscard .govtopics { margin-top: 4px; }
+details.opsplay { margin: 28px 0 10px; border: 1px solid var(--glass-line, var(--line)); border-radius: 16px; padding: 4px 16px; background: var(--glass, transparent); }
+details.opsplay > summary { cursor: pointer; font: 600 20px var(--f-display); padding: 12px 0; list-style: none; }
+details.opsplay > summary::-webkit-details-marker { display: none; }
+details.opsplay > summary::after { content: " +"; color: var(--accent); }
+details.opsplay[open] > summary::after { content: " −"; }

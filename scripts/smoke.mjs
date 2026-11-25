@@ -893,12 +893,12 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
   const slide = (P3, k, v) => { P3[k] = v; const el = doc.querySelector('#app .labside input[type=range]'); el.value = v; el.dispatchEvent(new window.Event('input')); };
   const finish = id => { doc.querySelectorAll('#app .labdef').forEach(clk); nx(id + ' defend'); chk(S.nn[id] && S.nn[id].done, id + ' debrief not reached'); chk(doc.querySelector('#app a.labx[href="#adv-ops"]'), id + ' close should return to AI SecOps'); };
   { go2('optel'); blocked('optel sources');
-    ['Answer metadata', 'Retrieval log', 'Tool-call log', 'On-behalf-of', 'Knowledge-base change', 'Version stamp'].forEach(t => tap(new RegExp('^' + t), 'optel')); nx('optel sources');
+    ['Answer metadata', 'Retrieval log', 'Tool-call log', 'On-behalf-of', 'KB changes', 'Version stamp'].forEach(t => tap(new RegExp('^' + t), 'optel')); nx('optel sources');
     blocked('optel pipeline'); ['Keep every event', 'Tokenise', '30 days hot', 'Mapped to a schema'].forEach(t => tap(new RegExp('^' + t), 'optel pipe')); nx('optel pipeline');
     T.OP_Q.forEach(q => tap(new RegExp(esc(q.t)), 'optel ask')); nx('optel siem'); finish('optel'); }
   { const L3 = go2('opdetect'), P3 = L3.sim.P; blocked('opdetect flood');
-    tap(/^Keyword list$/, 'kw off'); slide(P3, 'tv', 82); nx('opdetect capacity');
-    blocked('opdetect pack'); ['…also on retrieved', 'Retrieve → bulk', 'Link to a domain', 'Canary phrase'].forEach(t => tap(new RegExp('^' + esc(t)), 'pack')); slide(P3, 'tv', 98);
+    tap(/^Keywords$/, 'kw off'); slide(P3, 'tv', 82); nx('opdetect capacity');
+    blocked('opdetect pack'); ['+ documents', 'Read → lookup', 'New domain', 'Canary phrase'].forEach(t => tap(new RegExp('^' + esc(t)), 'pack')); slide(P3, 'tv', 98);
     chk(T.opPackOk(Object.assign({}, P3.pack, { t: 0.5 + 0.49 * 0.98 })), 'opdetect pack should meet the target'); nx('opdetect pack');
     tap(/Week 2/, 'week 2'); nx('opdetect adapt'); finish('opdetect'); }
   { const L3 = go2('opbase'), P3 = L3.sim.P; blocked('opbase one'); tap(/^Fixed reference/, 'ref'); nx('opbase one');
@@ -906,18 +906,18 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
     const first = T.OP_TRACES[0]; tap(first.bad ? /Normal/ : /Suspicious/, 'wrong'); chk(P3.ti === 0 && P3.wrong === first.id, 'a wrong call should not advance');
     T.OP_TRACES.forEach(t => tap(t.bad ? /Suspicious/ : /Normal/, 'trace ' + t.id)); chk(P3.ti === T.OP_TRACES.length, 'all traces sorted'); nx('opbase traces'); finish('opbase'); }
   { const L3 = go2('ophunt'), P3 = L3.sim.P; btns().forEach(b => clk(b)); nx('ophunt channels');
-    blocked('ophunt hunt'); ['imgs', 'first', 'decode', 'retr', 'who', 'mail'].forEach(id => tap(new RegExp('^▶ ' + esc(T.OP_PIV.find(p => p.id === id).t)), 'pivot ' + id));
+    blocked('ophunt hunt'); ['imgs', 'first', 'decode', 'retr', 'who', 'mail'].forEach(id => tap(new RegExp('^▶ ' + esc(T.OP_PIV.find(p => p.id === id).s)), 'pivot ' + id));
     chk(T.opHuntFound(P3.done).length === 4, 'hunt found all four'); nx('ophunt hunt');
-    T.OP_PROMOTE.filter(p => !p.good).forEach(p => tap(new RegExp(esc(p.t)), 'bad promote')); chk(!Object.keys(P3.picked).length, 'a block or a flood rule is not a detection');
-    T.OP_PROMOTE.filter(p => p.good).forEach(p => tap(new RegExp(esc(p.t)), 'promote')); chk(T.opCoverage(P3.picked).length === 6, 'all six channels covered'); nx('ophunt promote'); finish('ophunt'); }
+    T.OP_PROMOTE.filter(p => !p.good).forEach(p => tap(new RegExp(esc(p.s)), 'bad promote')); chk(!Object.keys(P3.picked).length, 'a block or a flood rule is not a detection');
+    T.OP_PROMOTE.filter(p => p.good).forEach(p => tap(new RegExp(esc(p.s)), 'promote')); chk(T.opCoverage(P3.picked).length === 6, 'all six channels covered'); nx('ophunt promote'); finish('ophunt'); }
   { const L3 = go2('opsoar'), P3 = L3.sim.P; tap(/Run the shift/, 'run 1'); chk(P3.run.missed === 2, 'round one misses two'); nx('opsoar r1');
     [1, 2, 3, 4].forEach(i => clk([...doc.querySelectorAll('#app .labside .labchipset')][i].querySelectorAll('button')[1])); tap(/Run the shift/, 'run 2'); chk(P3.ok2, 'opsoar redesign should pass: ' + JSON.stringify(P3.mode)); nx('opsoar r2');
     tap(/^Eradicate/, 'erad first'); chk(!P3.placed.length && P3.wrong, 'eradicating first should be refused');
-    T.OP_IR.forEach(s2 => tap(new RegExp('^' + esc(s2.t)), 'ir ' + s2.id)); chk(P3.placed.length === 8, 'ir all placed'); nx('opsoar ir'); finish('opsoar'); }
-  { const L3 = go2('opkill'), P3 = L3.sim.P; tap(/Start the clock/, 'start'); tap(/^Shut the whole/, 'kill'); tap(/Fast-forward/, 'ff'); blocked('opkill big red button');
-    tap(/Run it again/, 'again'); tap(/Start the clock/, 'start 2'); ['Quarantine', 'Pause and drain', 'Revoke the CRM'].forEach(t => tap(new RegExp('^' + t), 'lever')); tap(/Fast-forward/, 'ff 2');
+    T.OP_IR.forEach(s2 => tap(new RegExp('^' + esc(s2.s)), 'ir ' + s2.id)); chk(P3.placed.length === 8, 'ir all placed'); nx('opsoar ir'); finish('opsoar'); }
+  { const L3 = go2('opkill'), P3 = L3.sim.P; tap(/Start the clock/, 'start'); tap(/^Whole platform off/, 'kill'); tap(/Fast-forward/, 'ff'); blocked('opkill big red button');
+    tap(/Run it again/, 'again'); tap(/Start the clock/, 'start 2'); ['Quarantine', 'Drain the job', 'Revoke CRM'].forEach(t => tap(new RegExp('^' + t), 'lever')); tap(/Fast-forward/, 'ff 2');
     chk(T.opContainOk(T.opContain(P3.pulls)), 'opkill precise run should contain'); nx('opkill live');
-    btns().forEach(b => clk(b)); tap(/^Deny at the AI gateway/, 'gw'); tap(/^Disable the agent/, 'idp'); nx('opkill drill'); finish('opkill'); }
+    btns().forEach(b => clk(b)); tap(/^Gateway deny/, 'gw'); tap(/^Identity revoke/, 'idp'); nx('opkill drill'); finish('opkill'); }
   T.NN.sync = false;
   console.log('ai secops: 6 instruments, 14 topics; default pack ' + d0.alerts + ' alerts → layered pack within ' + 60 + '; rolling baseline ' + r7.delay + ' days late vs ' + rf.delay + '; vendor SOAR missed ' + s0.missed + ' + ' + s0.outages.length + ' outages; contained ' + best.leaked + ' records at impact ' + best.impact + ' vs platform switch ' + big.impact + '; all played to the debrief');
 }

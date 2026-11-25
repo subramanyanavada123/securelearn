@@ -24,27 +24,24 @@ function ophMount(L) {
     hud: () => [
       [['CHANNELS', () => P.seen.size + '/' + OP_CHAN.length], ['CLASSIC SENSORS SEE', () => OP_CHAN.filter(c => ['dlp', 'proxy', 'casb'].some(s => c.seen[s] === 1)).length + '/' + OP_CHAN.length, 'bad']],
       [['HOURS', () => used() + ' / ' + OP_HUNT_H, used() > OP_HUNT_H ? 'bad' : 'good'], ['FINDINGS', () => found().length + '/' + OP_FINDS.length, found().length === OP_FINDS.length ? 'good' : '']],
-      [['DETECTIONS', () => picked() + '/' + goodN], ['CHANNELS COVERED', () => opCoverage(P.picked).length + '/' + OP_CHAN.length, opCoverage(P.picked).length === OP_CHAN.length ? 'good' : '']],
+      [['CHANNELS COVERED', () => opCoverage(P.picked).length + '/' + OP_CHAN.length, opCoverage(P.picked).length === OP_CHAN.length ? 'good' : '']],
       axDefHud(P, OPH_VEC, OPH_DEF), axDefHud(P, OPH_VEC, OPH_DEF)][L.step],
     draw: (L2, g) => L2.step >= 3 ? axDrawDefend(L2, g, P, OPH_GROUPS, OPH_VEC, OPH_DEF) : [ophDrawChan, ophDrawHunt, ophDrawPromote][L2.step](L2, g, P, used, found),
     steps: [
-      { say: () => P.seen.size < OP_CHAN.length ? 'A customer says the support chat showed a broken image. DLP: no alerts. Proxy: nothing odd. Look at each way data can leave an agent, and which sensor would see it.'
-          : 'Your three classic sensors fully see one channel of six. The agent’s own logs see all six.',
-        side: L2 => [h('div', { class: 'labstack' }, OP_CHAN.map(c => labBtn((P.seen.has(c.id) ? '✓ ' : '▶ ') + c.t, () => { P.chan = c.id; P.seen.add(c.id); P.at = L2.t; L2.repaint(); })))],
+      { say: () => P.seen.size < OP_CHAN.length ? 'A customer saw a broken image. DLP and proxy: silent. Check each way out.' : 'Classic sensors fully see one way out. Agent logs see all six.',
+        side: L2 => [h('div', { class: 'labstack' }, OP_CHAN.map(c => labBtn((P.seen.has(c.id) ? '✓ ' : '▶ ') + c.s, () => { P.chan = c.id; P.seen.add(c.id); P.at = L2.t; L2.repaint(); })))],
         acts: L2 => [labNext(L2, 'Start the hunt →', P.seen.size < OP_CHAN.length)] },
-      { say: () => { const f = found(); return f.length < OP_FINDS.length ? 'Hypothesis: data is leaving through Relay’s answers. You have ' + OP_HUNT_H + ' analyst hours. Each pivot is a question in plain words. Find the channel, the scope, the root cause, and any second channel.' + (used() > OP_HUNT_H ? ' Over the shift: the rest goes to tomorrow.' : '')
-          : 'Four findings in ' + used() + ' hours' + (OP_PIV.some(p => p.dead && P.done.has(p.id)) ? ', with a dead end or two. Dead ends are normal; the hypothesis is what keeps them few.' : '. No dead ends: the hypothesis did the work.'); },
-        side: L2 => [h('div', { class: 'labstack' }, avail().map(p => labBtn('▶ ' + p.t + ' · ' + p.h + ' h', () => { P.done.add(p.id); P.last = p.id; P.at = L2.t; L2.repaint(); }))),
-          h('p', { class: 'labsm' }, 'Done: ' + (P.done.size ? OP_PIV.filter(p => P.done.has(p.id)).map(p => p.t).join(' · ') : 'nothing yet'))],
+      { say: () => found().length < OP_FINDS.length ? (used() > OP_HUNT_H ? 'Over the shift. Fewer dead ends next time.' : 'Hunch: data leaves in Relay’s answers. 8 hours. Find 4 things.') : 'Four findings in ' + used() + ' hours.',
+        side: L2 => [h('div', { class: 'labstack' }, avail().map(p => labBtn('▶ ' + p.s + ' · ' + p.h + ' h', () => { P.done.add(p.id); P.last = p.id; P.at = L2.t; L2.repaint(); })))],
         acts: L2 => [labNext(L2, 'Make it stick →', found().length < OP_FINDS.length)] },
-      { say: () => P.wrong ? OP_PROMOTE.find(p => p.id === P.wrong).why : picked() < goodN ? 'A hunt that ends as a report finds the same thing next time. Turn the findings into standing detections.' : 'Four detections cover all six channels. The next leak is an alert, not a customer complaint.',
-        side: L2 => [h('div', { class: 'labstack' }, OP_PROMOTE.map(p => labBtn((P.picked[p.id] ? '✓ ' : P.wrong === p.id ? '✗ ' : '+ ') + p.t, () => { if (p.good) { P.picked[p.id] = true; P.wrong = null; } else P.wrong = p.id; P.at = L2.t; L2.repaint(); }, P.picked[p.id] ? 'ok' : '')))],
+      { say: () => P.wrong ? OP_PROMOTE.find(p => p.id === P.wrong).why : picked() < goodN ? 'Turn the findings into standing detections.' : 'All six ways out now raise an alert.',
+        side: L2 => [h('div', { class: 'labstack' }, OP_PROMOTE.map(p => labBtn((P.picked[p.id] ? '✓ ' : P.wrong === p.id ? '✗ ' : '+ ') + p.s, () => { if (p.good) { P.picked[p.id] = true; P.wrong = null; } else P.wrong = p.id; P.at = L2.t; L2.repaint(); }, P.picked[p.id] ? 'ok' : '')))],
         acts: L2 => [labNext(L2, 'Close the paths →', picked() < goodN)] },
       { enter: () => { P.on = {}; P.flash = {}; },
         say: () => { const n = axLive(OPH_VEC, OPH_DEF, P.on).length; return n ? n + ' ways data leaves unseen. Switch on controls.' : 'All ' + OPH_VEC.length + ' closed.'; },
         side: L2 => [axDefSide(L2, P, OPH_DEF)],
         acts: L2 => [labNext(L2, 'Debrief →', !Object.values(P.on).some(Boolean))] },
-      { say: () => 'AI exfiltration rides on normal features: links, images, emails, tickets. Hunt for it on purpose, then make every finding an alert.',
+      { say: () => 'Hunt on purpose. Make every finding an alert.',
         enter: () => labDone('ophunt'),
         side: () => axDebrief(P, OPH_VEC, OPH_DEF, [
           ['Aug 2024 · Slack AI', 'A message in a public channel made Slack AI show a link carrying a private channel’s API key. Nothing a file-based DLP watches.'],
@@ -55,48 +52,57 @@ function ophMount(L) {
         acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), opBack()] }
     ] };
 }
+// Ways out × sensors, as a map of lit and dark dots.
 function ophDrawChan(L, g, P) {
-  const pad = 16, lw = Math.min(280, L.w * 0.3), n = OP_SENS.length, cw = (L.w - lw - pad * 3) / n, top = 64, rh = Math.min(60, (L.h - top - 50) / OP_CHAN.length - 6);
-  labText(g, 'WAYS OUT  ×  WHO WOULD SEE IT', pad, 26, { size: 12, w: 700, col: lc(LC.blue, 1) });
-  OP_SENS.forEach(([k, t], j) => { const x = lw + pad * 2 + j * cw; gvWrap(g, t.toUpperCase(), x + cw / 2, top - 22, cw - 8, { size: 10, w: 700, align: 'center', col: lc(['out', 'tool'].includes(k) ? LC.good : LC.mute, 1), max: 2 }); });
-  OP_CHAN.forEach((c, i) => { const y = top + i * (rh + 6), seen = P.seen.has(c.id), cur = P.chan === c.id;
-    axCard(g, pad, y, lw, rh, { col: cur ? LC.ink : seen ? LC.blue : LC.mute, lines: [[c.t, lc(LC.text, seen ? 1 : 0.6), false]], fs: Math.max(10, Math.min(12, lw / 24)) });
-    OP_SENS.forEach(([k], j) => { const x = lw + pad * 2 + j * cw, v = seen ? c.seen[k] || 0 : null, col = v == null ? LC.mute : v === 1 ? LC.good : v ? LC.ink : LC.bad;
-      g.fillStyle = v == null ? 'rgba(141,182,242,.05)' : lc(col, v === 0 ? 0.1 : 0.22); g.fillRect(x + 3, y, cw - 6, rh); g.strokeStyle = lc(col, v == null ? 0.2 : 0.7); g.strokeRect(x + 3.5, y + 0.5, cw - 7, rh - 1);
-      if (v != null) labText(g, v === 1 ? '✓' : v ? 'partly' : '✗', x + cw / 2, y + rh / 2 + 5, { size: v === 1 || !v ? 16 : 11, w: 700, align: 'center', col: lc(col, 1) }); }); });
-  const c = P.chan && OP_CHAN.find(x => x.id === P.chan); if (c) gvWrap(g, c.note, L.w / 2, L.h - 26, L.w - pad * 2, { size: 13, align: 'center', col: lc(LC.ink, 1), max: 2 });
+  const pad = 26, lw = 170, n = OP_SENS.length, gx = pad + lw, cw = Math.min(130, (L.w - gx - pad) / n), top = 110, rh = Math.min(92, (L.h - top - 70) / OP_CHAN.length);
+  const cx = j => gx + cw * (j + 0.5) + (j >= 3 ? 24 : 0);
+  opCap(g, 'CLASSIC SENSORS', (cx(0) + cx(2)) / 2, 30, lc(LC.mute, 1), 'center'); opCap(g, 'AGENT LOGS', (cx(3) + cx(4)) / 2, 30, lc(LC.good, 1), 'center');
+  g.strokeStyle = 'rgba(141,182,242,.2)'; g.beginPath(); g.moveTo(cx(2) + cw / 2 + 12, 20); g.lineTo(cx(2) + cw / 2 + 12, top + OP_CHAN.length * rh - 10); g.stroke();
+  OP_SENS.forEach(([k, t], j) => opLbl(g, t, cx(j), 62, lc(j >= 3 ? LC.good : LC.text, 0.95), 13, 700));
+  OP_CHAN.forEach((c, i) => { const y = top + i * rh + rh / 2, seen = P.seen.has(c.id), cur = P.chan === c.id;
+    if (cur) { opRR(g, pad - 10, y - rh / 2 + 4, L.w - pad * 2 + 20, rh - 8, 12); g.fillStyle = lc(LC.ink, 0.07); g.fill(); }
+    labText(g, c.s, pad, y + 5, { size: 14, w: 700, mono: false, col: lc(seen ? LC.text : LC.mute, 1) });
+    OP_SENS.forEach(([k], j) => { const v = seen ? c.seen[k] || 0 : null, x = cx(j);
+      if (v == null) { g.fillStyle = 'rgba(141,182,242,.15)'; g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); return; }
+      if (v === 1) opNode(g, x, y, 13, LC.good, true, '✓');
+      else if (v) { opNode(g, x, y, 13, LC.ink, false, ''); g.fillStyle = lc(LC.ink, 0.9); g.beginPath(); g.arc(x, y, 13, Math.PI / 2, Math.PI * 1.5); g.fill(); }
+      else opNode(g, x, y, 13, LC.bad, false, '✕'); }); });
+  const c = P.chan && OP_CHAN.find(x => x.id === P.chan); if (c) opLbl(g, c.note, L.w / 2, L.h - 22, lc(LC.ink, 1), 14);
 }
+// The hunt: a tree of pivots, an hours dial, the latest result, four findings.
 function ophDrawHunt(L, g, P, used, found) {
-  const pad = 16, lw = L.w * 0.6, u = used();
-  labText(g, 'HUNT · ' + u + ' OF ' + OP_HUNT_H + ' HOURS', pad, 24, { size: 12, w: 700, col: lc(u > OP_HUNT_H ? LC.bad : LC.blue, 1) });
-  gvBar(g, pad, 32, lw - pad, 8, u / OP_HUNT_H, u > OP_HUNT_H ? LC.bad : LC.ink);
-  // the pivot tree: depth by prerequisites
+  const pad = 26, tw = L.w * 0.6, u = used(), f = found();
   const depth = id => { const p = OP_PIV.find(x => x.id === id); return p.need.length ? 1 + Math.max(...p.need.map(depth)) : 0; };
-  const cols = {}; OP_PIV.forEach(p => { const d = depth(p.id); (cols[d] = cols[d] || []).push(p); });
-  const nd = Object.keys(cols).length, cw = (lw - pad) / nd, pos = {};
-  Object.keys(cols).sort().forEach((d, i) => cols[d].forEach((p, j) => { const n = cols[d].length, ch = Math.min(70, (L.h - 120) / n - 8); pos[p.id] = [pad + i * cw, 60 + j * (ch + 8) + (L.h - 120 - n * (ch + 8)) / 2, cw - 12, ch]; }));
-  OP_PIV.forEach(p => p.need.forEach(n => { const a = pos[n], b = pos[p.id]; g.strokeStyle = lc(P.done.has(p.id) ? LC.good : LC.mute, P.done.has(p.id) ? 0.8 : 0.25); g.beginPath(); g.moveTo(a[0] + a[2], a[1] + a[3] / 2); g.lineTo(b[0], b[1] + b[3] / 2); g.stroke(); }));
-  OP_PIV.forEach(p => { const [x, y, w, hh] = pos[p.id], dn = P.done.has(p.id), open = !dn && p.need.every(n => P.done.has(n)), col = dn ? (p.dead ? LC.mute : p.finds ? LC.good : LC.blue) : open ? LC.ink : LC.mute;
-    if (P.last === p.id) labGlow(g, x + w / 2, y + hh / 2, w * 0.6, col, 0.25);
-    axCard(g, x, y, w, hh, { col, ok: dn && !!p.finds, title: dn ? (p.dead ? 'DEAD END' : p.finds ? OP_FINDS.find(f => f[0] === p.finds)[1].toUpperCase() : 'DONE') : open ? 'OPEN · ' + p.h + ' H' : 'LOCKED', lines: [[p.t, lc(LC.text, dn || open ? 0.95 : 0.4), false]], fs: Math.max(9, Math.min(11, w / 20)) }); });
-  // the last result
-  const x0 = lw + pad, w = L.w - x0 - pad, p = P.last && OP_PIV.find(x => x.id === P.last);
-  labText(g, 'RESULT', x0, 24, { size: 11, w: 700, col: lc(LC.mute, 1) });
-  if (p) { gvWrap(g, p.t, x0, 50, w, { size: 14, w: 700, col: lc(LC.ink, 1), max: 2 });
-    p.rows.forEach((r, i) => { const k = NN.sync ? 1 : Math.min(1, (L.t - P.at) * 3 - i * 0.5); if (k <= 0) return; g.globalAlpha = k;
-      axCard(g, x0, 90 + i * 56, w, 48, { col: p.dead ? LC.mute : LC.good, lines: [[r, lc(LC.text, 1), true]], fs: Math.max(10, Math.min(13, w / 34)) }); g.globalAlpha = 1; }); }
-  const f = found(), fy = L.h - 40, fw = (w - 18) / 4;
-  OP_FINDS.forEach(([k, t], i) => axCard(g, x0 + i * (fw + 6), fy, fw, 32, { col: opTone(f.includes(k)), ok: f.includes(k), lines: [[(f.includes(k) ? '✓ ' : '○ ') + t, lc(LC.text, 1), false]], fs: Math.max(9, Math.min(11, fw / 13)) }));
+  const cols = {}; OP_PIV.forEach(p => { const d = p.dead ? 0 : depth(p.id); (cols[d] = cols[d] || []).push(p); });
+  const nd = Object.keys(cols).length, pos = {};
+  Object.keys(cols).sort().forEach((d, i) => cols[d].forEach((p, j) => { const n = cols[d].length, sp = Math.min(96, (L.h - 120) / n); pos[p.id] = [pad + 40 + (tw - 80) * i / Math.max(1, nd - 1), L.h / 2 + 10 + (j - (n - 1) / 2) * sp]; }));
+  OP_PIV.forEach(p => p.need.forEach(n => { const a = pos[n], b = pos[p.id], dn = P.done.has(p.id); g.strokeStyle = lc(dn ? LC.good : LC.mute, dn ? 0.7 : 0.2); g.lineWidth = dn ? 2 : 1; g.beginPath(); g.moveTo(a[0], a[1]); g.bezierCurveTo((a[0] + b[0]) / 2, a[1], (a[0] + b[0]) / 2, b[1], b[0], b[1]); g.stroke(); g.lineWidth = 1;
+    if (dn) opFlow(L, g, [a, b], LC.good, 2, 40, 2.2); }));
+  OP_PIV.forEach(p => { const [x, y] = pos[p.id], dn = P.done.has(p.id), open = !dn && p.need.every(n => P.done.has(n)), col = dn ? (p.dead ? LC.mute : p.finds ? LC.good : LC.blue) : open ? LC.ink : LC.mute;
+    if (P.last === p.id && !NN.sync) labGlow(g, x, y, 40 + 6 * Math.sin(L.t * 4), col, 0.3);
+    opNode(g, x, y, p.finds ? 15 : 11, col, dn, dn ? (p.dead ? '–' : p.finds ? '★' : '✓') : open ? '?' : '');
+    opLbl(g, p.s, x, y + 30, lc(dn || open ? LC.text : LC.mute, dn || open ? 0.95 : 0.5), 12, 700);
+    opLbl(g, dn && p.dead ? 'dead end' : dn && p.finds ? OP_FINDS.find(z => z[0] === p.finds)[1] : open ? p.h + ' h' : '', x, y + 45, lc(dn ? (p.dead ? LC.mute : LC.good) : LC.ink, 0.9), 10); });
+  // hours dial and result
+  const rx = tw + 20, rw = L.w - rx - pad;
+  opRing(g, rx + 44, 60, 32, u / OP_HUNT_H, u > OP_HUNT_H ? LC.bad : LC.ink, 7);
+  labText(g, String(u), rx + 44, 66, { size: 18, w: 700, align: 'center', col: lc(u > OP_HUNT_H ? LC.bad : LC.text, 1) }); opCap(g, 'OF 8 HOURS', rx + 44, 108, null, 'center');
+  const p = P.last && OP_PIV.find(x => x.id === P.last);
+  if (p) { const k = opIn(L, P, 3); g.globalAlpha = k; labText(g, p.s, rx + 96, 52, { size: 17, w: 700, mono: false, col: lc(LC.ink, 1) });
+    p.rows.forEach((r, i) => gvWrap(g, r, rx + 96, 76 + i * 34, rw - 96, { size: 12, col: lc(p.dead ? LC.mute : LC.text, 0.95), max: 2 })); g.globalAlpha = 1; }
+  OP_FINDS.forEach(([k, t], i) => { const x = rx + rw * (i + 0.5) / 4, y = L.h - 58, ok = f.includes(k); opNode(g, x, y, 16, ok ? LC.good : LC.mute, ok, ok ? '★' : ''); opLbl(g, t, x, y + 34, lc(ok ? LC.text : LC.mute, 1), 11, 700); });
 }
+// Detections wired to the ways out they cover.
 function ophDrawPromote(L, g, P) {
-  const pad = 18, cov = opCoverage(P.picked), rh = Math.min(48, (L.h - 70) / OP_CHAN.length - 6), lw = Math.min(330, L.w * 0.42);
-  labText(g, 'CHANNELS WITH A STANDING DETECTION', pad, 26, { size: 12, w: 700, col: lc(LC.blue, 1) });
-  OP_CHAN.forEach((c, i) => { const y = 42 + i * (rh + 6), ok = cov.includes(c.id), by = OP_PROMOTE.filter(p => p.good && P.picked[p.id] && p.covers.includes(c.id)).length;
-    axCard(g, pad, y, lw, rh, { col: opTone(ok), ok, hot: !ok, lines: [[(ok ? '✓ ' : '✗ ') + c.t, lc(LC.text, 1), false]], fs: Math.max(10, Math.min(12, lw / 28)) });
-    for (let k = 0; k < by; k++) { g.fillStyle = lc(LC.good, 0.9); g.beginPath(); g.arc(pad + lw + 14 + k * 14, y + rh / 2, 5, 0, 7); g.fill(); } });
-  const x0 = pad * 2 + lw + 60, w = L.w - x0 - pad; if (w < 140) return;
-  labText(g, 'YOUR DETECTIONS', x0, 26, { size: 12, w: 700, col: lc(LC.blue, 1) });
-  OP_PROMOTE.filter(p => P.picked[p.id] || P.wrong === p.id).forEach((p, i) => axCard(g, x0, 42 + i * 62, w, 54, { col: p.good ? LC.good : LC.bad, ok: p.good, hot: !p.good, lines: [[p.t, lc(LC.text, 1), false]], fs: Math.max(10, Math.min(12, w / 30)) }));
+  const pad = 30, cov = opCoverage(P.picked), lx = pad, rx = L.w - pad - 200, n = OP_PROMOTE.length, m = OP_CHAN.length, dy = Math.min(70, (L.h - 80) / n), cy = Math.min(70, (L.h - 80) / m);
+  const dY = i => 60 + i * dy + (L.h - 80 - n * dy) / 2, cY = i => 60 + i * cy + (L.h - 80 - m * cy) / 2, pw = {};
+  OP_PROMOTE.forEach((p, i) => { const on = !!P.picked[p.id], bad = P.wrong === p.id; g.font = "600 13px 'IBM Plex Sans', sans-serif"; pw[p.id] = g.measureText(p.s).width + 21;
+    if (on) p.covers.forEach(c => { const j = OP_CHAN.findIndex(x => x.id === c), a = [lx + pw[p.id], dY(i)], b = [rx - 20, cY(j)];
+      g.strokeStyle = lc(LC.good, 0.45); g.lineWidth = 2; g.beginPath(); g.moveTo(a[0], a[1]); g.bezierCurveTo((a[0] + b[0]) / 2, a[1], (a[0] + b[0]) / 2, b[1], b[0], b[1]); g.stroke(); g.lineWidth = 1; opFlow(L, g, [a, b], LC.good, 2, 70, 2.4); });
+    opPill(g, p.s, lx, dY(i), bad ? LC.bad : on ? LC.good : p.good ? LC.blue : LC.mute, on || bad, 13);
+    if (bad) labText(g, '✕ not a detection', lx + pw[p.id] + 12, dY(i) + 4, { size: 11, w: 700, col: lc(LC.bad, 1) }); });
+  OP_CHAN.forEach((c, j) => { const ok = cov.includes(c.id); opNode(g, rx, cY(j), 14, ok ? LC.good : LC.bad, ok, ok ? '✓' : ''); labText(g, c.s, rx + 26, cY(j) + 5, { size: 14, w: 700, mono: false, col: lc(ok ? LC.text : LC.mute, 1) }); });
+  opCap(g, 'DETECTIONS', lx, 30); opCap(g, 'WAYS OUT', rx - 14, 30);
 }
 
 /* ====================== 5 · The SOC’s own AI ====================== */
@@ -126,28 +132,24 @@ function opsMount(L) {
       axDefHud(P, OPS_VEC, OPS_DEF), axDefHud(P, OPS_VEC, OPS_DEF)][L.step],
     draw: (L2, g) => L2.step >= 3 ? axDrawDefend(L2, g, P, OPS_GROUPS, OPS_VEC, OPS_DEF) : L2.step === 2 ? opsDrawIr(L2, g, P) : opsDrawShift(L2, g, P),
     steps: [
-      { say: () => !P.ran1 ? 'Your SOC added an AI triage assistant, wired into SOAR. Below: the vendor’s recommended automation. Run tonight’s shift of 40 alerts.'
-          : 'Saved ' + res().saved + ' analyst minutes. Missed ' + res().missed + ' real attacks, closed because the alert text told the AI to. ' + res().outages.length + ' outages caused by your own automation.',
-        side: L2 => [h('div', { class: 'fiout' }, h('span', { class: 'labk' }, 'Vendor settings'), OP_ACTS.map(a => h('div', null, h('i', null, OP_MODES.find(m => m[0] === P.mode[a.id])[1]), a.t))),
+      { say: () => !P.ran1 ? 'An AI triage assistant drives your SOAR. Vendor settings. Run the shift.' : 'Saved ' + res().saved + ' minutes. ' + res().missed + ' real attacks closed, ' + res().outages.length + ' outages.',
+        side: L2 => [h('div', { class: 'fiout' }, h('span', { class: 'labk' }, 'Vendor settings'), OP_ACTS.map(a => h('div', null, h('i', null, OP_MODES.find(m => m[0] === P.mode[a.id])[1]), a.s))),
           labBtn('▶ Run the shift', () => go(L2), 'go')],
         acts: L2 => [labNext(L2, 'Redesign it →', !P.ran1)] },
       { enter: () => { P.run = null; P.ok2 = false; },
-        say: () => { const r = res(); return !r ? 'Target: no missed attacks, no outages, within ' + OP_SOC_MIN + ' analyst minutes, and at least 250 minutes saved. Set each action, then run.'
-          : P.ok2 ? 'Zero missed, zero outages, ' + r.saved + ' minutes saved. The AI still does most of the work; it cannot act alone where one wrong step hurts.'
-          : 'Missed ' + r.missed + ', outages ' + r.outages.length + ', ' + r.min + ' analyst minutes, ' + r.saved + ' saved.' + (r.backlog ? ' ' + r.backlog + ' alerts left in the queue at the end of the shift.' : '') + ' Adjust and run again.'; },
-        side: L2 => [OP_ACTS.map(a => opSeg(a.t, OP_MODES, P.mode[a.id], v => { P.mode[a.id] = v; dirty(L2); })),
+        say: () => { const r = res(); return !r ? 'Goal: nothing missed, no outages, 250+ minutes saved.' : P.ok2 ? 'Nothing missed. No outages. ' + r.saved + ' minutes saved.' : 'Missed ' + r.missed + ' · outages ' + r.outages.length + ' · saved ' + r.saved + '. Adjust, run again.'; },
+        side: L2 => [OP_ACTS.map(a => opSeg(a.s, OP_MODES, P.mode[a.id], v => { P.mode[a.id] = v; dirty(L2); })),
           h('div', { class: 'labchipset' }, OP_GUARDS.map(([k, t]) => gvChip(t, P.guard[k], () => { P.guard[k] = !P.guard[k]; dirty(L2); }))),
           labBtn('▶ Run the shift', () => go(L2), 'go')],
         acts: L2 => [labNext(L2, 'The incident workflow →', !P.ok2)] },
-      { say: () => P.placed.length === OP_IR.length ? 'Declare, contain and preserve, then scope, eradicate, notify, recover, learn. The AI-specific part is what you preserve: the index, the prompts, the model version.'
-          : P.wrong ? P.wrong : 'Relay’s leak is confirmed. Put the response in order: click the next step.',
-        side: L2 => [h('div', { class: 'labstack' }, P.deck.filter(id => !P.placed.includes(id)).map(id => labBtn(OP_IR.find(x => x.id === id).t, () => { const why = opIrTry(P.placed, id); if (why) P.wrong = why; else { P.placed.push(id); P.wrong = null; } P.at = L2.t; L2.repaint(); })))],
+      { say: () => P.placed.length === OP_IR.length ? 'Preserve before you fix: the index, prompts, model.' : P.wrong ? P.wrong : 'Leak confirmed. Click the response steps in order.',
+        side: L2 => [h('div', { class: 'labstack' }, P.deck.filter(id => !P.placed.includes(id)).map(id => labBtn(OP_IR.find(x => x.id === id).s, () => { const why = opIrTry(P.placed, id); if (why) P.wrong = why; else { P.placed.push(id); P.wrong = null; } P.at = L2.t; L2.repaint(); })))],
         acts: L2 => [labNext(L2, 'Close the paths →', P.placed.length < OP_IR.length)] },
       { enter: () => { P.on = {}; P.flash = {}; },
-        say: () => { const n = axLive(OPS_VEC, OPS_DEF, P.on).length; return n ? n + ' ways an AI-assisted SOC is turned against itself. Switch on controls.' : 'All ' + OPS_VEC.length + ' closed.'; },
+        say: () => { const n = axLive(OPS_VEC, OPS_DEF, P.on).length; return n ? n + ' ways the SOC’s AI turns on you. Switch on controls.' : 'All ' + OPS_VEC.length + ' closed.'; },
         side: L2 => [axDefSide(L2, P, OPS_DEF)],
         acts: L2 => [labNext(L2, 'Debrief →', !Object.values(P.on).some(Boolean))] },
-      { say: () => 'Everything in an alert can be written by the attacker. Let the AI read it, never let it alone act on it where one mistake is expensive.',
+      { say: () => 'The attacker writes the alert. The AI reads it; a person approves the big moves.',
         enter: () => labDone('opsoar'),
         side: () => axDebrief(P, OPS_VEC, OPS_DEF, [
           ['Jul 2024 · CrowdStrike', 'One automatic content update to a security tool crashed about 8.5 million Windows machines. Security automation has a blast radius too.'],
@@ -158,32 +160,42 @@ function opsMount(L) {
         acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), opBack()] }
     ] };
 }
+// The shift: alerts fly in and settle in the lane that decided them.
 function opsDrawShift(L, g, P) {
-  const pad = 16, r = P.run, lw = L.w - 240 - pad * 3, lanes = OP_MODES, lh = Math.min(120, (L.h - 70) / 3 - 10);
-  labText(g, 'TONIGHT’S SHIFT · 40 ALERTS · TWO STEPS EACH: ENRICH, THEN DECIDE', pad, 24, { size: 12, w: 700, col: lc(LC.blue, 1) });
-  lanes.forEach(([k, t], i) => { const y = 40 + i * (lh + 10); g.fillStyle = 'rgba(141,182,242,.05)'; g.fillRect(pad, y, lw, lh); labText(g, t.toUpperCase(), pad + 8, y + 16, { size: 10, w: 700, col: lc(LC.mute, 1) }); });
-  const shown = !r ? 0 : NN.sync ? 40 : Math.min(40, Math.floor((L.t - P.runAt) * 14)), seat = [0, 0, 0];
-  for (let i = 0; i < shown; i++) { const x = OP_SHIFT[i], e = r.events[i], lane = OP_MODES.findIndex(m => m[0] === e.lanes[1]), k = seat[lane]++, y = 40 + lane * (lh + 10), cx = pad + 18 + (k % 20) * ((lw - 36) / 20), cy = y + 38 + Math.floor(k / 20) * 30;
+  const pad = 26, r = P.run, lw = L.w - 290 - pad * 2, lh = Math.min(150, (L.h - 60) / 3 - 14), per = 14, sp = Math.min(30, (lw - 120) / per);
+  OP_MODES.forEach(([k, t], i) => { const y = 30 + i * (lh + 14); opRR(g, pad, y, lw, lh, 14); g.fillStyle = lc(i === 0 ? LC.ink : i === 1 ? LC.blue : LC.good, 0.06); g.fill();
+    labText(g, t, pad + 18, y + 30, { size: 18, w: 700, mono: false, col: lc(LC.text, 0.95) });
+    opCap(g, OP_ACTS.filter(a => P.mode[a.id] === k).map(a => a.s).join(' · ').toUpperCase(), pad + 18, y + 48); });
+  if (!r) { opLbl(g, '▶ Run the shift', pad + lw / 2, L.h / 2, lc(LC.mute, 1), 18); }
+  const shown = !r ? 0 : NN.sync ? 40 : Math.min(40, (L.t - P.runAt) * 12), seat = [0, 0, 0];
+  for (let i = 0; i < Math.ceil(shown); i++) { const x = OP_SHIFT[i], e = r.events[i], lane = OP_MODES.findIndex(m => m[0] === e.lanes[1]), k = seat[lane]++;
+    const tx = pad + 120 + (k % per) * sp, ty = 30 + lane * (lh + 14) + 76 + Math.floor(k / per) * 28, f = Math.min(1, shown - i), ease = 1 - Math.pow(1 - f, 3);
+    const cx = pad + lw * 0.5 + (tx - pad - lw * 0.5) * ease, cy = -10 + (ty + 10) * ease;
     const col = e.bad ? LC.bad : e.saved ? LC.violet : x.real ? LC.ink : x.poison ? LC.violet : LC.good;
-    g.fillStyle = lc(col, e.bad ? 1 : 0.75); g.beginPath(); g.arc(cx, cy, e.bad ? 8 : 6, 0, 7); g.fill();
-    if (e.bad) labText(g, e.bad === 'outage' ? '!' : '✗', cx, cy + 4, { size: 10, w: 800, align: 'center', col: '#0B1226' }); }
-  const bx = pad * 2 + lw, bw = 240;
-  if (!r) { gvWrap(g, 'Run the shift.', bx + bw / 2, L.h / 2, bw - 20, { size: 15, align: 'center', col: lc(LC.mute, 1) }); return; }
-  labText(g, 'ANALYST MINUTES', bx, 46, { size: 10, w: 700, col: lc(LC.mute, 1) }); gvBar(g, bx, 54, bw, 10, r.min / Math.max(OP_SOC_MIN, r.min), r.min > OP_SOC_MIN ? LC.bad : LC.good);
-  labText(g, r.min + ' of ' + OP_SOC_MIN + ' · saved ' + r.saved, bx, 80, { size: 12, w: 700, col: lc(LC.text, 1) });
-  [['Missed attacks', r.missed, r.missed], ['Outages you caused', r.outages.length, r.outages.length]].forEach(([t, v, bad], i) => { labText(g, t.toUpperCase(), bx, 112 + i * 54, { size: 10, w: 700, col: lc(LC.mute, 1) }); labText(g, String(v), bx, 140 + i * 54, { size: 26, w: 700, col: lc(bad ? LC.bad : LC.good, 1) }); });
-  let y = 230; OP_SHIFT.filter(x => x.poison).forEach(x => { const e = r.events[x.i]; if (y > L.h - 50) return;
-    axCard(g, bx, y, bw, 52, { col: e.bad ? LC.bad : LC.good, hot: !!e.bad, ok: !e.bad, title: e.bad ? (e.bad === 'outage' ? 'OUTAGE' : 'MISSED') : 'STOPPED', lines: [[x.harm && e.bad ? x.harm : x.t, lc(LC.text, 1), false]], fs: 10 }); y += 58; });
-  labText(g, '● benign  ● real  ● attacker-steered  ✗ missed  ! outage', pad, L.h - 6, { size: 10, col: lc(LC.mute, 1) });
+    opNode(g, cx, cy, e.bad ? 10 : 8, col, true, e.bad ? (e.bad === 'outage' ? '!' : '✕') : ''); }
+  // the scoreboard
+  const bx = pad + lw + 30, bw = L.w - bx - pad;
+  if (!r) return; const done = shown >= 40;
+  opRing(g, bx + 56, 80, 46, r.min / OP_SOC_MIN, r.min > OP_SOC_MIN ? LC.bad : LC.good, 9, null);
+  labText(g, String(r.min), bx + 56, 86, { size: 22, w: 700, align: 'center', col: lc(LC.text, 1) }); opCap(g, 'OF 240 MIN', bx + 56, 142, null, 'center');
+  opBig(g, String(r.saved), 'SAVED', bx + 130, 92, LC.good, 26);
+  if (!done) return;
+  opBig(g, String(r.missed), 'MISSED', bx, 210, r.missed ? LC.bad : LC.good, 34); opBig(g, String(r.outages.length), 'OUTAGES', bx + 120, 210, r.outages.length ? LC.bad : LC.good, 34);
+  OP_SHIFT.filter(x => x.poison).forEach((x, i) => { const e = r.events[x.i], y = 250 + i * 40; if (y > L.h - 20) return;
+    opNode(g, bx + 10, y, 9, e.bad ? LC.bad : LC.good, true, e.bad ? '✕' : '✓'); labText(g, x.s, bx + 28, y + 5, { size: 13, w: 600, mono: false, col: lc(e.bad ? LC.text : LC.mute, 1) }); });
 }
+// The response: eight stops on a track.
 function opsDrawIr(L, g, P) {
-  const pad = 20, rh = Math.min(50, (L.h - 60) / OP_IR.length - 6), w = Math.min(L.w - pad * 2, 760), x = (L.w - w) / 2;
-  labText(g, 'INCIDENT 2231 · RESPONSE ORDER', x, 26, { size: 12, w: 700, col: lc(LC.blue, 1) });
-  OP_IR.forEach((_, i) => { const y = 40 + i * (rh + 6), id = P.placed[i], s = id && OP_IR.find(q => q.id === id);
-    if (!s) { g.strokeStyle = lc(LC.mute, 0.25); g.setLineDash([4, 4]); g.strokeRect(x + 0.5, y + 0.5, w - 1, rh - 1); g.setLineDash([]); labText(g, String(i + 1), x + 14, y + rh / 2 + 4, { size: 12, col: lc(LC.mute, 0.6) }); return; }
-    const ai = ['preserve', 'scope', 'erad'].includes(id);
-    axCard(g, x, y, w, rh, { col: ai ? LC.violet : LC.good, ok: true, lines: [[(i + 1) + '.  ' + s.t + (ai ? '   · AI-specific' : ''), lc(LC.text, 1), false]], fs: Math.max(10, Math.min(13, w / 62)) }); });
-  if (P.wrong) axStamp(g, L.w / 2, L.h - 24, 'OUT OF ORDER', LC.bad, L.t - P.at, L.w > 720 ? 16 : 11);
+  const pad = 50, n = OP_IR.length, y = L.h * 0.42, X = i => pad + (L.w - pad * 2) * i / (n - 1);
+  g.strokeStyle = 'rgba(141,182,242,.25)'; g.lineWidth = 4; g.beginPath(); g.moveTo(X(0), y); g.lineTo(X(n - 1), y); g.stroke();
+  if (P.placed.length > 1) { g.strokeStyle = lc(LC.good, 0.8); g.beginPath(); g.moveTo(X(0), y); g.lineTo(X(P.placed.length - 1), y); g.stroke(); } g.lineWidth = 1;
+  OP_IR.forEach((_, i) => { const id = P.placed[i], st = id && OP_IR.find(q => q.id === id), ai = ['preserve', 'scope', 'erad'].includes(id), x = X(i);
+    if (!st) { opNode(g, x, y, 18, i === P.placed.length ? LC.ink : LC.mute, false, String(i + 1)); return; }
+    const k = i === P.placed.length - 1 ? opIn(L, P, 4) : 1; opNode(g, x, y, 18 + 4 * (1 - k), ai ? LC.violet : LC.good, true, String(i + 1));
+    opLbl(g, st.s, x, y + 44, lc(LC.text, 1), 15, 700); if (ai) opLbl(g, 'AI-specific', x, y + 62, lc(LC.violet, 1), 10); });
+  const last = P.placed.length && OP_IR.find(q => q.id === P.placed[P.placed.length - 1]);
+  if (last) gvWrap(g, last.t, L.w / 2, y + 120, Math.min(640, L.w - 80), { size: 15, align: 'center', col: lc(LC.ink, 0.95), max: 2 });
+  if (P.wrong) axStamp(g, L.w / 2, y - 80, 'OUT OF ORDER', LC.bad, L.t - P.at, L.w > 720 ? 18 : 12);
 }
 
 /* ====================== 6 · Pull the plug ====================== */
@@ -214,28 +226,25 @@ function opkMount(L) {
     draw: (L2, g) => L2.step >= 2 ? axDrawDefend(L2, g, P, OPK_GROUPS, OPK_VEC, OPK_DEF) : L2.step ? opkDrawDrill(L2, g, P) : opkDrawLive(L2, g, P, res),
     steps: [
       { say: () => { const r = fin();
-          if (!P.running && !P.ended) return 'Minute 0. Relay is leaking through three paths at once. Every minute costs records; every lever you pull costs the business. Start the clock, then pull levers.';
-          if (P.running) { const o = open(); return 'Minute ' + Math.floor(P.now) + '. ' + res().leaked + ' records out. ' + (o.length ? 'Still open: ' + o.join('; ') + '.' : 'All three paths stopped. Fast-forward to see the cost.'); }
-          return opContainOk(r) ? 'Contained: ' + r.leaked + ' records leaked, business impact ' + r.impact + '. The smallest levers that reach each path, including the one that reaches the attacker’s copy.'
-            : !r.all ? 'Minute 30 and ' + OP_PATHS.filter(p => !r.stopped.includes(p.id)).map(p => p.s).join(' and ') + ' never stopped. Read what each lever reaches, then run it again.'
-            : 'All stopped, but business impact ' + r.impact + ' against a limit of ' + OP_IMPACT_MAX + '. The big levers stop the leak by stopping the company. Run it again.'; },
-        side: L2 => !P.running && !P.ended ? [labBtn('▶ Start the clock', () => { P.running = true; P.tries++; P.at = L2.t; L2.repaint(); }, 'go'), h('p', { class: 'labsm' }, 'One minute every ' + OP_SEC_PER_MIN + ' seconds. Each lever takes effect after its own delay.')]
+          if (!P.running && !P.ended) return 'Three leaks, one clock. Start it, then pull levers.';
+          if (P.running) return 'Minute ' + Math.floor(P.now) + '. ' + res().leaked + ' records out' + (open().length ? '.' : '. All stopped: fast-forward.');
+          return opContainOk(r) ? 'Contained: ' + r.leaked + ' records, impact ' + r.impact + '.' : !r.all ? OP_PATHS.filter(p => !r.stopped.includes(p.id)).map(p => p.n).join(' and ') + ' never stopped. Run it again.'
+            : 'Stopped, at impact ' + r.impact + '. The limit is ' + OP_IMPACT_MAX + '. Run it again.'; },
+        side: L2 => !P.running && !P.ended ? [labBtn('▶ Start the clock', () => { P.running = true; P.tries++; P.at = L2.t; L2.repaint(); }, 'go')]
           : P.ended ? [labBtn('↺ Run it again', () => reset(L2), opContainOk(fin()) ? '' : 'go')]
           : [h('div', { class: 'labstack' }, OP_LEVERS.map(l => { const on = P.pulls.some(p => p.id === l.id);
-              return labBtn((on ? '✓ ' : '') + l.t + ' · ' + l.m + ' min', () => { P.pulls.push({ id: l.id, at: Math.floor(P.now * 10) / 10 }); P.at = L2.t; L2.repaint(); }, on ? 'ok' : '', on); })),
-            labBtn('⏩ Fast-forward to minute 30', () => end(L2))],
+              return labBtn((on ? '✓ ' : '') + l.s + ' · ' + l.m + ' min', () => { P.pulls.push({ id: l.id, at: Math.floor(P.now * 10) / 10 }); P.at = L2.t; L2.repaint(); }, on ? 'ok' : '', on); })),
+            labBtn('⏩ Fast-forward', () => end(L2))],
         acts: L2 => [labNext(L2, 'The drill →', !(P.ended && opContainOk(fin())))] },
-      { say: () => P.drilled.size < OP_SW.length ? 'That went well because the switches worked. Drill four kinds of kill switch against four bad nights.'
-          : opStack(P.stack).length < OP_COND.length ? 'No single switch survives every night. Choose the set you would build: it has to survive all four.'
-          : 'Two layers, outside the agent, each tested: the gateway for speed and for on-call, the identity provider for the copied token.',
-        side: L2 => [h('div', { class: 'labstack' }, OP_SW.map(s => labBtn((P.drilled.has(s.id) ? '✓ ' : '▶ Drill: ') + s.t, () => { P.drilled.add(s.id); P.dsel = s.id; P.at = L2.t; L2.repaint(); }))),
-          P.drilled.size === OP_SW.length ? [h('span', { class: 'labk' }, 'Your kill-switch set'), h('div', { class: 'labchipset' }, OP_SW.map(s => gvChip(s.t, P.stack[s.id], () => { P.stack[s.id] = !P.stack[s.id]; L2.repaint(); })))] : null],
+      { say: () => P.drilled.size < OP_SW.length ? 'Drill four kill switches against four bad nights.' : opStack(P.stack).length < OP_COND.length ? 'No switch survives every night. Pick a set that does.' : 'Gateway for speed. Identity for the copied token.',
+        side: L2 => [h('div', { class: 'labstack' }, OP_SW.map(s => labBtn((P.drilled.has(s.id) ? '✓ ' : '▶ Drill: ') + s.s, () => { P.drilled.add(s.id); P.dsel = s.id; P.at = L2.t; L2.repaint(); }))),
+          P.drilled.size === OP_SW.length ? [h('span', { class: 'labk' }, 'Your set'), h('div', { class: 'labchipset' }, OP_SW.map(s => gvChip(s.s, P.stack[s.id], () => { P.stack[s.id] = !P.stack[s.id]; L2.repaint(); })))] : null],
         acts: L2 => [labNext(L2, 'Close the paths →', P.drilled.size < OP_SW.length || opStack(P.stack).length < OP_COND.length)] },
       { enter: () => { P.on = {}; P.flash = {}; },
-        say: () => { const n = axLive(OPK_VEC, OPK_DEF, P.on).length; return n ? n + ' ways a kill switch fails on the night. Switch on controls.' : 'All ' + OPK_VEC.length + ' closed.'; },
+        say: () => { const n = axLive(OPK_VEC, OPK_DEF, P.on).length; return n ? n + ' ways a kill switch fails. Switch on controls.' : 'All ' + OPK_VEC.length + ' closed.'; },
         side: L2 => [axDefSide(L2, P, OPK_DEF)],
         acts: L2 => [labNext(L2, 'Debrief →', !Object.values(P.on).some(Boolean))] },
-      { say: () => 'A kill switch is a set of levers outside the agent, the smallest first, that on-call may pull at 03:00 and has pulled in a drill.',
+      { say: () => 'Small levers first, outside the agent, drilled.',
         enter: () => labDone('opkill'),
         side: () => axDebrief(P, OPK_VEC, OPK_DEF, [
           ['Mar 2016 · Tay', 'Microsoft took its chatbot offline about 16 hours after launch, once users had taught it abuse. The kill switch worked; nothing before it had.'],
@@ -246,67 +255,75 @@ function opkMount(L) {
         acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), opBack()] }
     ] };
 }
+// Three pipes from Relay to the attacker; levers close valves after their delay.
 function opkDrawLive(L, g, P, res) {
-  const pad = 18, r = res(), lw = L.w - 250 - pad * 3, rh = Math.min(96, (L.h - 120) / 3 - 12);
-  labText(g, 'MINUTE ' + Math.floor(P.now) + ' OF ' + OP_WINDOW, pad, 30, { size: 20, w: 700, col: lc(P.running ? LC.ink : LC.blue, 1) }); gvBar(g, pad, 40, lw, 6, P.now / OP_WINDOW, LC.ink);
-  OP_PATHS.forEach((p, i) => { const y = 62 + i * (rh + 12), st = r.stopAt[p.id], stopped = st != null && st <= P.now, mins = Math.min(P.now, st == null ? P.now : st);
-    axCard(g, pad, y, lw, rh, { col: stopped ? LC.good : LC.bad, ok: stopped, hot: !stopped && P.now > 0, title: (stopped ? 'STOPPED AT MINUTE ' + st : st != null ? 'STOPPING AT MINUTE ' + st : 'OPEN') + ' · ' + p.rate + ' RECORDS/MIN', lines: [[p.t, lc(LC.text, 1), false], [Math.round(p.rate * mins) + (Math.round(p.rate * mins) === 1 ? ' record' : ' records'), lc(stopped ? LC.good : LC.bad, 1), true]], fs: Math.max(11, Math.min(13, lw / 50)) });
-    if (!stopped && P.running && !NN.sync) for (let k = 0; k < 6; k++) { const ph = (L.t * (0.4 + p.rate / 60) + k / 6) % 1; g.fillStyle = lc(LC.bad, 0.9 * (1 - ph)); g.beginPath(); g.arc(pad + lw * 0.55 + lw * 0.42 * ph, y + rh - 14, 3, 0, 7); g.fill(); } });
-  // pulled levers, with their delay
-  const bx = pad * 2 + lw, bw = 250;
-  labText(g, 'RECORDS LEAKED', bx, 30, { size: 10, w: 700, col: lc(LC.mute, 1) }); labText(g, String(r.leaked), bx, 60, { size: 30, w: 700, col: lc(LC.bad, 1) });
-  labText(g, 'BUSINESS IMPACT', bx, 92, { size: 10, w: 700, col: lc(LC.mute, 1) }); gvBar(g, bx, 100, bw, 10, r.impact / (OP_IMPACT_MAX * 2), r.impact > OP_IMPACT_MAX ? LC.bad : LC.ink);
-  g.strokeStyle = lc(LC.text, 0.8); g.beginPath(); g.moveTo(bx + bw / 2, 96); g.lineTo(bx + bw / 2, 114); g.stroke(); labText(g, r.impact + ' · limit ' + OP_IMPACT_MAX, bx, 130, { size: 11, col: lc(LC.text, 1) });
-  P.pulls.forEach((p, i) => { const l = OP_LEVERS.find(x => x.id === p.id), y = 146 + i * 50; if (y > L.h - 50) return; const live = P.now >= p.at + l.m;
-    axCard(g, bx, y, bw, 44, { col: live ? (l.stops.length ? LC.good : LC.mute) : LC.ink, title: (live ? 'LIVE' : 'IN ' + Math.max(0, p.at + l.m - P.now).toFixed(1) + ' MIN') + ' · pulled at ' + Math.floor(p.at), lines: [[l.t, lc(LC.text, 1), false]], fs: 10 }); });
+  const pad = 30, r = res(), rx = L.w - 230, ax = pad + 60, bx = rx - 90, ys = [0.28, 0.5, 0.72].map(f => 40 + (L.h - 120) * f);
+  // the clock
+  opRing(g, pad + 40, 52, 30, P.now / OP_WINDOW, P.running ? LC.ink : LC.blue, 6); labText(g, String(Math.floor(P.now)), pad + 40, 59, { size: 18, w: 700, align: 'center', col: lc(LC.text, 1) }); opCap(g, 'MINUTE', pad + 40, 100, null, 'center');
+  // Relay and the attacker
+  const my = (ys[0] + ys[2]) / 2; opNode(g, ax, my, 26, LC.blue, true, ''); opLbl(g, 'Relay', ax, my + 46, lc(LC.text, 1), 14, 700);
+  opNode(g, bx, my, 26, LC.bad, true, ''); opLbl(g, 'Attacker', bx, my + 46, lc(LC.bad, 1), 14, 700);
+  OP_PATHS.forEach((p, i) => { const y = ys[i], st = r.stopAt[p.id], stopped = st != null && st <= P.now, pend = st != null && !stopped, vx = (ax + bx) / 2;
+    const pts = [[ax + 26, my], [ax + 80, y], [bx - 80, y], [bx - 26, my]];
+    g.strokeStyle = lc(stopped ? LC.good : LC.bad, stopped ? 0.35 : 0.5); g.lineWidth = 10; g.lineCap = 'round'; g.beginPath(); g.moveTo(...pts[0]); g.lineTo(...pts[1]); g.lineTo(...pts[2]); g.lineTo(...pts[3]); g.stroke(); g.lineWidth = 1; g.lineCap = 'butt';
+    if (!stopped && (P.running || NN.sync)) opFlow(L, g, pts, LC.bad, Math.round(p.rate / 3), 40 + p.rate * 3, 3.2, 1);
+    else if (stopped) opFlow(L, g, [pts[0], pts[1], [vx - 12, y]], LC.bad, 2, 40, 3, 0.6);
+    opLbl(g, p.n, vx, y - 18, lc(LC.text, 1), 14, 700); opLbl(g, p.rate + ' records/min', vx, y + 26, lc(LC.mute, 1), 11);
+    if (stopped || pend) { g.fillStyle = lc(stopped ? LC.good : LC.ink, 1); opRR(g, vx - 6, y - 14, 12, 28, 4); g.fill(); labGlow(g, vx, y, 26, stopped ? LC.good : LC.ink, 0.4);
+      opLbl(g, stopped ? 'stopped at minute ' + Math.round(st * 10) / 10 : 'closing in ' + Math.max(0, st - P.now).toFixed(1) + ' min', vx, y + 44, lc(stopped ? LC.good : LC.ink, 1), 12, 700); } });
+  // the score
+  opBig(g, String(r.leaked), 'RECORDS LEAKED', rx, 80, LC.bad, 40);
+  opRing(g, rx + 80, 190, 56, r.impact / (OP_IMPACT_MAX * 2), r.impact > OP_IMPACT_MAX ? LC.bad : LC.ink, 10, 0.5);
+  labText(g, String(r.impact), rx + 80, 196, { size: 22, w: 700, align: 'center', col: lc(r.impact > OP_IMPACT_MAX ? LC.bad : LC.text, 1) }); opCap(g, 'BUSINESS IMPACT · LIMIT ' + OP_IMPACT_MAX, rx + 80, 262, null, 'center');
   const last = P.pulls.length && OP_LEVERS.find(x => x.id === P.pulls[P.pulls.length - 1].id);
-  if (last) gvWrap(g, last.note, pad, L.h - 22, lw, { size: 12, col: lc(LC.ink, 1), max: 2 });
-  if (P.ended) { const f = opContain(P.pulls); axStamp(g, pad + lw / 2, L.h / 2, opContainOk(f) ? 'CONTAINED' : !f.all ? 'STILL LEAKING' : 'CONTAINED · AT A COST', opContainOk(f) ? LC.good : LC.bad, L.t - P.at - 0.2, L.w > 720 ? 22 : 14); }
+  if (last) opLbl(g, last.s + ': ' + last.note, (ax + bx) / 2, L.h - 24, lc(LC.ink, 1), 14);
+  if (P.ended) { const f = opContain(P.pulls); axStamp(g, (ax + bx) / 2, 50, opContainOk(f) ? 'CONTAINED' : !f.all ? 'STILL LEAKING' : 'CONTAINED · AT A COST', opContainOk(f) ? LC.good : LC.bad, L.t - P.at - 0.2, L.w > 720 ? 20 : 13); }
 }
+// Four switches against four bad nights.
 function opkDrawDrill(L, g, P) {
-  const pad = 16, lw = Math.min(250, L.w * 0.26), n = OP_COND.length, cw = (L.w - lw - pad * 3) / n, top = 70, rh = Math.min(88, (L.h - top - 40) / OP_SW.length - 8), cov = opStack(P.stack);
-  labText(g, 'KILL-SWITCH DRILL · FOUR DESIGNS, FOUR BAD NIGHTS', pad, 26, { size: 12, w: 700, col: lc(LC.blue, 1) });
-  OP_COND.forEach((c, j) => { const x = lw + pad * 2 + j * cw; gvWrap(g, c.t, x + cw / 2, top - 30, cw - 10, { size: 11, w: 700, align: 'center', col: lc(cov.includes(c.id) ? LC.good : LC.text, 1), max: 2 }); });
-  OP_SW.forEach((s, i) => { const y = top + i * (rh + 8), dr = P.drilled.has(s.id), inS = !!P.stack[s.id];
-    axCard(g, pad, y, lw, rh, { col: inS ? LC.good : dr ? LC.blue : LC.mute, ok: inS, title: inS ? 'IN YOUR SET' : dr ? 'DRILLED' : 'NOT DRILLED', lines: [[s.t, lc(LC.text, 1), false], [s.d, lc(LC.mute, 1), false]], fs: Math.max(10, Math.min(12, lw / 22)) });
-    OP_COND.forEach((c, j) => { const x = lw + pad * 2 + j * cw, v = OP_SURVIVE[s.id][c.id], ok = v === true;
-      if (!dr) { g.fillStyle = 'rgba(141,182,242,.05)'; g.fillRect(x + 3, y, cw - 6, rh); return; }
-      g.fillStyle = lc(ok ? LC.good : LC.bad, 0.14); g.fillRect(x + 3, y, cw - 6, rh); g.strokeStyle = lc(ok ? LC.good : LC.bad, 0.6); g.strokeRect(x + 3.5, y + 0.5, cw - 7, rh - 1);
-      labText(g, ok ? '✓ works' : '✗ fails', x + 12, y + 20, { size: 12, w: 700, col: lc(ok ? LC.good : LC.bad, 1) });
-      if (!ok) fiClip(g, x + 3, y, cw - 6, rh, () => gvWrap(g, v, x + 12, y + 38, cw - 24, { size: 10.5, col: lc(LC.text, 0.85), max: 3 })); }); });
+  const pad = 26, lw = 190, n = OP_COND.length, cw = (L.w - lw - pad * 2) / n, top = 80, rh = Math.min(110, (L.h - top - 20) / OP_SW.length), cov = opStack(P.stack);
+  OP_COND.forEach((c, j) => { const x = pad + lw + cw * (j + 0.5), ok = cov.includes(c.id); opLbl(g, c.s, x, 40, lc(ok ? LC.good : LC.text, 1), 14, 700); if (ok) opLbl(g, 'covered', x, 58, lc(LC.good, 0.9), 10); });
+  OP_SW.forEach((s2, i) => { const y = top + i * rh, dr = P.drilled.has(s2.id), inS = !!P.stack[s2.id];
+    if (inS) { opRR(g, pad - 10, y + 4, L.w - pad * 2 + 20, rh - 8, 14); g.fillStyle = lc(LC.good, 0.07); g.fill(); g.strokeStyle = lc(LC.good, 0.4); g.stroke(); }
+    labText(g, s2.s, pad, y + rh / 2, { size: 15, w: 700, mono: false, col: lc(dr ? LC.text : LC.mute, 1) }); gvWrap(g, s2.d, pad, y + rh / 2 + 18, lw - 16, { size: 11, col: lc(LC.mute, 1), max: 2 });
+    OP_COND.forEach((c, j) => { const x = pad + lw + cw * (j + 0.5), v = OP_SURVIVE[s2.id][c.id], ok = v === true, cy = y + rh / 2 - 8;
+      if (!dr) { g.fillStyle = 'rgba(141,182,242,.15)'; g.beginPath(); g.arc(x, cy, 4, 0, 7); g.fill(); return; }
+      const k = P.dsel === s2.id ? Math.max(0, Math.min(1, opIn(L, P, 3) * 1.6 - j * 0.25)) : 1; g.globalAlpha = k;
+      opNode(g, x, cy, 14, ok ? LC.good : LC.bad, ok, ok ? '✓' : '✕');
+      if (!ok) gvWrap(g, v, x, cy + 30, cw - 20, { size: 10.5, align: 'center', col: lc(LC.text, 0.75), max: 2 }); g.globalAlpha = 1; }); });
 }
 
 /* ---------- registration ---------- */
 [
-  { id: 'ophunt', track: 'ops', title: 'Follow the data out', kicker: 'Data exfiltration detection · AI threat hunting', blurb: 'Map six ways data leaves an agent against the sensors you own, run a hypothesis-led hunt with eight analyst hours to find the channel, the scope, the root cause and a second way out, then turn the findings into standing detections.', mount: ophMount,
+  { id: 'ophunt', track: 'ops', hook: 'Six ways out. Your DLP sees one.', title: 'Follow the data out', kicker: 'Data exfiltration detection · AI threat hunting', blurb: 'Map six ways data leaves an agent against the sensors you own, run a hypothesis-led hunt with eight analyst hours to find the channel, the scope, the root cause and a second way out, then turn the findings into standing detections.', mount: ophMount,
     brief: { what: 'Agents leak data through features: an image in an answer, a link, an email the agent sends, a ticket it writes. Classic DLP and proxies watch files and your own network; much of this happens in the customer’s browser or inside the agent’s tools.',
       real: 'Slack AI, Google Bard, ChatGPT memory and Microsoft 365 Copilot have all had link- or image-based leaks reported and fixed. In each, the evidence was in what the assistant retrieved and wrote.',
       todo: ['See which sensor sees each way out', 'Hunt with pivots, inside eight hours', 'Promote the findings to detections'] },
     guide: [
-      { look: [['good', '✓', 'Sees it.'], ['ink', '~', 'Partly.'], ['bad', '✗', 'Blind.']], why: 'The image is fetched by the customer’s browser. Your proxy and DLP never see the request; only the agent’s own answer log does.' },
-      { look: [['ink', '▭', 'Open pivot, with its cost.'], ['good', '▭', 'A finding.'], ['mute', '▭', 'A dead end.']], why: 'A hunt starts from a hypothesis and pivots on what it finds. Each answer opens the next question.' },
-      { look: [['good', '▭', 'Channel covered by a standing detection.'], ['bad', '▭', 'Still blind.']], why: 'A block is not a detection, and an alert on every image is noise. Detect the pattern, not the domain.' },
-      { look: [['bad', '●', 'Open paths.'], ['good', '✓', 'Closed by a control.']], why: 'Exfiltration fails silent at the channel and in how you look.' },
-      { why: 'Ask: which of the six ways out could we see today, and when did we last hunt for them?' }] },
-  { id: 'opsoar', track: 'ops', title: 'The SOC’s own AI', kicker: 'AI systems in the SOC · SOAR integration · incident response', blurb: 'Run a night shift with an AI triage assistant wired into SOAR and watch attacker-written alert text close real attacks and lock out your own users, redesign the automation by blast radius, then put an AI incident response in the right order.', mount: opsMount,
+      { look: [['good', '●', 'Sees it'], ['ink', '◐', 'Partly'], ['bad', '○', 'Blind']], why: 'The customer’s browser fetches the image, not you.' },
+      { look: [['ink', '?', 'Open pivot'], ['good', '★', 'Finding'], ['mute', '–', 'Dead end']], why: 'Each answer opens the next question.' },
+      { look: [['good', '●', 'Covered'], ['bad', '○', 'Still blind']], why: 'Detect the pattern, not the domain.' },
+      { look: [['bad', '●', 'Open paths.'], ['good', '✓', 'Closed by a control.']], why: 'Silent channels, and nobody looking.' },
+      { why: 'Ask: which ways out can we see today?' }] },
+  { id: 'opsoar', track: 'ops', hook: 'The attacker writes the alert your AI reads.', title: 'The SOC’s own AI', kicker: 'AI systems in the SOC · SOAR integration · incident response', blurb: 'Run a night shift with an AI triage assistant wired into SOAR and watch attacker-written alert text close real attacks and lock out your own users, redesign the automation by blast radius, then put an AI incident response in the right order.', mount: opsMount,
     brief: { what: 'AI triage in the SOC reads alerts, summarises, recommends and, through SOAR, acts. Alerts contain text the attacker wrote: email bodies, user-agent strings, file names. An AI that can be told what to do by that text is an attack surface.',
       real: 'SOC copilots became mainstream in 2024. The CrowdStrike outage the same year showed that security automation itself can take down millions of machines.',
       todo: ['Run a shift with the vendor’s automation settings', 'Redesign by blast radius until nothing is missed', 'Order the AI incident response'] },
     guide: [
-      { look: [['good', '●', 'Benign, closed.'], ['ink', '●', 'Real attack.'], ['violet', '●', 'Alert steered by the attacker.'], ['bad', '✗', 'Missed or outage.']], why: 'The dots sit in the lane that made the decision. Steered alerts in the auto lane do what the attacker wrote.' },
-      { look: [['good', '▬', 'Analyst minutes used, against the shift.']], why: 'All-human runs out of minutes and misses attacks in the backlog. All-auto is fast and dangerous. Decide per action, by blast radius.' },
-      { look: [['violet', '▭', 'AI-specific steps.']], why: 'Preserve before you fix: the index, the prompts, the config and the model version are the AI crime scene.' },
-      { look: [['bad', '●', 'Open paths.'], ['good', '✓', 'Closed by a control.']], why: 'The AI in the loop and the process around it both fail.' },
-      { why: 'Ask: which automated actions can text inside an alert influence, and which run without a person?' }] },
-  { id: 'opkill', track: 'ops', title: 'Pull the plug', kicker: 'Runtime kill switches · containment strategies', blurb: 'An agent is leaking through three paths at once. Pull levers against a running clock, with each lever’s delay, reach and business cost, then drill four kinds of kill switch against four bad nights and build the set that survives them all.', mount: opkMount,
+      { look: [['good', '●', 'Benign'], ['ink', '●', 'Real attack'], ['violet', '●', 'Attacker-steered'], ['bad', '✕', 'Missed or outage']], why: 'Each dot lands in the lane that decided it.' },
+      { look: [['good', '◔', 'Analyst minutes']], why: 'Decide per action, by blast radius.' },
+      { look: [['violet', '●', 'AI-specific']], why: 'The index and prompts are the crime scene.' },
+      { look: [['bad', '●', 'Open paths.'], ['good', '✓', 'Closed by a control.']], why: 'The AI, and the process around it.' },
+      { why: 'Ask: what can alert text make our SOAR do?' }] },
+  { id: 'opkill', track: 'ops', hook: 'Three leaks, nine levers, thirty minutes.', title: 'Pull the plug', kicker: 'Runtime kill switches · containment strategies', blurb: 'An agent is leaking through three paths at once. Pull levers against a running clock, with each lever’s delay, reach and business cost, then drill four kinds of kill switch against four bad nights and build the set that survives them all.', mount: opkMount,
     brief: { what: 'Containment for an agent is not one switch. It runs as live sessions, queued jobs and tokens held by integrations, and an attacker may have copied a token. Each lever reaches some paths, takes time, and costs the business.',
       real: 'Microsoft took Tay offline; DPD switched off one AI element; Salesforce revoked every Drift token. The right lever was different every time, and the switch that helped was the one that had been planned.',
       todo: ['Contain a live leak against the clock', 'Drill four kill-switch designs', 'Build the set that survives every night'] },
     guide: [
-      { look: [['bad', '▭', 'A path still leaking.'], ['good', '▭', 'Stopped.'], ['ink', '▭', 'A lever on its way.']], why: 'Each lever has a delay, a reach and a cost. The platform-wide switch is fast and costly, and does not touch the copied token.' },
-      { look: [['good', '✓', 'Works that night.'], ['bad', '✗', 'Fails, and why.']], why: 'A flag inside the app dies with the app. Identity revocation reaches copied tokens but needs authority at 03:00. Layer them.' },
-      { look: [['bad', '●', 'Open paths.'], ['good', '✓', 'Closed by a control.']], why: 'Kill switches fail in design and in readiness.' },
-      { why: 'Ask: what are our levers for each agent, who may pull them at 03:00, and when did we last time a drill?' }] }
+      { look: [['bad', '•', 'Leaking'], ['ink', '▮', 'Closing'], ['good', '▮', 'Stopped']], why: 'Every lever: a delay, a reach, a cost.' },
+      { look: [['good', '✓', 'Works'], ['bad', '✕', 'Fails']], why: 'Layer them.' },
+      { look: [['bad', '●', 'Open paths.'], ['good', '✓', 'Closed by a control.']], why: 'Design, and readiness.' },
+      { why: 'Ask: who may pull it at 03:00?' }] }
 ].forEach(x => { OP_SIMS.push(x); NN_SIMS.push(x); NN_BY[x.id] = x; });
 
 /* ---------- the AI SecOps hub on the Advanced page ---------- */
@@ -315,18 +332,32 @@ function opsHub() {
   const done = OP_SIMS.filter(x => S.nn && S.nn[x.id] && S.nn[x.id].done).length;
   const cols = [['was', 'Classic SOC'], ['miss', 'Why it misses AI'], ['add', 'Add'], ['ask', 'Ask your vendor']];
   return [
-    h('p', { class: 'advlead' }, 'Fourteen AI security operations topics, taught as six instruments for operations engineers. No code, no queries: budgets, queues, baselines, pivots, playbooks and levers. One incident runs through all six: Relay, a support agent, leaking customer records.'),
+    h('p', { class: 'advlead' }, 'One leaking agent. Six consoles. No code.'),
     h('div', { class: 'govgrid' }, OP_SIMS.map((x, i) => { const ok = S.nn && S.nn[x.id] && S.nn[x.id].done;
       return h('a', { class: 'govcard opscard glow' + (ok ? ' done' : ''), href: '#adv-nn-' + x.id, style: '--i:' + i },
-        h('span', { class: 'govn' }, String(i + 1).padStart(2, '0')), h('span', { class: 'kicker' }, x.kicker + (ok ? ' · done' : '')), h('b', null, x.title), h('span', { class: 'clamp' }, x.blurb),
+        h('span', { class: 'govn' }, String(i + 1).padStart(2, '0')), opsViz(x.id), h('b', null, x.title), h('span', { class: 'opshook' }, x.hook + (ok ? ' · done' : '')),
         h('span', { class: 'govtopics' }, OP_SIM_TOPICS(x.id).map(t => h('i', null, t)))); })),
-    h('h2', { class: 'sylgroup' }, 'Where AI breaks the SOC playbook'),
-    h('p', { class: 'advlead' }, 'Same SOC, same tools. Each row is a place where the classic approach goes quiet on an AI system, and what to add.'),
-    h('div', { class: 'govfw', role: 'table', 'aria-label': 'How AI changes the SOC playbook' },
-      h('div', { class: 'govfwrow opsrow head', role: 'row' }, h('span', { role: 'columnheader' }, ''), cols.map(([, t]) => h('span', { role: 'columnheader' }, t))),
-      OP_DIFF.map(r => h('div', { class: 'govfwrow opsrow', role: 'row' }, h('b', { role: 'rowheader' }, r.k), cols.map(([k]) => h('span', { role: 'cell', class: k === 'miss' ? 'hot' : k === 'add' ? 'warm' : '' }, r[k]))))),
-    h('p', { class: 'small' }, done + ' of ' + OP_SIMS.length + ' AI SecOps instruments done. Volumes, rates and costs are illustrative.')
+    h('details', { class: 'opsplay' }, h('summary', null, 'Where AI breaks the SOC playbook'),
+      h('div', { class: 'govfw', role: 'table', 'aria-label': 'How AI changes the SOC playbook' },
+        h('div', { class: 'govfwrow opsrow head', role: 'row' }, h('span', { role: 'columnheader' }, ''), cols.map(([, t]) => h('span', { role: 'columnheader' }, t))),
+        OP_DIFF.map(r => h('div', { class: 'govfwrow opsrow', role: 'row' }, h('b', { role: 'rowheader' }, r.k), cols.map(([k]) => h('span', { role: 'cell', class: k === 'miss' ? 'hot' : k === 'add' ? 'warm' : '' }, r[k])))))),
+    h('p', { class: 'small' }, done + ' of ' + OP_SIMS.length + ' done · volumes and costs are illustrative')
   ];
+}
+/* A small moving picture of each instrument, for its hub card. */
+function opsViz(id) {
+  const A = (attr, from, to, dur, begin) => s('animate', { attributeName: attr, from, to, dur: dur + 's', begin: (begin || 0) + 's', repeatCount: 'indefinite' });
+  const c = (x, y, r, cls, kids) => s('circle', { cx: x, cy: y, r, class: cls }, kids || []);
+  const ln = (x1, y1, x2, y2, cls) => s('line', { x1, y1, x2, y2, class: cls });
+  const kids = {
+    optel: () => [ln(14, 34, 226, 34, 'tr'), ...[0, 1, 2, 3, 4, 5, 6, 7].map(i => c(14 + i * 30.3, 34, 7, [0, 1, 3, 5].includes(i) ? 'ok' : i === 6 ? 'off v' : 'off')), c(14, 34, 3.5, 'bad', [A('cx', 14, 226, 3.2)]), ln(14, 10, 226, 10, 'flat')],
+    opdetect: () => Array.from({ length: 120 }, (_, k) => s('rect', { x: 8 + (k % 30) * 7.5, y: 6 + Math.floor(k / 30) * 13, width: 6, height: 11, rx: 1.5, class: [17, 43].includes(k) ? 'ok hi' : [71, 98, 113].includes(k) ? 'ink' : k < 30 ? 'ok dim' : 'bad dim' })),
+    opbase: () => [s('polyline', { points: '6,52 40,50 70,51 100,49 130,42 160,33 190,22 230,10', class: 'line' }), s('polyline', { points: '6,40 40,39 70,40 100,38 130,33 160,26 190,17 230,6', class: 'band' }), c(230, 10, 4, 'bad', [A('r', 3, 7, 1.2)])],
+    ophunt: () => [ln(20, 30, 80, 14, 'tr'), ln(20, 30, 80, 46, 'tr'), ln(80, 14, 140, 14, 'tr'), ln(80, 46, 140, 40, 'tr'), ln(140, 14, 200, 22, 'tr'), c(20, 30, 7, 'ok'), c(80, 14, 6, 'ok'), c(80, 46, 6, 'ok'), c(140, 14, 6, 'ok'), c(140, 40, 6, 'ink'), c(200, 22, 8, 'ink', [A('r', 6, 9, 1.4)])],
+    opsoar: () => [0, 1, 2].flatMap(l => [s('rect', { x: 4, y: 3 + l * 18, width: 232, height: 14, rx: 7, class: 'lane' }), ...Array.from({ length: [9, 5, 3][l] }, (_, k) => c(16 + k * 13, 10 + l * 18, 4, l === 0 && k === 6 ? 'bad' : l === 0 && k === 3 ? 'v' : 'ok'))]).concat([c(120, -6, 4, 'ink', [A('cy', -6, 10, 1.4)])]),
+    opkill: () => [10, 30, 50].flatMap((y, i) => [s('path', { d: 'M18 30 L50 ' + y + ' L190 ' + y + ' L222 30', class: 'pipe' + (i === 2 ? ' leak' : '') }), i < 2 ? s('rect', { x: 116, y: y - 7, width: 6, height: 14, rx: 2, class: 'okf' }) : c(60, y, 3, 'bad', [A('cx', 60, 190, 1.6)])]).concat([c(18, 30, 8, 'b'), c(222, 30, 8, 'bad')])
+  };
+  return s('svg', { class: 'opsviz', viewBox: '0 0 240 60', 'aria-hidden': 'true' }, kids[id] ? kids[id]() : []);
 }
 /* A link from the related modules' labs. */
 const OP_LAB = { m14: ['optel', 'opdetect', 'opsoar', 'opkill'], m11: ['opdetect'], m12: ['ophunt'], m10: ['opbase', 'opkill'] };
