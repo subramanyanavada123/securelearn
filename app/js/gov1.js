@@ -58,7 +58,7 @@ function gvxMount(L) {
           ['Aug 2024 · EU AI Act in force', 'Obligations phase in: prohibitions and AI literacy from Feb 2025, general-purpose models from Aug 2025, most high-risk duties from Aug 2026 onwards. Check the current dates before quoting.'],
           ['May 2024 · OECD update', 'The 2019 principles were updated for generative AI. They are the common ancestor: the EU, US and others cite them.']],
           [], 'Coverage is counted from the table on this page, one mapping per framework and evidence type. Real crosswalks are many-to-many; use the official text.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv-gov' }, 'Governance →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv-gov', 'Governance →')] }
     ] };
 }
 function gvxDrawCols(L, g, P) {
@@ -148,7 +148,7 @@ function gvtMount(L) {
           ['Jan 2021 · Dutch childcare benefits', 'A risk-classification model used nationality as a risk signal. Thousands of families were wrongly treated as fraudsters, and the government resigned.'],
           ['2026 onwards · High-risk duties', 'Most Annex III obligations were legislated to apply from Aug 2026, and a 2025 EU proposal sought to push some back. Check the current dates before you plan against them.']],
           [], 'The classifier on this page is a simplified reading of Articles 5, 6, 25 and 50 and Annex III, for teaching. A real classification needs the legal text and counsel.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv-gov' }, 'Governance →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv-gov', 'Governance →')] }
     ] };
 }
 function gvtBands(L, g, x0, top, bh, w) {
@@ -249,7 +249,7 @@ function gvfMount(L) {
           ['Aug 2020 · UK A-level grades', 'An algorithm moderating teacher grades downgraded almost 40% of them, hitting students at larger state schools hardest. It was withdrawn within days.'],
           ['2019–21 · Apple Card', 'Complaints of lower limits for women. New York’s regulator found no unlawful discrimination, and criticised how poorly decisions were explained.']],
           [], 'Every rate on this page is counted from 1,200 generated applicants. The groups share one score model; only the base rates and one measurement bias differ.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv-gov' }, 'Governance →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv-gov', 'Governance →')] }
     ] };
 }
 /* The three definitions, scored live, drawn on the canvas so they follow the slider. */

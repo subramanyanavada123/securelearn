@@ -109,7 +109,7 @@ function tkMount(L) {
           ['Jul 2025 · Supabase MCP', 'A support ticket drove an agent running with a service-role key to read the secrets table.'],
           ['2025 · MCP authorisation spec', 'Token passthrough is explicitly forbidden: servers must only accept tokens issued for them.']],
           ['supabase', 'ghmcp', 'nx', 'slackai', 'amazonq'], 'The tokens, signatures and every allow/deny on this page are computed for real. Names and systems are illustrative.'),
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }

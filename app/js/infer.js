@@ -110,7 +110,7 @@ function inMount(L) {
             labStat(closed + '/' + IN_STAGES.length, 'your controls closed', closed === IN_STAGES.length ? 'good' : 'bad'), labStat(String(IN_DEF.length), 'serving-layer controls')),
             h('p', { class: 'labsm' }, 'Timing, batch and cache behaviour here are illustrative, set to match published side-channel results, not measurements of any product.'),
             h('div', { class: 'labcases' }, nnCaseLinks(['extract', 'steal', 'side']))]; },
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }

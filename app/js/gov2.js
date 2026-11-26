@@ -63,7 +63,7 @@ function gveMount(L) {
           ['Feb 2020 · SyRI, The Hague', 'A Dutch welfare-fraud risk system was struck down, in part because nobody could see how it worked or check its outputs.'],
           ['2019 · Fairwashing', 'Researchers showed an unfair model can be given plausible, fair-looking explanations that pass casual review. Fidelity has to be tested.']],
           [], 'The credit model is linear, so every contribution on this page is exact. The log hashes are real SHA-256, computed on this device.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv-gov' }, 'Governance →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv-gov', 'Governance →')] }
     ] };
 }
 function gveWaterfall(L, g, c, x, y, w, hh, title, hideZip) {
@@ -180,7 +180,7 @@ function gvhMount(L) {
           ['Feb 2024 · Moffatt v Air Canada', 'The airline argued its chatbot was responsible for its own wrong answer. The tribunal held the company accountable for everything on its website.'],
           ['Aug 2026 · AI Act Art 14 and 26', 'High-risk systems must be designed for effective oversight, and deployers must assign people with the competence, training and authority to exercise it.']],
           [], 'Your catches on this page are your own clicks. The catch-rate curve at scale is illustrative.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv-gov' }, 'Governance →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv-gov', 'Governance →')] }
     ] };
 }
 function gvhDrawQueue(L, g, P, stats) {
@@ -277,7 +277,7 @@ function gvbMount(L) {
           ['Nov 2021 · Zillow Offers', 'A home-pricing model kept buying above resale value as the market turned. The business was wound down with hundreds of millions in write-downs and a quarter of staff cut.'],
           ['Jun 2022 · Responsible AI Standard v2', 'Microsoft published how it turns six principles into goals, requirements and tools per system: the ladder from principle to evidence, made public.']],
           [], 'The quarter is simulated from 48 generated requests; preparation times, board seats and teams’ patience are illustrative.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv-gov' }, 'Governance →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv-gov', 'Governance →')] }
     ] };
 }
 function gvbDrawLadder(L, g, P) {

@@ -121,7 +121,7 @@ function impMount(L) {
           ['Sep 2025 · Model namespace reuse', 'Deleted publisher names were re-registered, so pipelines that pulled “author/model” got the attacker’s.'],
           ['Jan 2024 · Arup', 'Everyone on a video call except the employee was a deepfake. US$25m was transferred.']],
           ['toolpoison', 'namespace', 'arup', 'slop', 'morris'], 'Routing, the confusable check and the HMAC run for real on this page. Agents and events are illustrative.'),
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }

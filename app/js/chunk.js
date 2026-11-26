@@ -112,7 +112,7 @@ function ckMount(L) {
           ['2025 · Wayback Copilot', 'An assistant kept answering from cached copies of repositories that had since been made private.'],
           ['2024 · Copilot oversharing', 'Early deployments surfaced HR and executive files to ordinary staff: the search was faithful to permissions that were too broad.']],
           ['poisonrag', 'echoleak', 'slackai'], 'The chunker, ranking, cache lookup and filter on this page are real and tiny: word counts and cosine similarity. Production embeddings are denser; the failure modes are the same.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
 }
 

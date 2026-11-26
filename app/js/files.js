@@ -171,7 +171,7 @@ function fiMount(L) {
             labStat(closed + '/' + FI_VEC.length, 'your rules closed', closed === FI_VEC.length ? 'good' : 'bad'), labStat(String(FI_DEF.length), 'rules to close all')),
             h('p', { class: 'labsm' }, 'The resize, the 1% text and both JSON parsers ran for real on this page. The agent’s actions are illustrative.'),
             h('div', { class: 'labcases' }, nnCaseLinks(['papers', 'greshake', 'toolpoison', 'echoleak', 'smuggle']))]; },
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }

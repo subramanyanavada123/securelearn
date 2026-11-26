@@ -32,8 +32,8 @@ function labPaint(L) {
   const sp = L.sim.steps[L.step], n = L.sim.steps.length;
   L.chips = [];
   const chip = ([k, fn, tone]) => { const b = h('b'); L.chips.push({ el: b, fn }); b.textContent = fn(); return h('span', { class: 'labchip ' + (tone || '') }, h('i', null, k), b); };
-  L.hud.replaceChildren(h('a', { class: 'labx', href: L.def.track === 'gov' ? '#adv-gov' : L.def.track === 'ops' ? '#adv-ops' : '#adv', 'aria-label': 'Back to the Advanced path' }, '×'),
-    h('div', { class: 'labttl' }, h('i', null, L.def.kicker), h('b', null, L.def.title)),
+  L.hud.replaceChildren(h('a', { class: 'labx', href: pathBack(L.def.track === 'gov' ? '#adv-gov' : L.def.track === 'ops' ? '#adv-ops' : '#adv'), 'aria-label': pathCtx() ? 'Back to your path' : 'Back to all instruments' }, '×'),
+    h('div', { class: 'labttl' }, h('i', null, pathCrumb(L.def.kicker)), h('b', null, L.def.title)),
     h('ol', { class: 'labdots', 'aria-label': 'Step ' + (L.step + 1) + ' of ' + n }, L.sim.steps.map((_, i) => h('li', { class: i < L.step ? 'done' : i === L.step ? 'now' : '' }))),
     h('div', { class: 'labchips' }, (L.sim.hud ? L.sim.hud(L) : []).map(chip)));
   const gd = (L.def.guide || [])[L.step] || {};
@@ -208,7 +208,7 @@ function bdMount(L) {
         side: () => [h('div', { class: 'labdebrief' }, labStat(B.poison.size + ' files', 'poisoned', 'bad'), labStat((B.poison.size / (BD_CLEAN + B.poison.size) * 100).toFixed(1) + '%', 'of the data'), labStat(Math.round(B.pf.asr * 100) + '%', 'backdoor', 'bad'),
           labStat(Math.round((bdEval(B.clean).acc - B.pf.acc) * 100) + ' pts', 'accuracy lost'), labStat('1 scan', 'caught it', 'good')),
           h('div', { class: 'labcases' }, nnCaseLinks(['p250', 'sleeper', 'webscale']))],
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }
@@ -383,7 +383,7 @@ function rfMount(L) {
       { say: () => 'One direction. Remove it, add it, or out-type it.',
         enter: () => labDone('refusal'),
         side: () => [h('div', { class: 'labdebrief' }, labStat('1', 'direction', 'bad'), labStat('16 / 16', 'neurons carry it'), labStat('0%', 'other change'), labStat('3', 'tokens to slip past', 'bad')), h('div', { class: 'labcases' }, nnCaseLinks(['bon', 'crescendo', 'guard', 'classifiers']))],
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }
@@ -486,7 +486,7 @@ function rmMount(L) {
       { say: () => 'Benchmarks: unchanged. Fingerprint: not.',
         enter: () => { M.hashAt = L.t; labDone('rome'); },
         side: () => [h('div', { class: 'labdebrief' }, labStat('1', 'layer touched', 'bad'), labStat('64 / 64', 'weights moved'), labStat('6 / 6', 'benchmark', 'good'), labStat('✗', 'signature check', 'bad')), h('div', { class: 'labcases' }, nnCaseLinks(['namespace', 'pickle', 'signing']))],
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }

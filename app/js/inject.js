@@ -166,7 +166,7 @@ function piMount(L) {
             h('span', { class: 'labk' }, 'What the market sells, by layer'), h('div', { class: 'labmkt' }, PI_LAYERS.map(l => h('div', { class: 'labrow' + (P.on[l.id] ? ' on' : '') }, h('span', null, l.rule ? '■' : '≈'), h('span', null, l.market), h('b', null, P.on[l.id] ? 'yours' : '')))),
             h('p', { class: 'labsm' }, 'Catch rates for the ≈ layers are illustrative, set to match published patterns, not measurements of any product.'),
             h('div', { class: 'labcases' }, nnCaseLinks(['greshake', 'smuggle', 'stack', 'camel']))]; },
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }

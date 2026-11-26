@@ -107,7 +107,7 @@ function hoMount(L) {
             labStat(Math.round(worst * 100) + '%', 'best per-attempt rate with every defence', 'bad'), labStat(Math.round((1 - Math.pow(1 - worst, 50)) * 100) + '%', 'over 50 attempts', 'bad'), labStat('2', 'heads hijacked by the polite attack')),
             h('p', { class: 'labsm' }, 'An 8-feature, 2-head layer built so the arithmetic can be followed. Real models: thousands of features, dozens of layers and heads, the same operations.'),
             h('div', { class: 'labcases' }, nnCaseLinks(['greshake', 'spotlight', 'echoleak']))]; },
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv-nn-inject' }, 'Injection Range →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv-nn-inject', 'Injection Range →')] }
     ] };
   return sim;
 }
@@ -218,7 +218,7 @@ function grMount(L) {
         side: () => [h('div', { class: 'labdebrief' }, labStat(G.g.loss.toFixed(1), 'loss on the poisoned file', 'bad'), labStat('4', 'pixels nothing defends'), labStat('2', 'files to rewrite them', 'bad'), labStat('0', 'clean files that disagree')),
           h('div', { class: 'labcases' }, nnCaseLinks(['p250', 'sleeper', 'subliminal']))] }
     ] };
-  sim.steps.forEach((sp, i) => { if (!sp.acts) sp.acts = L => [i === sim.steps.length - 1 ? labBtn('↺ Again', () => { LAB.id = null; App.render(); }) : labNext(L, ['Forward pass →', 'Loss →', 'Blame →', 'Update →', 'Tug of war →', 'Repeat →', 'Debrief →'][i] || 'Next →', i === 6 && !(G.T && G.T.done)), i === sim.steps.length - 1 ? h('a', { class: 'labbtn go', href: '#adv-nn-backdoor' }, 'Backdoor lab →') : null]; });
+  sim.steps.forEach((sp, i) => { if (!sp.acts) sp.acts = L => [i === sim.steps.length - 1 ? labBtn('↺ Again', () => { LAB.id = null; App.render(); }) : labNext(L, ['Forward pass →', 'Loss →', 'Blame →', 'Update →', 'Tug of war →', 'Repeat →', 'Debrief →'][i] || 'Next →', i === 6 && !(G.T && G.T.done)), i === sim.steps.length - 1 ? pathGo('#adv-nn-backdoor', 'Backdoor lab →') : null]; });
   const rep = sim.steps[6].acts; sim.steps[6].acts = L => [...rep(L), labNext(L, 'Debrief →', !(G.T && G.T.done))];
   return sim;
 }

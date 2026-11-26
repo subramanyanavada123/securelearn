@@ -7,7 +7,7 @@ const OPC = { ok: LC.good, bad: LC.bad, warn: LC.ink, info: LC.blue, mute: LC.mu
 const opTone = ok => ok ? LC.good : LC.bad;
 // A row of option chips for one setting; v is the current value.
 function opSeg(label, opts, v, fn) { return [h('span', { class: 'labk' }, label), h('div', { class: 'labchipset' }, opts.map(([k, t]) => gvChip(t, v === k, () => fn(k))))]; }
-function opBack(id) { return h('a', { class: 'labbtn go', href: '#adv-ops' }, 'AI SecOps →'); }
+function opBack(id) { return pathGo('#adv-ops', 'AI SecOps →'); }
 
 /* ====================== 1 · What did the logs see? ====================== */
 const OPT_VEC = [{ id: 'applog', name: 'Only web and network logs collected' }, { id: 'sample', name: 'AI events sampled away' }, { id: 'redact', name: 'Evidence deleted as personal data' },

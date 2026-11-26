@@ -93,8 +93,8 @@ function advIndex() {
       h('h3', null, c.title), h('p', { class: 'leadq clamp' }, c.hook), h('span', { class: 'meta' }, sigPlayed(c.id) ? '▶ played' : '▶ hands-on')); };
   return [
     h('section', { class: 'hero' },
-      h('a', { class: 'back', href: '#labs' }, '← Workbench'),
-      h('span', { class: 'eyebrow' }, 'Advanced path · for people who already run the controls'),
+      h('a', { class: 'back', href: '#library' }, '← Library'),
+      h('span', { class: 'eyebrow' }, 'Library · instruments and real attacks'),
       AdvV.v === 'ops' ? [h('h1', null, 'Run it, watch it, stop it'),
         h('p', null, 'AI security operations for the people on call: what to collect, what to alert on, what normal looks like, how to hunt, how to automate safely, and how to pull the plug.')]
       : AdvV.v === 'gov' ? [h('h1', null, 'Governance that holds under pressure'),
@@ -109,7 +109,7 @@ function advIndex() {
         h('button', { type: 'button', 'aria-pressed': String(AdvV.v === 'ops'), onclick: () => tab('ops') }, 'AI security operations', h('small', null, opsDone + ' of ' + OP_SIMS.length + ' done'))),
       meter(AdvV.v === 'sims' ? simsDone / sims.length : AdvV.v === 'gov' ? govDone / GV_SIMS.length : AdvV.v === 'ops' ? opsDone / OP_SIMS.length : done / ADV_CASES.length, 'accent', 'Progress')),
     AdvV.v === 'ops' ? opsHub() : AdvV.v === 'gov' ? govHub() : AdvV.v === 'sims' ? [
-      h('p', { class: 'advlead' }, 'Start here. Train a network and poison it, cut the direction that makes a model refuse, rewrite a fact in its weights, fire injections through the defences the market sells.'),
+      h('p', { class: 'advlead' }, 'Train a network and poison it, cut the direction that makes a model refuse, rewrite a fact in its weights, fire injections through the defences the market sells.'),
       h('div', { class: 'nnsims' }, sims.map(nnSimCard))
     ] : [
       h('div', { class: 'chipset trackchips', role: 'group', 'aria-label': 'Track' },
@@ -117,7 +117,7 @@ function advIndex() {
       tracks.map(t => [h('h2', { class: 'sylgroup', id: 'track-' + t.id }, t.name), h('p', { class: 'advlead' }, t.lead),
         h('div', { class: 'grid cases' }, ADV_CASES.filter(c => c.track === t.id).map(caseCard))])
     ],
-    h('div', { class: 'btnrow end' }, confirmTwice('adv-clear', 'Clear Advanced path answers', () => { delete S.adv; }, 'warn'))
+    h('div', { class: 'btnrow end' }, confirmTwice('adv-clear', 'Clear these answers', () => { delete S.adv; }, 'warn'))
   ];
 }
 

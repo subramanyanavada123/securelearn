@@ -110,7 +110,7 @@ function nzMount(L) {
           ['Nov 2025 · GTG-1002', 'An AI agent ran most of an espionage campaign at a tempo no analyst queue could match.'],
           ['Jul 2025 · Replit', 'An agent deleted a production database during a freeze: an instruction to stop is not a switch.']],
           ['echoleak', 'gtg1002', 'memory'], 'The week of sessions, the 60-day series and the kill timeline are generated on this page from fixed seeds; every count comes from running your rule against them.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
 }
 

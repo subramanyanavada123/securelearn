@@ -83,7 +83,7 @@ function fkMount(L) {
           ['Apr 2025 · GPT-4o', 'An update passed offline evaluations and a small test, went to everyone, and was rolled back days later for a behaviour no metric covered.'],
           ['2024–25 · Alias drift', 'Teams pointing at a model alias have had behaviour change with no deployment of their own.']],
           ['bon', 'spotlight', 'classifiers'], 'Every trial on this page is a real random draw at the attack’s hidden rate, and the intervals are Wilson 95%. The attacks, rates and cohort are illustrative.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
 }
 

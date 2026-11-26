@@ -95,7 +95,7 @@ function mwMount(L) {
           ['Sep 2025 · postmark-mcp', 'Fifteen honest releases, then one line that blind-copied every email to the author. The tool’s definition did not need to change.'],
           ['2025 · Shadowing', 'Researchers showed one server’s description rewriting how an agent used a different, trusted server’s tool.']],
           ['toolpoison', 'ghmcp', 'supabase'], 'The SHA-256, the field scanner, the canary comparison and the name resolution on this page are real. The tool and its servers are invented.'),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
 }
 

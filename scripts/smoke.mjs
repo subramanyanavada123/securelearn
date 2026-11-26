@@ -15,7 +15,7 @@ window.TextEncoder = TextEncoder; window.TextDecoder = TextDecoder;
 window.matchMedia = () => ({ matches: false });
 const srcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
 const all = srcs.map(s => readFileSync('app/' + s, 'utf8')).join('\n;\n') +
-  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, GV_SIMS, GV_FW, GV_EV, GV_USES, GV_TOPICS, GV_PEOPLE, GV_PEOPLE_EQ, GV_CLAIMS, GV_LADDERS, GV_APPLICANT, GV_TWIN, gvCover, gvClassify, gvSearch, gvFair, gvProxy, gvSlices, gvContrib, gvCounterfactual, gvApproved, gvFidelity, gvChain, gvVerify, gvBoardSim, gvBoardOk, gvMismatch, gvRole, gvTriggered, FEEDS, FEED_ALL, FeedV, FeedTab, Theme, NewsV, NEWS, newsParse, newsTopics, newsRank, newsHot, newsMerge, newsRefresh, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, OP_SIMS, OP_TOPICS, OP_Q, OP_PACK0, OP_TRACES, OP_PIV, OP_PROMOTE, OP_IR, OP_MODE0, OP_DIFF, opGb, opAnswered, opPipe, opPipeOk, opDetect, opPackOk, opAnomaly, opAnomOk, opShift, opShiftOk, opContain, opContainOk, opStack, opCoverage, opHuntFound, opIrTry, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill };';
+  '\n;window.__T = { App, S, makeCode, readCodes, collectedDocs, renderBlock, SCENARIOS, DISCUSSIONS, FLOWS, PLAYS, ROLEPLAYS, EPISODES, TRAPS, DECK, STORY_EXTRA, HARDEN_LAYERS, HD_ATTACKS, hdOutcome, SYLLABUS, HD, ADV_CASES, ADV_TRACKS, NN, NN_SIMS, LAB, BD_COUNTS, BD_EPOCHS, BD_X, BD_TRIG, BD_INPUTS, bdStart, bdScan, bdData, bdInit, bdEpoch, bdEval, bdSample, bdForward, nnRng, RF, RF_THETA, rfAct, RM_EDITS, RM_FACTS, RM, rmEdit, rmRecall, nnDot, PI_CH, PI_TECH, PI_GOAL, PI_LAYERS, piValid, piBreach, piStackRate, piAtk, piRun, NN_BY, AdvV, GV_SIMS, GV_FW, GV_EV, GV_USES, GV_TOPICS, GV_PEOPLE, GV_PEOPLE_EQ, GV_CLAIMS, GV_LADDERS, GV_APPLICANT, GV_TWIN, gvCover, gvClassify, gvSearch, gvFair, gvProxy, gvSlices, gvContrib, gvCounterfactual, gvApproved, gvFidelity, gvChain, gvVerify, gvBoardSim, gvBoardOk, gvMismatch, gvRole, gvTriggered, FEEDS, FEED_ALL, FeedV, FeedTab, Theme, NewsV, NEWS, newsParse, newsTopics, newsRank, newsHot, newsMerge, newsRefresh, Motion, hoRun, bdTug, bdGrad, bdTrigScore, SIGS, TAKE, FI_N, FI_M, FI_FN, FI_FX, FI_FY, FI_FS, FI_FAINT, FI_VEC, FI_DEF, FI_FILES, fiScaleImg, fiPhoto, fiResize, fiGlyphs, fiFaintImg, fiHighpass, fiChanged, fiJson, fiValidate, fiRuntime, fiLive, fiHot, IN_STAGES, IN_LAYERS, IN_DEF, inLive, axSha256, axBytes, axHmac, axLive, axRun, axBadN, axEscaped, axTally, tkForge, AX_Q, AX_ACTS, axOrigin, axPolicy, AX_VEC, AX_DEF, MP_Q, MP_VEC, MP_DEF, mpPoisoned, mpOrder, MP_MEM, TK, tkCheck, tkSigOk, TK_VEC, TK_DEF, impRoute, impClash, IMP_NAMES, IMP_MSG, impVerify, IMP_VEC, IMP_DEF, KIT, ATLAS, AT_LINES, AT_ICON, AtV, atBeats, atFixNode, atPos, atFor, atTopic, atEmbRank, atDetScore, syllabusTopics, AT_DEEP, atPlaybookAll, AT_SIM, ckPolicy, ckMemoBad, ckSim, ckProbe, CK_ASK, mwHash, mwDiff, mwAimed, mwCanary, mwResolve, MW_HOT, MW_CLEAN, MW_FIELDS, MC_CONCEPTS, MC_EX, MC_DEF0, MC_ATK, MC_CHECK, MC_NOTE, mcReach, mcTriCount, mcTaskOk, mcFence, mcVet, mcLineage, mcFleet, mcAttack, MC_ATTK, mcDepOk, OP_SIMS, OP_TOPICS, OP_Q, OP_PACK0, OP_TRACES, OP_PIV, OP_PROMOTE, OP_IR, OP_MODE0, OP_DIFF, opGb, opAnswered, opPipe, opPipeOk, opDetect, opPackOk, opAnomaly, opAnomOk, opShift, opShiftOk, opContain, opContainOk, opStack, opCoverage, opHuntFound, opIrTry, fkTrials, fkWilson, fkAtLeastOnce, fkRing, FK_P, nzEval, nzFrog, nzKill, PATHS, PATH_BY, stepInfo, stepDone, pathNextTarget, DEV };';
 window.eval(all);
 const { App, S, makeCode, readCodes } = window.__T;
 const doc = window.document;
@@ -139,7 +139,8 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   }
   go('deck-m12'); if (!/RAG/.test(doc.querySelector('#app .deckpos').textContent) && S.deck.all !== window.__T.DECK.order.indexOf('m12')) fail('#deck-m12 did not open at Module 12');
   go('deck'); if (doc.querySelectorAll('#app .deckthumb').length !== window.__T.DECK.order.length) fail('full deck incomplete');
-  go(''); if (!doc.querySelector('#app .seasonnav a[href="#labs"]') || !doc.querySelector('#app .seasonnav a[href="#deck"]')) fail('story home lacks workbench or deck links');
+  S.workshop = false; go('library'); if (doc.querySelector('#app a[href="#labs"]') || doc.querySelector('.topnav a[href="#deck"]')) fail('workshop links should be hidden by default');
+  S.workshop = true; go('library'); if (!doc.querySelector('#app .libgrid a[href="#labs"]') || !doc.querySelector('#app .libgrid a[href="#deck"]') || !doc.querySelector('.topnav a[href="#labs"]')) fail('workshop mode lacks workbench or deck links'); S.workshop = false;
   console.log('deck: ' + window.__T.DECK.order.length + ' slides; every lab has a Deck tab; home links to workbench and deck');
 }
 // RAG Lab: a naive design then the expert design
@@ -209,8 +210,8 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   }
   go('adv'); if (doc.querySelectorAll('#app .status.done').length !== ADV_CASES.length) fail('advanced index should mark every case done');
   AdvV.v = 'sims';
-  if (!doc.querySelector('.topnav a[href="#adv"]')) fail('top bar lacks the Advanced path link');
-  go(''); if (!doc.querySelector('#app .seasonnav a[href="#adv"]')) fail('story home lacks the Advanced path link');
+  if (!doc.querySelector('.topnav a[href="#library"]')) fail('top bar lacks the Library link');
+  go('library'); if (!doc.querySelector('#app .libgrid a[href="#adv"]')) fail('library lacks the cases and instruments');
   console.log('advanced path: ' + ADV_CASES.length + ' cases in ' + ADV_TRACKS.length + ' tracks, each walked and answered for full marks');
 }
 // Every case has its own signature interaction and a Monday-morning card; each can be played to the end
@@ -327,8 +328,8 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (doc.querySelectorAll('#app .atstop').length !== 0) fail('atlas not-seen filter');
   AtV.filter = 'all'; delete S.atlas; go('atlas');
   if (!doc.querySelector('#app .atstop.next') || !doc.querySelector('#app a.btn.primary[href="#atlas-' + ATLAS[0].id + '"]')) fail('atlas map lacks a start button');
-  go(''); if (!doc.querySelector('#app a.athero[href="#atlas"]')) fail('story home lacks the 10-hour map');
-  if (!doc.querySelector('.topnav a[href="#atlas"]')) fail('top bar lacks the 10-hour map');
+  go('story'); if (!doc.querySelector('#app a.athero[href="#atlas"]')) fail('episode list lacks the map');
+  go('library'); if (!doc.querySelector('#app .libgrid a[href="#atlas"]') || !doc.querySelector('#app .libgrid a[href="#atlas-playbook"]')) fail('library lacks the map or playbook');
   for (const m of ['m12', 'm13', 'm14']) { S.tab[m] = 'topics'; go(m);
     if (!doc.querySelector('#app a.atlablink')) fail(m + ' lacks the map link');
     if (doc.querySelectorAll('#app .topic a[href^="#atlas-"]').length !== syllabusTopics(m).length) fail(m + ' syllabus cards lack their animated stop'); }
@@ -350,8 +351,7 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   const rows = () => doc.querySelectorAll('#app .kittable')[1].querySelectorAll('tbody tr').length;
   if (rows() !== K.laws.length) fail('kit: all regions should list every row');
   clk([...doc.querySelectorAll('#app .kitchip')].find(b => b.textContent === 'Asia')); if (rows() !== K.laws.filter(r => r[0] === 'Asia').length) fail('kit: region filter');
-  go(''); if (!doc.querySelector('#app a.navcard[href="#kit"]')) fail('kit: story landing lacks the kit card');
-  if (!doc.querySelector('.topnav a[href="#kit"]')) fail('kit: top bar lacks the kit link');
+  go('library'); if (!doc.querySelector('#app .libgrid a[href="#kit"]')) fail('kit: library lacks the kit card');
   console.log('cio kit: 8 sections, 15 questions with live links, maturity verdicts and region filter work');
 }
 // Inside the model: the math does what the instruments claim, and each instrument plays through
@@ -665,11 +665,11 @@ go('labs'); if (!doc.querySelector('.stop')) fail('workbench home program map mi
   if (left.length) fail('harden: still getting through with every layer online: ' + left.map(a => a.id).join(', '));
   if (hdOutcome(HD_ATTACKS[0]) !== 'served') fail('harden: the legitimate invoice should be served');
   S.tab.m12 = 'do'; go('m12'); if (!doc.querySelector('#app .hdlink')) fail('Module 12 lab lacks its Harden NEXUS links');
-  go(''); if (!doc.querySelector('#app .hdhero')) fail('story home lacks the Harden NEXUS card');
+  go('story'); if (!doc.querySelector('#app .hdhero')) fail('episode list lacks the Harden NEXUS card');
   console.log('harden nexus: ' + HARDEN_LAYERS.length + ' layers played at 3 stars; all ' + (HD_ATTACKS.length - 1) + ' attacks stopped');
 }
 // story mode: play every episode start to finish
-go(''); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 module episodes'); if (!doc.querySelector('#app .seasonhead a.cta[href="#e00"]')) fail('NEXUS opening missing on home');
+go('story'); if (doc.querySelectorAll('#app .ep').length !== 10) fail('season home should list 10 module episodes'); if (!doc.querySelector('#app .seasonhead a.cta[href="#e00"]')) fail('NEXUS opening missing on home');
 const click = el => el && el.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
 for (const ep of window.__T.EPISODES) {
   go(ep.id); let guard = 0;
@@ -689,7 +689,7 @@ for (const ep of window.__T.EPISODES) {
   }
   if (!doc.querySelector('#app .sc-recap') || !S.story[ep.id].finished) fail(ep.id + ' did not reach the recap');
 }
-go(''); if (!doc.querySelector('#app .repair')) fail('repair board missing after the opening');
+go('story'); if (!doc.querySelector('#app .repair')) fail('repair board missing after the opening');
 // every question in every episode is framed: a story bridge, why it matters, and an explanation once answered
 {
   const X = window.__T.STORY_EXTRA; let framed = 0;
@@ -706,7 +706,7 @@ go(''); if (!doc.querySelector('#app .repair')) fail('repair board missing after
   if (!doc.querySelector('#app .explainbox')) fail('e07 explanation not shown after answering');
   if (!/Up next/.test(doc.querySelector('#app .stagebot .hint').textContent)) fail('no up-next teaser');
   console.log('story frames: ' + framed + ' questions with a bridge, why it matters, visual and explanation');
-  go('');
+  go('story');
 }
 if (doc.querySelectorAll('#app .rpill.ok').length !== 6) fail('all six NEXUS failures should show fixed after every episode');
 if (Object.keys(window.__T.TRAPS).length !== 9) fail('expected 9 traps');
@@ -807,7 +807,7 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
   const side = re => [...doc.querySelectorAll('#app .labside button')].find(b => re.test(b.textContent));
   const nx = m => { const b = doc.querySelector('#app .labbar .labbtn.go'); if (!b || b.disabled) { fail('gov: ' + m + ' (next disabled)'); return false; } clk(b); return true; };
   const slide = (L3, P3, k, v) => { P3[k] = v; const el = [...doc.querySelectorAll('#app .labside input[type=range]')].find(r => r.getAttribute('aria-label') && true); el.value = v; el.dispatchEvent(new window.Event('input')); };
-  const finish = id => { doc.querySelectorAll('#app .labdef').forEach(clk); nx(id + ' defend'); chk(S.nn[id] && S.nn[id].done, id + ' debrief not reached'); chk(doc.querySelector('#app a.labx[href="#adv-gov"]'), id + ' close should return to governance'); };
+  const finish = id => { doc.querySelectorAll('#app .labdef').forEach(clk); nx(id + ' defend'); chk(S.nn[id] && S.nn[id].done, id + ' debrief not reached'); chk(doc.querySelector('#app a.labx[href="#path-gov"]'), id + ' close should return to the governance path'); };
   { const L3 = go2('gvx'); [...doc.querySelectorAll('#app .labside .labchipset button')].slice(0, 6).forEach(clk); nx('gvx evidence');
     [...doc.querySelectorAll('#app .labside .labstack button')].forEach(clk); nx('gvx lenses');
     [...doc.querySelectorAll('#app .labside .labstack button')].forEach(clk); chk(L3.sim.P.tried.size === 6, 'gvx tried all assurance'); nx('gvx assurance'); finish('gvx'); }
@@ -891,7 +891,7 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
   const nx = m => { const b = doc.querySelector('#app .labbar .labbtn.go'); if (!b || b.disabled) { fail('ops: ' + m + ' (next disabled)'); return false; } clk(b); return true; };
   const blocked = m => { const b = doc.querySelector('#app .labbar .labbtn.go'); chk(b && b.disabled, 'ops: ' + m + ' should not pass yet'); };
   const slide = (P3, k, v) => { P3[k] = v; const el = doc.querySelector('#app .labside input[type=range]'); el.value = v; el.dispatchEvent(new window.Event('input')); };
-  const finish = id => { doc.querySelectorAll('#app .labdef').forEach(clk); nx(id + ' defend'); chk(S.nn[id] && S.nn[id].done, id + ' debrief not reached'); chk(doc.querySelector('#app a.labx[href="#adv-ops"]'), id + ' close should return to AI SecOps'); };
+  const finish = id => { doc.querySelectorAll('#app .labdef').forEach(clk); nx(id + ' defend'); chk(S.nn[id] && S.nn[id].done, id + ' debrief not reached'); chk(doc.querySelector('#app a.labx[href="#path-ops"]'), id + ' close should return to the operations path'); };
   { go2('optel'); blocked('optel sources');
     ['Answer metadata', 'Retrieval log', 'Tool-call log', 'On-behalf-of', 'KB changes', 'Version stamp'].forEach(t => tap(new RegExp('^' + t), 'optel')); nx('optel sources');
     blocked('optel pipeline'); ['Keep every event', 'Tokenise', '30 days hot', 'Mapped to a schema'].forEach(t => tap(new RegExp('^' + t), 'optel pipe')); nx('optel pipeline');
@@ -922,6 +922,43 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
   console.log('ai secops: 6 instruments, 14 topics; default pack ' + d0.alerts + ' alerts → layered pack within ' + 60 + '; rolling baseline ' + r7.delay + ' days late vs ' + rf.delay + '; vendor SOAR missed ' + s0.missed + ' + ' + s0.outages.length + ' outages; contained ' + best.leaked + ' records at impact ' + best.impact + ' vs platform switch ' + big.impact + '; all played to the debrief');
 }
 // Theme: a toggle in the top bar and on the story home, persisted, dark by default
+
+// Guided paths: one front door, every step resolves, each step's Next is the following step.
+{
+  const { PATHS, stepInfo, pathNextTarget, DEV, NN } = window.__T; NN.sync = true;
+  go('');
+  if (doc.querySelectorAll('#app .pathcard').length !== PATHS.length) fail('paths: start page should show every path');
+  if (!doc.querySelector('#app .devcard a[href="' + DEV.url + '"]')) fail('paths: start page lacks the developer card');
+  if (!doc.querySelector('#app a.libstrip[href="#library"]')) fail('paths: start page lacks the library link');
+  const seen = new Set(); let n = 0;
+  for (const p of PATHS) {
+    go('path-' + p.id);
+    if (doc.querySelectorAll('#app .pathsteps .step').length !== p.steps.length) fail('paths: ' + p.id + ' page should list every step');
+    if (!doc.querySelector('#app a.cta[href="#' + p.steps[0] + '"]') && !doc.querySelector('#app a.btn.primary')) fail('paths: ' + p.id + ' lacks a start button');
+    p.steps.forEach((r, i) => {
+      if (seen.has(r)) fail('paths: ' + r + ' is on two paths'); seen.add(r);
+      const info = stepInfo(r); if (info.kind === 'Step' || info.title === r) fail('paths: ' + r + ' does not resolve to content');
+      window.location.hash = r;
+      const t = pathNextTarget(), want = p.steps[i + 1] ? '#' + p.steps[i + 1] : '#path-' + p.id;
+      if (!t || t.href !== want) fail('paths: next from ' + r + ' should be ' + want + ', got ' + (t && t.href));
+      try { App.render(); } catch (e) { fail('paths: ' + r + ' failed to render: ' + e.message); }
+      if (!doc.querySelector('#app').children.length) fail('paths: ' + r + ' rendered nothing');
+      if (S.path !== p.id) fail('paths: visiting ' + r + ' should make ' + p.id + ' the current path');
+      n++;
+    });
+  }
+  go('atlas-' + PATHS[1].steps[0].slice(6)); if (!doc.querySelector('#app .pathbar a.btn.primary[href="#' + PATHS[1].steps[1] + '"]')) fail('paths: map scene lacks the path bar Next');
+  go('adv-nn-inject'); if (!doc.querySelector('#app a.labx[href="#path-internals"]')) fail('paths: instrument close should return to its path');
+  if (!/Attacks inside the model · 1 of/.test(doc.querySelector('#app .labttl i').textContent)) fail('paths: instrument header lacks its path position');
+  go('e11'); if (!doc.querySelector('#app .stagetop a.close[href="#path-foundations"]')) fail('paths: episode close should return to its path');
+  { const keep = S.nn.infer; delete S.nn.infer; S.path = 'internals'; go('');
+    if (!doc.querySelector('#app a.resume[href="#adv-nn-infer"]')) fail('paths: start page should offer to resume at the first unfinished step');
+    S.nn.infer = keep; go(''); if (doc.querySelector('#app a.resume')) fail('paths: a finished path should not offer to resume'); }
+  go('path-foundations'); if (!doc.querySelector('#app .devcard.big')) fail('paths: a finished path should invite the learner to connect');
+  if (doc.querySelector('#tablechip').hidden !== true) fail('paths: table chip should be hidden outside workshop mode');
+  console.log('paths: ' + PATHS.length + ' paths, ' + n + ' steps, each rendered with Next pointing to the following step; developer card on start and on completion');
+}
+
 {
   const de = doc.documentElement, click = b => b && b.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   window.localStorage.removeItem('agentic-ai-labs-theme'); window.__T.Theme.apply(window.__T.Theme.get());

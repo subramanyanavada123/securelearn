@@ -162,17 +162,18 @@ function renderRag() {
       h('button', { type: 'button', class: 'btn primary', onclick: () => { if (last) { const t = ragTally(R.res); R.runs.push({ bad: t.bad, money: t.money }); R.phase = 'report'; } else R.i++; commit(); } }, last ? 'Incident report →' : 'Next event →')];
   } else if (R.phase === 'report') {
     body = ragReport(R);
-    foot = [h('a', { class: 'btn ghost', href: '#' }, 'Home'), h('span', { class: 'hint' }, 'Change your design and run again'),
+    foot = pathCtx() ? [h('button', { type: 'button', class: 'btn ghost', onclick: () => { R.focus = 0; go('build'); } }, '↺ Redesign'), h('span', { class: 'hint' }, 'Redesign and run again, or move on'), pathGo('#', '', 'btn primary')]
+      : [h('a', { class: 'btn ghost', href: '#' }, 'Home'), h('span', { class: 'hint' }, 'Change your design and run again'),
       h('button', { type: 'button', class: 'btn primary', onclick: () => { R.focus = 0; go('build'); } }, 'Redesign →')];
   } else {
     body = ragBrief(R);
-    foot = [h('a', { class: 'btn ghost', href: '#' }, '← Home'), h('span', { class: 'hint' }, ''), h('button', { type: 'button', class: 'btn primary', onclick: () => { R.focus = R.focus || 0; go('build'); } }, 'Start designing →')];
+    foot = [h('a', { class: 'btn ghost', href: pathBack('#') }, pathCtx() ? '← Path' : '← Home'), h('span', { class: 'hint' }, ''), h('button', { type: 'button', class: 'btn primary', onclick: () => { R.focus = R.focus || 0; go('build'); } }, 'Start designing →')];
   }
   const key = 'rag:' + R.phase + ':' + (R.phase === 'run' ? R.i : R.phase === 'build' ? (R.focus || 0) : '');
   const anim = Story.last !== key && R.phase !== 'build' ? ' enter-f' : ''; Story.last = key;
   return h('div', { class: 'stage' },
-    h('header', { class: 'stagetop' }, h('a', { class: 'close', href: '#', 'aria-label': 'Home' }, '✕'),
-      h('div', { class: 'eptitle' }, h('span', null, 'Core lab · RAG pipelines'), h('b', null, 'Build Ask Meridian')),
+    h('header', { class: 'stagetop' }, h('a', { class: 'close', href: pathBack('#'), 'aria-label': pathCtx() ? 'Back to your path' : 'Home' }, '✕'),
+      h('div', { class: 'eptitle' }, h('span', null, pathCrumb('Build lab · RAG pipelines')), h('b', null, 'Build Ask Meridian')),
       h('div', { class: 'ragphase' }, ['brief', 'build', 'run', 'report'].map((p, k) => h('span', { class: p === R.phase ? 'on' : '' }, ['Brief', 'Design', 'Run', 'Report'][k])))),
     h('div', { class: 'dots' }),
     h('main', { class: 'scenewrap' + anim }, body),

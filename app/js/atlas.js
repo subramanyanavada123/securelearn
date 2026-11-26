@@ -263,24 +263,23 @@ function atLock(st) {
         h('button', { type: 'button', class: 'btn small ' + (seen[k] ? '' : 'primary'), 'data-k': 'hard-' + k, onclick: () => atBreach(st, k) }, seen[k] ? 'Replay' : '▶ Play it against the control')))),
       Object.keys(seen).length < 3 ? h('p', { class: 'atskip' }, h('button', { type: 'button', class: 'linkbtn', 'data-k': 'hard-all', onclick: () => { atState().deep[st.id] = { 0: 1, 1: 1, 2: 1 }; persist(); atPaint(); } }, 'Reveal all three without playing')) : null),
     h('div', { class: 'atcard like' }, label('Think of it as'), h('p', null, st.like)),
-    h('div', { class: 'atcard' }, label('It really happened'), h('p', null, st.real), adv ? h('a', { class: 'atmore', href: '#adv-' + adv.id }, 'Walk the full case in the Advanced path →') : null),
-    h('div', { class: 'atcard ask' }, label('Ask the room'), h('p', null, st.ask)),
+    h('div', { class: 'atcard' }, label('It really happened'), h('p', null, st.real), adv ? h('a', { class: 'atmore', href: '#adv-' + adv.id }, 'Walk the full case in the Library →') : null),
+    h('div', { class: 'atcard ask' }, label(S.workshop ? 'Ask the room' : 'Think about it'), h('p', null, st.ask)),
     st.play === 'emb' ? atPgEmb() : st.play === 'det' ? atPgDet() : null,
     h('div', { class: 'atcard atchecks' }, label('Checks to run · the answer is a fact, not an opinion'),
       h('div', { class: 'atchecklist' }, D.checks.map((_, k) => atTick(st.id, k, atPaint))),
       h('div', { class: 'btnrow' }, copyButton(() => atPlaybookText(st), 'Copy this stop’s playbook'), h('a', { class: 'btn', href: '#atlas-playbook' }, 'Open the full playbook →'))),
     h('div', { class: 'atcard go' }, label('Keep going'),
-      h('div', { class: 'btnrow' },
-        tp.t ? h('button', { type: 'button', class: 'btn', onclick: () => atGoLab(tp.lab, 'topics', tp.k) }, 'Check yourself: one question') : null,
+      h('div', { class: 'btnrow' }, pathGo(next ? '#atlas-' + next.id : '#atlas', next ? 'Next scene: ' + next.t + ' →' : 'End of the line: back to the map →', 'btn primary big')),
+      goDeeper([S.workshop && tp.t ? h('button', { type: 'button', class: 'btn', onclick: () => atGoLab(tp.lab, 'topics', tp.k) }, 'Check yourself: one question') : null,
         atPractise(st),
-        NN_BY[AT_SIM[st.line]] ? h('a', { class: 'btn', href: '#adv-nn-' + AT_SIM[st.line] }, 'Instrument: ' + NN_BY[AT_SIM[st.line]].title) : null,
-        next ? h('a', { class: 'btn primary', href: '#atlas-' + next.id }, 'Next stop: ' + next.t + ' →') : h('a', { class: 'btn primary', href: '#atlas' }, 'End of the line: back to the map →'))));
+        NN_BY[AT_SIM[st.line]] ? h('a', { class: 'btn', href: '#adv-nn-' + AT_SIM[st.line] }, 'Instrument: ' + NN_BY[AT_SIM[st.line]].title) : null])));
 }
 
 function atBody(st) {
   const line = AT_LINE[st.line], list = atOf(line.id), k = list.indexOf(st), gi = ATLAS.indexOf(st), t0 = atStart(st), prev = ATLAS[gi - 1], next = ATLAS[gi + 1];
   return [
-    h('div', { class: 'crumbs' }, h('a', { class: 'back', href: '#atlas' }, '← The 10-hour map'), h('span', { class: 'spacer' }), h('span', { class: 'atchip' }, 'Line ' + line.n + ' · ' + line.name)),
+    h('div', { class: 'crumbs' }, pathCtx() ? null : h('a', { class: 'back', href: '#atlas' }, '← The full map'), h('span', { class: 'spacer' }), h('span', { class: 'atchip' }, 'Line ' + line.n + ' · ' + line.name)),
     h('header', { class: 'athead' },
       h('span', { class: 'eyebrow' }, 'Stop ' + (k + 1) + ' of ' + list.length + ' · ' + atClock(t0) + ' to ' + atClock(t0 + st.min) + ' · ' + st.min + ' min' + (atDone(st.id) ? ' · seen' : '')),
       h('h1', null, st.t), h('p', { class: 'athook' }, st.hook)),
@@ -321,7 +320,7 @@ function atMap() {
   const fbtn = (k, t) => h('button', { type: 'button', 'aria-pressed': String(F === k), onclick: () => { AtV.filter = k; rerender(); } }, t);
   return h('div', { class: 'atmap' },
     h('section', { class: 'hero' },
-      h('a', { class: 'back', href: '#' }, '← Back to the story mode'),
+      h('a', { class: 'back', href: '#library' }, '← Library'),
       h('span', { class: 'eyebrow' }, 'Modules 12, 13 and 14 · ' + total / 60 + ' hours · ' + ATLAS.length + ' topics'),
       h('h1', null, 'The 10-hour map'),
       h('p', null, 'Every syllabus topic is a stop. First the baseline: a real failure, where the control belongs, the same scene holding. Then one level up, for a room that has already built that control: three ways the secure design still fails, how to harden it, and four checks to run. It all collects into one playbook.')),
@@ -363,7 +362,7 @@ function atPlaybook() {
   const total = ATLAS.length * 4, ticked = sum(ATLAS.map(st => atChkN(st.id)));
   return h('div', { class: 'atmap atbook' },
     h('section', { class: 'hero' },
-      h('a', { class: 'back', href: '#atlas' }, '← The 10-hour map'),
+      h('a', { class: 'back', href: pathBack('#atlas') }, pathCtx() ? '← Your path' : '← The full map'),
       h('span', { class: 'eyebrow' }, 'Take-home · ' + ATLAS.length + ' topics · ' + ATLAS.length * 3 + ' failure modes · ' + total + ' checks'),
       h('h1', null, 'The playbook'),
       h('p', null, 'For teams that already have the controls. Each topic gives the baseline, three ways it still fails, the hardening for each, and four checks whose answer is a fact. Tick what you could evidence today; what is left is your backlog.')),

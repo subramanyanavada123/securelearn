@@ -1,10 +1,30 @@
 # Agentic AI Labs
 
-Hands-on labs for Modules 07–16 of the **Agentic AI Security & Governance** program. Participants open the app on their phones and work in tables of four or five, in role and against the clock. No technical background is needed.
+A free, open-source, hands-on way to learn how AI agents get attacked and how to defend them. It runs in the browser with no install or sign-up, and progress stays on the device.
 
 Live app: https://claude.ai/artifact/2SNepAFvq2HNnVBXJ5NLfS
 
-## Story mode (the home screen)
+## Start here: guided paths (`#`)
+
+The home screen is one front door with five paths. Each path is an ordered list of steps, and every step ends with exactly one **Next** button that leads to the following step. A path bar (or the path's name in the screen header) shows where you are, and ✕ always returns to the path.
+
+| Path | For | Steps |
+|---|---|---|
+| 1 · How AI agents fail | New to AI security, no code needed | The 11 story episodes |
+| 2 · Secure a RAG and agent system | Engineers and architects | 14 map scenes, 5 instruments, Build Ask Meridian, Harden NEXUS |
+| 3 · Attacks inside the model | People who know the controls and want the mechanism | 12 instruments |
+| 4 · Governance and responsible AI | Risk, compliance and product owners | 6 instruments |
+| 5 · AI security operations | SOC analysts and on-call engineers | 6 instruments |
+
+Paths are data in `app/js/paths.js` (`PATHS`): chapters of route ids. A route can belong to only one path, so any screen can work out its path from the URL alone. The smoke test checks that every step resolves, renders and points Next at the following step.
+
+Everything not on a path is in the **Library** (`#library`): the 36 real-attack cases, all instruments, the full map and playbook, the episode list, the CIO kit and the reading list. **Workshop mode** (a switch in the Library) brings back the facilitator workbench, the slide deck, table numbers and the room view described below. It is off by default.
+
+The Start page, every path page and the Library carry a card for connecting with the developer on LinkedIn. A learner who finishes a path is invited to send a ready-made note saying what they want built next.
+
+The sections below describe the content the paths draw on, and the workshop features.
+
+## The story (`#story`, path 1)
 
 **Agents at Meridian** opens with the deck's challenge, *Approve Project NEXUS*: you vote on a launch, watch it fail hour by hour, then rebuild NEXUS through ten episodes, one per module. Every episode starts with a fail-first trap and its reveal, and a repair board on the home screen turns NEXUS's six failures green as you go. You are Meridian's new Head of AI Risk. Each episode is a sequence of single screens, with no scrolling. In each screen a character speaks, you make one decision, tap items on an animated diagram, sort cards one at a time, flip switches, or talk to a stakeholder live. Every choice shows its consequence and moves three meters: Safety, Trust and Speed. Each episode ends with stars and its key lessons. The detailed labs below are the facilitator's deep-dive workbench at `#labs`.
 

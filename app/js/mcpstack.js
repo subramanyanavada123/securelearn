@@ -322,7 +322,7 @@ function mcMount(L) {
           ['ghmcp', 'supabase', 'toolpoison', 'camel', 'spotlight'], 'Reachability, lineage, the fence parser, the semver resolver, path resolution, exposure and the fleet scan run on this page. The company, packages and laptops are invented.')
           .concat([h('div', { class: 'fiout' }, h('span', { class: 'labk' }, 'Checks to take away · each answer is a fact'), MC_CHECKS.map((t, i) => h('div', null, h('i', null, String(i + 1).padStart(2, '0')), t))),
             copyButton(() => 'MCP security checks\n' + MC_CHECKS.map((t, i) => (i + 1) + '. ' + t).join('\n'), 'Copy the checks')]),
-        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: () => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   // Each topic opens with its animated explainer (auto-plays on first visit); the debrief replays any of them and copies the notes.
   sim.steps.slice(0, MC_EX.length).forEach((sp, i) => { const s0 = sp.side; sp.side = L2 => [mcExBtn(L2, i), s0 ? s0(L2) : null]; });

@@ -210,9 +210,10 @@ function labView(lab) {
 let lastView = '';
 App.render = function () {
   const route = location.hash.slice(1), lab = /^adv-nn-/.test(route) && NN_BY[route.slice(7)];
+  pathNote(route);
   document.body.classList.toggle('labmode', !!lab);
   if (lab) { document.body.classList.remove('story', 'present'); document.getElementById('app').replaceChildren(labMount(lab.id)); return; }
-  if (route === '' || route === 'rag' || /^harden(-\w+)?$/.test(route) || /^e\d\d$/.test(route)) { document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route);
+  if (route === '' || route === 'story' || route === 'library' || /^path-[a-z]+$/.test(route) || route === 'rag' || /^harden(-\w+)?$/.test(route) || /^e\d\d$/.test(route)) { paintChrome(); document.body.classList.add('story'); document.body.classList.remove('present'); renderStoryRoute(route);
     const fresh = App.viewKey !== 'story:' + route; App.viewKey = 'story:' + route; Motion.after(document.getElementById('app'), fresh); return; }
   document.body.classList.remove('story');
   const app = document.getElementById('app'); const id = currentLabId(); const y = window.scrollY;
@@ -224,6 +225,7 @@ App.render = function () {
   let view;
   try { view = deckRoute ? deckPage(route) : advRoute ? advPage(route) : atlasRoute ? atlasPage(route) : feedsRoute ? feedsPage() : kitRoute ? kitPage() : id ? labView(App.byId[id]) : home(); }
   catch (e) { console.error(e); view = [box('', h('h3', null, 'This lab could not load'), h('p', { class: 'sub' }, 'Clear its answers to start again.'), id ? h('button', { type: 'button', class: 'btn warn', onclick: () => { delete S.labs[id]; commit(); } }, 'Clear this lab') : null)]; }
+  if (atlasRoute && pathCtx(route)) view = [pathBar(), view];
   app.replaceChildren(...[view].flat(Infinity).filter(Boolean));
   const here = deckRoute ? 'deck' : advRoute || kitRoute || atlasRoute ? route : id || '';
   if (lastView === here) window.scrollTo(0, y); else window.scrollTo(0, 0);
@@ -236,13 +238,16 @@ App.render = function () {
   paintChrome(); tick();
 };
 function paintChrome() {
+  const nav = document.getElementById('topnav'), here = '#' + location.hash.slice(1);
+  if (nav) nav.replaceChildren(...navLinks().map(([href, t]) => h('a', { href, 'aria-current': (href === here || (href !== '#' && here.startsWith(href + '-'))) ? 'page' : null }, t)));
+  document.getElementById('tablechip').hidden = !S.workshop;
   document.getElementById('tablename').textContent = S.table || 'Set your table';
   document.getElementById('tablechip').classList.toggle('live', !!App.db);
   document.body.classList.toggle('present', !!S.present && !!currentLabId());
 }
 
 { const slot = document.getElementById('themeslot'); if (slot) slot.replaceWith(Theme.button()); }
-document.getElementById('brand').addEventListener('click', () => { location.hash = 'labs'; });
+document.getElementById('brand').addEventListener('click', () => { location.hash = ''; });
 document.getElementById('tablechip').addEventListener('click', () => { location.hash = 'labs'; setTimeout(() => { const i = document.getElementById('tbl'); if (i) i.focus(); }, 60); });
 window.addEventListener('hashchange', () => { Motion.swap(() => App.render()); const id = currentLabId(); if (id && S.tab[id] === 'room') watchRoom(id); });
 setInterval(tick, 500);

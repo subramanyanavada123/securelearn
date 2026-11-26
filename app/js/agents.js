@@ -309,7 +309,7 @@ function axMount(L) {
           ['Aug 2025 · s1ngularity / Nx', 'A poisoned npm release ran local AI CLIs with permission-skipping flags to hunt for wallets and secrets.'],
           ['Nov 2025 · GTG-1002', 'An espionage group ran an agent through recon, exploitation and data triage with a human approving only 4–6 steps per target.']],
           ['ghmcp', 'supabase', 'nx', 'amazonq', 'gtg1002'], 'The shell lexer, the action attribution and the approval run are real on this page. The commands are illustrative.'),
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }

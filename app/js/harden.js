@@ -156,14 +156,14 @@ function renderHarden(hash) {
   let top, body, foot, dots = null, key;
   if (!L) {
     const next = HARDEN_LAYERS.find(l => !hdOn(l.id));
-    top = h('div', { class: 'eptitle' }, h('span', null, 'Core lab · Modules 08 to 15'), h('b', null, 'Harden NEXUS'));
+    top = h('div', { class: 'eptitle' }, h('span', null, pathCrumb('Build lab · seven defence layers')), h('b', null, 'Harden NEXUS'));
     body = hdHome(); key = 'hd:' + H.shot;
-    foot = [h('a', { class: 'btn ghost', href: '#' }, '← Home'), h('span', { class: 'hint' }, HARDEN_LAYERS.filter(l => hdOn(l.id)).length + ' of 7 layers online'),
-      next ? h('a', { class: 'btn primary', href: '#harden-' + next.id }, (next === HARDEN_LAYERS[0] ? 'Start: ' : 'Next: ') + 'Layer ' + next.n + ' →') : h('a', { class: 'btn primary', href: '#e16' }, 'Capstone →')];
+    foot = [h('a', { class: 'btn ghost', href: pathBack('#') }, pathCtx() ? '← Path' : '← Home'), h('span', { class: 'hint' }, HARDEN_LAYERS.filter(l => hdOn(l.id)).length + ' of 7 layers online'),
+      next ? h('a', { class: 'btn primary', href: '#harden-' + next.id }, (next === HARDEN_LAYERS[0] ? 'Start: ' : 'Next: ') + 'Layer ' + next.n + ' →') : pathGo('#e16', 'Capstone →', 'btn primary')];
   } else {
     const i = Math.min(H.i[L.id] || 0, HD_SCREENS - 1), done = hdScreenDone(L, i), idx = HARDEN_LAYERS.indexOf(L), next = HARDEN_LAYERS[idx + 1];
     const go = d => { H.i[L.id] = i + d; if (i + d === HD_SCREENS - 1) { const n = hdStarsFor(hdScore(L), L.qs.length); H.done[L.id] = { stars: Math.max(n, (H.done[L.id] || {}).stars || 0) }; } commit(); };
-    top = h('div', { class: 'eptitle' }, h('span', null, 'Harden NEXUS · Layer ' + L.n + ' · Module ' + L.mod), h('b', null, L.title));
+    top = h('div', { class: 'eptitle' }, h('span', null, pathCtx() ? pathCrumb('') + ' · Layer ' + L.n : 'Harden NEXUS · Layer ' + L.n), h('b', null, L.title));
     dots = h('div', { class: 'dots' }, [...Array(HD_SCREENS)].map((_, k) => h('span', { class: 'dot' + (k < i ? ' past' : k === i ? ' now' : '') })));
     body = i === 0 ? hdBrief(L) : i === 1 ? hdSimScreen(L) : i < HD_SCREENS - 1 ? hdDrill(L, i - 2) : hdDebrief(L);
     key = 'hd:' + L.id + ':' + i + (i === 1 ? ':' + hdSim(L.id).sc + ':' + hdSim(L.id).on : '');
@@ -175,7 +175,7 @@ function renderHarden(hash) {
   }
   const anim = Story.last !== key && !key.startsWith('hd:' + (L ? L.id + ':1' : '')) ? ' enter-f' : ''; Story.last = key;
   return h('div', { class: 'stage' + (L ? '' : ' hdconsole') },
-    h('header', { class: 'stagetop' }, h('a', { class: 'close', href: L ? '#harden' : '#', 'aria-label': L ? 'Back to the console' : 'Home' }, '✕'), top),
+    h('header', { class: 'stagetop' }, h('a', { class: 'close', href: L ? '#harden' : pathBack('#'), 'aria-label': L ? 'Back to the console' : pathCtx() ? 'Back to your path' : 'Home' }, '✕'), top),
     dots || h('div', { class: 'dots' }),
     h('main', { class: 'scenewrap' + anim }, body),
     h('footer', { class: 'stagebot' }, foot));

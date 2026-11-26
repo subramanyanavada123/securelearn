@@ -182,11 +182,11 @@ function sceneRecap(ep, st) {
     h('div', { class: 'finalm' }, METERS.map(([k, t]) => h('div', null, h('b', null, m[k]), h('span', null, t)))),
     h('ul', { class: 'lessons' }, ep.scenes[ep.scenes.length - 1].lessons.map((l, k) => h('li', { style: 'animation-delay:' + (0.4 + 0.15 * k) + 's' }, l))),
     h('div', { class: 'btnrow center' },
-      next ? h('a', { class: 'btn primary', href: '#' + next.id }, 'Next: ' + next.title + ' →') : h('a', { class: 'btn primary', href: '#' }, 'Back to the season'),
-      h('button', { type: 'button', class: 'btn', onclick: () => { S.story[ep.id] = { i: 0, picks: {}, spots: {}, sorts: {}, tog: {}, live: {}, tl: {} }; if (ep.lab && S.traps) delete S.traps[ep.lab]; Story.typed = {}; commit(); } }, 'Replay'),
-      ep.id === 'e09' || ep.id === 'e12' ? h('a', { class: 'btn', href: '#rag' }, 'Open the RAG Lab') : null,
+      pathGo(next ? '#' + next.id : '#story', next ? 'Next: ' + next.title + ' →' : 'Back to the episode list', 'btn primary big'),
+      h('button', { type: 'button', class: 'btn ghost', onclick: () => { S.story[ep.id] = { i: 0, picks: {}, spots: {}, sorts: {}, tog: {}, live: {}, tl: {} }; if (ep.lab && S.traps) delete S.traps[ep.lab]; Story.typed = {}; commit(); } }, 'Replay')),
+    goDeeper([ep.id === 'e09' || ep.id === 'e12' ? h('a', { class: 'btn', href: '#rag' }, 'Build lab: Ask Meridian') : null,
       hdLayersFor(ep.id).map(l => h('a', { class: 'btn', href: '#harden-' + l.id }, 'Harden NEXUS · Layer ' + l.n)),
-      ep.lab ? h('a', { class: 'btn', href: '#' + ep.lab }, 'Deep-dive workbench') : null, ep.lab ? h('a', { class: 'btn', href: '#deck-' + ep.lab }, 'Module slides') : null));
+      S.workshop && ep.lab ? h('a', { class: 'btn', href: '#' + ep.lab }, 'Workshop lab') : null, S.workshop && ep.lab ? h('a', { class: 'btn', href: '#deck-' + ep.lab }, 'Module slides') : null]));
 }
 
 function sceneComplete(sc, st, i, ep_) {
@@ -232,8 +232,8 @@ function renderEpisode(id) {
   const fl = Story.flash;
   return h('div', { class: 'stage' },
     h('header', { class: 'stagetop' },
-      h('a', { class: 'close', href: '#', 'aria-label': 'Back to the season' }, '✕'),
-      h('div', { class: 'eptitle' }, h('span', null, 'Episode ' + ep.n + ' · ' + ep.topic), h('b', null, ep.title)),
+      h('a', { class: 'close', href: pathBack('#story'), 'aria-label': pathCtx() ? 'Back to your path' : 'Back to the episode list' }, '✕'),
+      h('div', { class: 'eptitle' }, h('span', null, pathCrumb('Episode ' + ep.n + ' · ' + ep.topic)), h('b', null, ep.title)),
       h('div', { class: 'meters' }, METERS.map(([k, t]) => h('div', { class: 'mt' + (fl && fl.fx && fl.fx[k] ? (fl.fx[k] > 0 ? ' bump-up' : ' bump-down') : '') }, h('span', null, t), h('div', { class: 'mbar' }, h('i', { class: 'm-' + k, style: 'width:' + m[k] + '%' })))))),
     h('div', { class: 'dots' }, ep.scenes.map((x, k) => h('span', { class: 'dot' + (k < i ? ' past' : k === i ? ' now' : '') }))),
     h('main', { class: 'scenewrap' + anim }, body),
@@ -250,7 +250,7 @@ function repairStrip(compact) {
   const fixed = NEXUS_FAILS.filter(f => f.fix.every(e => epDone(e))).length;
   return h('div', { class: 'repair' + (compact ? ' compact' : '') }, h('div', { class: 'repairhead' }, h('b', null, 'NEXUS repair board'), h('span', null, fixed + ' of 6 failures fixed')),
     h('div', { class: 'repairpills' }, NEXUS_FAILS.map(f => { const ok = f.fix.every(e => epDone(e));
-      return h('a', { class: 'rpill' + (ok ? ' ok' : ''), href: '#' + (f.fix.find(e => !epDone(e)) || f.fix[0]), title: f.t }, h('b', null, 'H' + f.hour), h('span', null, ok ? 'fixed' : 'Mod ' + f.mod)); })));
+      return h('a', { class: 'rpill' + (ok ? ' ok' : ''), href: '#' + (f.fix.find(e => !epDone(e)) || f.fix[0]), title: f.t }, h('b', null, 'H' + f.hour), h('span', null, ok ? 'fixed' : 'broken')); })));
 }
 function coreTile(cls, href, kicker, title, line) {
   return h('a', { class: 'coretile glow ' + cls, href }, h('span', { class: 'kicker' }, kicker), h('b', null, title), h('span', { class: 'coreline' }, line), h('i', { class: 'corego', 'aria-hidden': 'true' }, '→'));
@@ -263,11 +263,8 @@ function renderSeason() {
   const atN = ATLAS.filter(st => atDone(st.id)).length, hdN = HARDEN_LAYERS.filter(l => hdOn(l.id)).length, runs = (S.rag && S.rag.runs) || [];
   Story.last = '';
   return h('div', { class: 'stage season' },
-    h('nav', { class: 'seasonnav', 'aria-label': 'Program' },
-      h('span', { class: 'seasonbrand' }, h('span', { class: 'mark', 'aria-hidden': 'true' }, 'AI'), 'Agentic AI Labs'),
-      h('span', { class: 'spacer' }),
-      [['#labs', 'Workbench'], ['#deck', 'Deck'], ['#adv', 'Advanced'], ['#kit', 'CIO kit'], ['#feeds', 'Reading']].map(([href, t]) => h('a', { class: 'navcard', href }, t)), Theme.button()),
-    h('div', { class: 'seasonhead' }, h('span', { class: 'kicker' }, 'Agentic AI Security & Governance · Season 1'), h('h1', null, 'Agents at Meridian'),
+    siteNav(),
+    h('div', { class: 'seasonhead' }, h('a', { class: 'pback', href: '#' }, '← All paths'), h('span', { class: 'kicker' }, 'The story behind path 1 · ' + EPISODES.length + ' episodes'), h('h1', null, 'Agents at Meridian'),
       h('p', { class: 'lead' }, opened ? 'NEXUS failed in 72 hours. Rebuild it one module at a time: every episode opens with a trap, and fixes part of NEXUS.' : 'It starts with a vote. Meridian Finance wants to launch Project NEXUS on Friday, and you are the AI Risk Committee.'),
       h('div', { class: 'btnrow' }, h('a', { class: 'btn primary big cta', href: '#' + next.id }, (next.id === 'e00' ? 'Start: approve Project NEXUS?' : (doneN ? 'Continue: ' : 'Next: ') + 'Episode ' + next.n) + ' →'),
         h('span', { class: 'small' }, opened ? doneN + ' of 10 episodes complete' : 'Vote first, then watch the first 72 hours · 30 min'))),
@@ -277,16 +274,16 @@ function renderSeason() {
         h('span', { class: 'epn' }, e.n), h('b', null, e.title), h('span', { class: 'ept' }, e.topic + ' · ' + e.scenes.length + ' scenes'),
         h('span', { class: 'epstars' }, n >= 0 ? [0, 1, 2].map(j => h('i', { class: j < n ? 'on' : '' }, '★')) : '')); })),
     h('div', { class: 'coretiles' },
-      coreTile('athero', '#atlas', 'Modules 12–14 · 10 hours', 'The 10-hour map', atN ? atN + ' of ' + ATLAS.length + ' stops seen' : ATLAS.length + ' animated stops: RAG, MCP, shipping, SOC'),
-      coreTile('raghero', '#rag', 'Core lab · 09 and 12', 'Build Ask Meridian', runs.length ? runs.length + ' runs · last: ' + runs[runs.length - 1].bad + ' incidents' : 'Design a RAG pipeline, then attack it'),
-      coreTile('raghero hdhero', '#harden', 'Core lab · 08 to 15', 'Harden NEXUS', hdN ? hdN + ' of 7 layers online' : 'Seven defence layers against its own failures')),
+      coreTile('athero', '#atlas', 'Map · ' + ATLAS.length + ' scenes', 'The full map', atN ? atN + ' of ' + ATLAS.length + ' stops seen' : ATLAS.length + ' animated stops: RAG, MCP, shipping, SOC'),
+      coreTile('raghero', '#rag', 'Build lab', 'Build Ask Meridian', runs.length ? runs.length + ' runs · last: ' + runs[runs.length - 1].bad + ' incidents' : 'Design a RAG pipeline, then attack it'),
+      coreTile('raghero hdhero', '#harden', 'Build lab', 'Harden NEXUS', hdN ? hdN + ' of 7 layers online' : 'Seven defence layers against its own failures')),
     opened ? h('div', { class: 'seasonfoot' }, h('a', { href: '#e00' }, 'Replay the opening challenge')) : null);
 }
 
 /* Called by App.render for story routes. */
 function renderStoryRoute(hash) {
   const app = document.getElementById('app');
-  app.replaceChildren(hash === 'rag' ? renderRag() : hash.startsWith('harden') ? renderHarden(hash) : /^e\d\d$/.test(hash) && EP[hash] ? renderEpisode(hash) : renderSeason());
+  app.replaceChildren(hash === '' ? renderStart() : hash === 'library' ? renderLibrary() : hash.startsWith('path-') ? renderPath(hash.slice(5)) : hash === 'rag' ? renderRag() : hash.startsWith('harden') ? renderHarden(hash) : /^e\d\d$/.test(hash) && EP[hash] ? renderEpisode(hash) : renderSeason());
   animateViz(app);
   // typewriter for speech
   const el = app.querySelector('[data-typed]');

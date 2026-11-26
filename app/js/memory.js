@@ -118,7 +118,7 @@ function mpMount(L) {
           ['2025 · MINJA', 'Researchers poisoned an agent’s memory bank through ordinary queries alone, with no access to the store.'],
           ['2024 · Morris II', 'A self-replicating prompt spread between email assistants through what they retrieved and stored.']],
           ['memory', 'poisonrag', 'morris', 'echoleak'], 'Recall on this page is real cosine similarity over word counts. The memories and answers are illustrative.'),
-        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), h('a', { class: 'labbtn go', href: '#adv' }, 'Advanced path →')] }
+        acts: L => [labBtn('↺ Again', () => { LAB.id = null; App.render(); }), pathGo('#adv', 'Advanced path →')] }
     ] };
   return sim;
 }
