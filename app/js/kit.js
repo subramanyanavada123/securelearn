@@ -26,7 +26,7 @@ function kitPage() {
   const jump = id => e => { e.preventDefault(); const el = document.getElementById('kit-' + id); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
   return [
     h('section', { class: 'hero' },
-      h('a', { class: 'back', href: '#library' }, '← Library'),
+      homeBack(),
       h('span', { class: 'eyebrow' }, 'Take-home kit · as of ' + KIT.asOf),
       h('h1', null, 'Take it to your CIO'),
       h('p', null, 'A one-page playbook for the conversation that starts on Monday: why now, 15 questions, a maturity check you can score, the frameworks your CIO will be measured against, and a 90-day plan to propose.'),

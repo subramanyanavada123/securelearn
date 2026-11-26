@@ -24,7 +24,7 @@ function labMount(id) {
     cv.addEventListener('pointermove', e => { const [x, y] = pt(e); if (L.sim.move) L.sim.move(L, x, y, L.down); });
     window.addEventListener('pointerup', () => { L.down = false; });
     LAB.id = id; LAB.L = L; L.briefOpen = !NN.sync; L.sim = def.mount(L); L.go(0);
-  }
+  } else labNav(LAB.L);
   labLoop();
   return LAB.L.root;
 }
@@ -46,6 +46,8 @@ function labPaint(L) {
     h('div', { class: 'labacts' }, (sp.acts ? sp.acts(L) : []).filter(Boolean)));
   labBrief(L);
 }
+// Reopening a cached instrument: repaint, since its way out and its Next depend on the version and the path.
+function labNav(L) { labPaint(L); }
 // The briefing card: what this is, the real-world version, what you will do. Shown on entry; ? reopens it.
 function labBrief(L) {
   const b = L.def.brief; if (!b) return;

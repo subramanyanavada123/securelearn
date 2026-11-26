@@ -93,8 +93,8 @@ function advIndex() {
       h('h3', null, c.title), h('p', { class: 'leadq clamp' }, c.hook), h('span', { class: 'meta' }, sigPlayed(c.id) ? '▶ played' : '▶ hands-on')); };
   return [
     h('section', { class: 'hero' },
-      h('a', { class: 'back', href: '#library' }, '← Library'),
-      h('span', { class: 'eyebrow' }, 'Library · instruments and real attacks'),
+      isClassic() ? h('a', { class: 'back', href: '#labs' }, '← Workbench') : h('a', { class: 'back', href: '#library' }, '← Library'),
+      h('span', { class: 'eyebrow' }, isClassic() ? 'Advanced path · for people who already run the controls' : 'Library · instruments and real attacks'),
       AdvV.v === 'ops' ? [h('h1', null, 'Run it, watch it, stop it'),
         h('p', null, 'AI security operations for the people on call: what to collect, what to alert on, what normal looks like, how to hunt, how to automate safely, and how to pull the plug.')]
       : AdvV.v === 'gov' ? [h('h1', null, 'Governance that holds under pressure'),

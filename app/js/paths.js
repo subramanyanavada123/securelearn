@@ -8,6 +8,17 @@
    belongs to at most one path, so any screen can work out its path and
    position from the URL alone. Add or reorder steps in PATHS below. */
 
+/* Two versions of the app. New (default): guided paths. Classic: the original
+   workshop app, with the story home at # and no paths. Progress is shared. */
+function isClassic() { return !!S.classic; }
+function wsOn() { return !!(S.workshop || S.classic); }
+function setVersion(classic) { S.classic = !!classic; persist(); if (location.hash.slice(1)) location.hash = ''; else rerender(); }
+function versionSwitch(cls) {
+  return h('button', { type: 'button', class: 'btn ' + (cls || ''), title: isClassic() ? 'Switch to the guided-path version' : 'Switch back to the original workshop version',
+    onclick: () => setVersion(!isClassic()) }, isClassic() ? 'Try the new version →' : 'Switch to the classic version');
+}
+function homeBack() { return isClassic() ? h('a', { class: 'back', href: '#' }, '← Back to the story mode') : h('a', { class: 'back', href: '#library' }, '← Library'); }
+
 const DEV = { name: 'Subramanya Navada', short: 'Subramanya', url: 'https://www.linkedin.com/in/subramanya-navada-b27018194' };
 
 const PATHS = [
@@ -67,8 +78,8 @@ function pathMinutes(p) { return sum(p.steps.map(r => stepInfo(r).min)); }
 function hrs(min) { return min < 90 ? min + ' min' : (Math.round(min / 30) / 2) + ' h'; }
 
 /* ---------- where am I ---------- */
-function pathCtx(route) { const r = route == null ? location.hash.slice(1) : route; return PATH_OF[/^harden-/.test(r) ? 'harden' : r] || null; }
-function pathNote(route) { const c = pathCtx(route); if (c && S.path !== c.p.id) { S.path = c.p.id; persist(); } }
+function pathCtx(route) { if (S.classic) return null; const r = route == null ? location.hash.slice(1) : route; return PATH_OF[/^harden-/.test(r) ? 'harden' : r] || null; }
+function pathNote(route) { if (S.classic) return; const c = pathCtx(route); if (c && S.path !== c.p.id) { S.path = c.p.id; persist(); } }
 function pathCrumb(fallback) { const c = pathCtx(); return c ? c.p.title + ' · ' + (c.i + 1) + ' of ' + c.p.steps.length : fallback; }
 function pathBack(fallback) { const c = pathCtx(); return c ? '#path-' + c.p.id : fallback; }
 function pathNextTarget() {
@@ -121,9 +132,9 @@ function pathCard(p) {
 }
 function siteNav() {
   return h('nav', { class: 'seasonnav', 'aria-label': 'Site' },
-    h('a', { class: 'seasonbrand', href: '#' }, h('span', { class: 'mark', 'aria-hidden': 'true' }, 'AI'), 'Agentic AI Labs'),
+    h('a', { class: 'seasonbrand', href: isClassic() ? '#labs' : '#' }, h('span', { class: 'mark', 'aria-hidden': 'true' }, 'AI'), 'Agentic AI Labs'),
     h('span', { class: 'spacer' }),
-    navLinks().map(([href, t]) => h('a', { class: 'navcard', href }, t)), Theme.button());
+    navLinks().map(([href, t]) => h('a', { class: 'navcard', href }, t)), isClassic() ? versionSwitch('small navswitch') : null, Theme.button());
 }
 function renderStart() {
   const cur = S.path && PATH_BY[S.path], cpr = cur && pathProgress(cur);
@@ -144,7 +155,7 @@ function renderStart() {
 }
 function siteFoot() {
   return h('footer', { class: 'sitefoot' }, h('span', null, 'Agentic AI Labs · open source · made by ', h('a', { href: DEV.url, target: '_blank', rel: 'noopener noreferrer' }, DEV.name)),
-    h('span', { class: 'spacer' }), h('a', { href: '#library' }, 'Library'), h('a', { href: '#feeds' }, 'Reading'));
+    h('span', { class: 'spacer' }), h('a', { href: '#library' }, 'Library'), h('a', { href: '#feeds' }, 'Reading'), versionSwitch('small ghost'));
 }
 
 /* ---------- one path (#path-<id>) ---------- */
@@ -191,17 +202,21 @@ function renderLibrary() {
       S.workshop ? tile('#deck', 'Workshop', 'Slide deck', 'The program deck with speaker notes.', '#B9C4DA') : null),
     h('section', { class: 'wsbox' }, h('div', null, h('b', null, 'Running a workshop?'), h('p', { class: 'small' }, 'Workshop mode adds the facilitator workbench, the slide deck, table numbers and the room view that compares tables.')),
       h('button', { type: 'button', class: 'btn', 'aria-pressed': String(!!S.workshop), onclick: () => { S.workshop = !S.workshop; commit(); } }, S.workshop ? 'Workshop mode: on' : 'Turn on workshop mode')),
+    h('section', { class: 'wsbox' }, h('div', null, h('b', null, 'Prefer the original version?'), h('p', { class: 'small' }, 'The classic version opens on the story, with the workbench, map, deck and Advanced path in the top menu and no guided paths. Your progress carries over both ways.')),
+      versionSwitch()),
     devCard(null),
     siteFoot());
 }
 
 /* ---------- top navigation, shared by both layouts ---------- */
 function navLinks() {
+  if (S.classic) return [['#atlas', 'Map'], ['#labs', 'Workbench'], ['#deck', 'Deck'], ['#adv', 'Advanced'], ['#kit', 'CIO kit'], ['#feeds', 'Reading']];
   return [['#', 'Paths'], ['#library', 'Library'], ['#feeds', 'Reading'], ...(S.workshop ? [['#labs', 'Workbench'], ['#deck', 'Deck']] : [])];
 }
 
 /* Secondary links at the end of a unit: tucked away so the one Next stays obvious. */
 function goDeeper(items, title) {
   const kids = [items].flat(Infinity).filter(Boolean); if (!kids.length) return null;
+  if (S.classic) return h('div', { class: 'btnrow center' }, kids);
   return h('details', { class: 'godeeper' }, h('summary', null, title || 'Go deeper'), h('div', { class: 'btnrow' }, kids));
 }

@@ -20,6 +20,8 @@ Paths are data in `app/js/paths.js` (`PATHS`): chapters of route ids. A route ca
 
 Everything not on a path is in the **Library** (`#library`): the 36 real-attack cases, all instruments, the full map and playbook, the episode list, the CIO kit and the reading list. **Workshop mode** (a switch in the Library) brings back the facilitator workbench, the slide deck, table numbers and the room view described below. It is off by default.
 
+**Two versions.** The new, path-based version is the default. **Classic** restores the original workshop app: the story home at `#`, the old top menu (Map, Workbench, Deck, Advanced, CIO kit, Reading), the table chip and the original end-of-unit buttons, with no paths. Switch with the button in the footer or the Library (new) or the top bar (classic). Progress is shared, so switching loses nothing; the choice is saved on the device.
+
 The Start page, every path page and the Library carry a card for connecting with the developer on LinkedIn. A learner who finishes a path is invited to send a ready-made note saying what they want built next.
 
 The sections below describe the content the paths draw on, and the workshop features.

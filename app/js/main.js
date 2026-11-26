@@ -240,14 +240,14 @@ App.render = function () {
 function paintChrome() {
   const nav = document.getElementById('topnav'), here = '#' + location.hash.slice(1);
   if (nav) nav.replaceChildren(...navLinks().map(([href, t]) => h('a', { href, 'aria-current': (href === here || (href !== '#' && here.startsWith(href + '-'))) ? 'page' : null }, t)));
-  document.getElementById('tablechip').hidden = !S.workshop;
+  document.getElementById('tablechip').hidden = !wsOn();
   document.getElementById('tablename').textContent = S.table || 'Set your table';
   document.getElementById('tablechip').classList.toggle('live', !!App.db);
   document.body.classList.toggle('present', !!S.present && !!currentLabId());
 }
 
 { const slot = document.getElementById('themeslot'); if (slot) slot.replaceWith(Theme.button()); }
-document.getElementById('brand').addEventListener('click', () => { location.hash = ''; });
+document.getElementById('brand').addEventListener('click', () => { location.hash = isClassic() ? 'labs' : ''; });
 document.getElementById('tablechip').addEventListener('click', () => { location.hash = 'labs'; setTimeout(() => { const i = document.getElementById('tbl'); if (i) i.focus(); }, 60); });
 window.addEventListener('hashchange', () => { Motion.swap(() => App.render()); const id = currentLabId(); if (id && S.tab[id] === 'room') watchRoom(id); });
 setInterval(tick, 500);

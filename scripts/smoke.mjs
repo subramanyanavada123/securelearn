@@ -956,6 +956,18 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
     S.nn.infer = keep; go(''); if (doc.querySelector('#app a.resume')) fail('paths: a finished path should not offer to resume'); }
   go('path-foundations'); if (!doc.querySelector('#app .devcard.big')) fail('paths: a finished path should invite the learner to connect');
   if (doc.querySelector('#tablechip').hidden !== true) fail('paths: table chip should be hidden outside workshop mode');
+  // Classic version: the original app, no paths, same progress.
+  S.classic = true; go('');
+  if (doc.querySelectorAll('#app .ep').length !== 10 || doc.querySelector('#app .pathcard')) fail('classic: home should be the story season, not the paths');
+  for (const href of ['#atlas', '#labs', '#deck', '#adv', '#kit', '#feeds']) if (!doc.querySelector('#app .seasonnav a[href="' + href + '"]')) fail('classic: season nav lacks ' + href);
+  go('labs'); if (!doc.querySelector('.topnav a[href="#adv"]') || doc.querySelector('#tablechip').hidden) fail('classic: top bar should have the old links and the table chip');
+  go('adv-nn-inject'); if (!doc.querySelector('#app a.labx[href="#adv"]')) fail('classic: instrument close should return to the Advanced path');
+  go('atlas-' + PATHS[1].steps[0].slice(6)); if (doc.querySelector('#app .pathbar') || doc.querySelector('#app details.godeeper')) fail('classic: map scenes should have no path bar or Go deeper fold');
+  go('e11'); if (!doc.querySelector('#app .stagetop a.close[href="#"]')) fail('classic: episode close should return to the season');
+  const btn = [...doc.querySelectorAll('button')].find(b => /new version/.test(b.textContent)); go(''); const sw = [...doc.querySelectorAll('#app button')].find(b => /new version/.test(b.textContent));
+  if (!sw) fail('classic: home lacks the switch to the new version'); else { sw.click(); if (S.classic) fail('classic: switch did not turn the new version on'); }
+  go(''); if (!doc.querySelector('#app .pathcard') || ![...doc.querySelectorAll('#app button')].some(b => /classic version/.test(b.textContent))) fail('new: start page lacks paths or the classic switch');
+  console.log('versions: new (paths) by default; classic restores the story home, old menus and endings; switch both ways');
   console.log('paths: ' + PATHS.length + ' paths, ' + n + ' steps, each rendered with Next pointing to the following step; developer card on start and on completion');
 }
 

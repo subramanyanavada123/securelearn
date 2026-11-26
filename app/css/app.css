@@ -2264,3 +2264,5 @@ body.story .devacts .btn.primary { background: #0A66C2; border-color: #0A66C2; c
 html[data-theme="light"] .pathcard, html[data-theme="light"] .resume { box-shadow: 0 1px 2px rgba(22,35,74,.05), 0 10px 26px -16px rgba(22,35,74,.3); }
 html[data-theme="light"] :is(.pcnum, .pcgo, .resume .kicker, .pathpage .starthead .kicker, .step.now .stkind, .step.now .stn) { color: color-mix(in srgb, var(--tone) 55%, #16234A); }
 html[data-theme="light"] .devtxt .kicker { color: #0A66C2; }
+.seasonnav .navswitch { margin-left: 6px; }
+.sitefoot .btn.ghost { background: transparent; }

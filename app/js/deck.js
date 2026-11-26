@@ -97,7 +97,7 @@ function deckPage(route) {
   const at = (S.deck && S.deck.all) || 0;
   const cur = DECK.sections.filter(s => DECK.order.indexOf(s.start) <= at).pop();
   return [h('section', { class: 'labhead' },
-      h('div', { class: 'crumbs' }, h('a', { class: 'back', href: '#labs' }, '← Workbench'), h('span', { class: 'spacer' }), h('a', { class: 'back', href: '#library' }, 'Library')),
+      h('div', { class: 'crumbs' }, h('a', { class: 'back', href: '#labs' }, '← Workbench'), h('span', { class: 'spacer' }), isClassic() ? h('a', { class: 'back', href: '#' }, 'Story mode') : h('a', { class: 'back', href: '#library' }, 'Library')),
       h('span', { class: 'eyebrow' }, 'Program deck · ' + ids.length + ' slides'), h('h1', null, DECK.title),
       h('div', { class: 'chipset deckjump', role: 'group', 'aria-label': 'Jump to a section' }, DECK.sections.map(s => h('button', { type: 'button', 'aria-pressed': String(cur === s), title: s.d,
         onclick: () => { S.deck = S.deck || {}; S.deck.all = DECK.order.indexOf(s.start); commit(); } }, deckSectionName(s.start))))),
