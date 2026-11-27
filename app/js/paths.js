@@ -15,7 +15,7 @@ function wsOn() { return !!(S.workshop || S.classic); }
 function setVersion(classic) { S.classic = !!classic; persist(); if (location.hash.slice(1)) location.hash = ''; else rerender(); }
 function versionSwitch(cls) {
   return h('button', { type: 'button', class: 'btn ' + (cls || ''), title: isClassic() ? 'Switch to the guided-path version' : 'Switch back to the original workshop version',
-    onclick: () => setVersion(!isClassic()) }, isClassic() ? 'Try the new version →' : 'Switch to the classic version');
+    onclick: () => setVersion(!isClassic()) }, isClassic() ? 'Try the new version →' : 'Classic version');
 }
 function homeBack() { return isClassic() ? h('a', { class: 'back', href: '#' }, '← Back to the story mode') : h('a', { class: 'back', href: '#library' }, '← Library'); }
 
@@ -134,7 +134,7 @@ function siteNav() {
   return h('nav', { class: 'seasonnav', 'aria-label': 'Site' },
     h('a', { class: 'seasonbrand', href: isClassic() ? '#labs' : '#' }, h('span', { class: 'mark', 'aria-hidden': 'true' }, 'AI'), 'Agentic AI Labs'),
     h('span', { class: 'spacer' }),
-    navLinks().map(([href, t]) => h('a', { class: 'navcard', href }, t)), isClassic() ? versionSwitch('small navswitch') : null, Theme.button());
+    navLinks().map(([href, t]) => h('a', { class: 'navcard', href }, t)), versionSwitch('small navswitch'), Theme.button());
 }
 function renderStart() {
   const cur = S.path && PATH_BY[S.path], cpr = cur && pathProgress(cur);
@@ -155,7 +155,7 @@ function renderStart() {
 }
 function siteFoot() {
   return h('footer', { class: 'sitefoot' }, h('span', null, 'Agentic AI Labs · open source · made by ', h('a', { href: DEV.url, target: '_blank', rel: 'noopener noreferrer' }, DEV.name)),
-    h('span', { class: 'spacer' }), h('a', { href: '#library' }, 'Library'), h('a', { href: '#feeds' }, 'Reading'), versionSwitch('small ghost'));
+    h('span', { class: 'spacer' }), h('a', { href: '#library' }, 'Library'), h('a', { href: '#feeds' }, 'Reading'));
 }
 
 /* ---------- one path (#path-<id>) ---------- */

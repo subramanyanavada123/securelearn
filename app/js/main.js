@@ -244,6 +244,7 @@ function paintChrome() {
   document.getElementById('tablename').textContent = S.table || 'Set your table';
   document.getElementById('tablechip').classList.toggle('live', !!App.db);
   document.body.classList.toggle('present', !!S.present && !!currentLabId());
+  const vs = document.getElementById('verslot'); if (vs) vs.replaceChildren(versionSwitch('small navswitch'));
 }
 
 { const slot = document.getElementById('themeslot'); if (slot) slot.replaceWith(Theme.button()); }

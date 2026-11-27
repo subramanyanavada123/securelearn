@@ -966,7 +966,8 @@ console.log('coverage: ' + nScen + ' scenarios · ' + App.labs.reduce((n, l) => 
   go('e11'); if (!doc.querySelector('#app .stagetop a.close[href="#"]')) fail('classic: episode close should return to the season');
   const btn = [...doc.querySelectorAll('button')].find(b => /new version/.test(b.textContent)); go(''); const sw = [...doc.querySelectorAll('#app button')].find(b => /new version/.test(b.textContent));
   if (!sw) fail('classic: home lacks the switch to the new version'); else { sw.click(); if (S.classic) fail('classic: switch did not turn the new version on'); }
-  go(''); if (!doc.querySelector('#app .pathcard') || ![...doc.querySelectorAll('#app button')].some(b => /classic version/.test(b.textContent))) fail('new: start page lacks paths or the classic switch');
+  go(''); if (!doc.querySelector('#app .pathcard') || ![...doc.querySelectorAll('#app .seasonnav button')].some(b => /classic version/i.test(b.textContent))) fail('new: start page lacks paths or the classic switch in its top bar');
+  go('labs'); if (![...doc.querySelectorAll('#verslot button')].some(b => /classic version/i.test(b.textContent))) fail('new: top bar lacks the classic switch');
   console.log('versions: new (paths) by default; classic restores the story home, old menus and endings; switch both ways');
   console.log('paths: ' + PATHS.length + ' paths, ' + n + ' steps, each rendered with Next pointing to the following step; developer card on start and on completion');
 }
